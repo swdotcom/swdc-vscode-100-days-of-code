@@ -1,0 +1,46 @@
+{
+    "Goals":[
+        {
+            "title" : "Thing 1",
+            "SubGoals":[
+                {
+                    "title": "Subthing 1.1"
+                },
+                {
+                    "title": "Subthing 1.2"
+                },
+                {
+                    "title": "Subthing 1.3"
+                }
+            ]
+        },
+        {
+            "title" : "Thing 2",
+            "SubGoals":[
+                {
+                    "title": "Subthing 2.1"
+                },
+                {
+                    "title": "Subthing 2.2"
+                },
+                {
+                    "title": "Subthing 2.3"
+                }
+            ]
+        },
+        {
+            "title" : "Thing 3",
+            "SubGoals":[
+                {
+                    "title": "Subthing 3.1"
+                },
+                {
+                    "title": "Subthing 3.2"
+                },
+                {
+                    "title": "Subthing 3.3"
+                }
+            ]
+        }
+    ]
+}

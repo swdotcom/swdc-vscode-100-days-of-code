@@ -1,45 +1,191 @@
 {
-	"name": "swdc-vscode-100-days-of-code",
-	"displayName": "100 Days of Code",
-	"description": "",
-	"version": "0.0.1",
-	"engines": {
-		"vscode": "^1.45.0"
-	},
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [
-        "onCommand:swdc-vscode-100-days-of-code.helloWorld"
-	],
-	"main": "./out/extension.js",
-	"contributes": {
-		"commands": [
-			{
-				"command": "swdc-vscode-100-days-of-code.helloWorld",
-                "title": "Hello World"
-			}
-		]
-	},
-	"scripts": {
-		"vscode:prepublish": "yarn run compile",
-		"compile": "tsc -p ./",
-		"lint": "eslint src --ext ts",
-		"watch": "tsc -watch -p ./",
-		"pretest": "yarn run compile && yarn run lint",
-		"test": "node ./out/test/runTest.js"
-	},
-	"devDependencies": {
-		"@types/vscode": "^1.45.0",
-		"@types/glob": "^7.1.1",
-		"@types/mocha": "^7.0.2",
-		"@types/node": "^13.11.0",
-		"eslint": "^6.8.0",
-		"@typescript-eslint/parser": "^2.30.0",
-		"@typescript-eslint/eslint-plugin": "^2.30.0",
-		"glob": "^7.1.6",
-		"mocha": "^7.1.2",
-		"typescript": "^3.8.3",
-		"vscode-test": "^1.3.0"
-	}
+    "name": "100doc",
+    "displayName": "100 Days of Code",
+    "description": "",
+    "version": "0.0.1",
+    "publisher": "softwaredotcom",
+    "scripts": {
+        "vscode:prepublish": "yarn run compile",
+        "compile": "tsc -p ./",
+        "lint": "eslint src --ext ts",
+        "watch": "tsc -watch -p ./",
+        "pretest": "yarn run compile && yarn run lint",
+        "test": "node ./out/test/runTest.js"
+    },
+    "engines": {
+        "vscode": "^1.43.0"
+    },
+    "preview": true,
+    "categories": [
+        "Other"
+    ],
+    "icon": "images/zoomtime.png",
+    "galleryBanner": {
+        "color": "#384356",
+        "theme": "dark"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/swdotcom/swdc-vscode-100-days-of-code"
+    },
+    "remote.extensionKind": {
+        "softwaredotcom.swdc-vscode-zoomtime": "ui"
+    },
+    "license": "SEE LICENSE IN LICENSE",
+    "keywords": [
+        "productivity"
+    ],
+    "activationEvents": [
+        "*"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "zoomtime.manageBookmarks",
+                "title": "Zoom Time: Edit your bookmarks"
+            },
+            {
+                "command": "zoomtime.displayReadme",
+                "title": "Zoom Time: Learn more"
+            },
+            {
+                "command": "zoomtime.sendFeedback",
+                "title": "Zoom Time: Submit feedback"
+            },
+            {
+                "command": "zoomtime.addZoomLink",
+                "title": "Add Zoom link",
+                "icon": {
+                    "light": "resources/light/add.png",
+                    "dark": "resources/dark/add.png"
+                }
+            },
+            {
+                "command": "zoomtime.createZoomMeeting",
+                "title": "Create Zoom meeting",
+                "icon": {
+                    "light": "resources/light/add.png",
+                    "dark": "resources/dark/add.png"
+                }
+            },
+            {
+                "command": "zoomtime.editZoomLink",
+                "title": "Edit Zoom link",
+                "icon": {
+                    "light": "resources/light/pencil.png",
+                    "dark": "resources/dark/pencil.png"
+                }
+            },
+            {
+                "command": "zoomtime.removeZoomLink",
+                "title": "Remove Zoom link",
+                "icon": {
+                    "light": "resources/light/remove.svg",
+                    "dark": "resources/dark/remove.svg"
+                }
+            },
+            {
+                "command": "zoomtime.copyZoomLink",
+                "title": "Copy Zoom link to clipboard",
+                "icon": {
+                    "light": "resources/light/copy.png",
+                    "dark": "resources/dark/copy.png"
+                }
+            },
+            {
+                "command": "DoC.LaunchSoftwareWebsite",
+                "title": "Goes to Software.com"
+            },
+            {
+                "command": "DoC.ToggleStatusbar",
+                "title": ""
+            },
+            {
+                "command": "DoC.BlankBlueLine",
+                "title": ""
+            },
+            {
+                "command": "DoC.goalsCMD",
+                "title": "Goals"
+            },
+            {
+                "command": "DoC.diaryAdd",
+                "title": "Add Diary Page"
+            },
+            {
+                "command": "DoC.diaryCMD",
+                "title": "Diary"
+            },
+            {
+                "command": "DoC.milestonesCMD",
+                "title": "Milestones"
+            },
+            {
+                "command": "DoC.shareCMD",
+                "title": "Share"
+            }
+        ],
+        "views": {
+            "code-time": [
+                {
+                    "id": "100DoC-tree",
+                    "name": "100 DAYS OF CODE"
+                }
+            ]
+        },
+        "menus": {
+            "view/item/context": [
+                {
+                    "command": "zoomtime.editZoomLink",
+                    "group": "inline@2",
+                    "when": "viewItem =~ /zoom-bookmark-parent/"
+                },
+                {
+                    "command": "zoomtime.removeZoomLink",
+                    "group": "inline@3",
+                    "when": "viewItem =~ /zoom-bookmark-parent/"
+                },
+                {
+                    "command": "zoomtime.copyZoomLink",
+                    "group": "inline@2",
+                    "when": "viewItem =~ /zoom-bookmark-child/"
+                }
+            ],
+            "view/title": [
+                {
+                    "command": "zoomtime.addZoomLink",
+                    "group": "navigation@2",
+                    "when": "view =~ /100DoC-bookmark-tree/"
+                },
+                {
+                    "command": "zoomtime.createZoomMeeting",
+                    "group": "navigation@2",
+                    "when": "view =~ /100DoC-daily-metrics-tree/"
+                }
+            ]
+        }
+    },
+    "devDependencies": {
+        "@types/glob": "^7.1.1",
+        "@types/mocha": "^7.0.1",
+        "@types/node": "^12.11.7",
+        "@types/vscode": "^1.43.0",
+        "@typescript-eslint/eslint-plugin": "^2.18.0",
+        "@typescript-eslint/parser": "^2.18.0",
+        "eslint": "^6.8.0",
+        "glob": "^7.1.6",
+        "mocha": "^7.0.1",
+        "typescript": "^3.7.5",
+        "vscode-test": "^1.3.0",
+        "softwaredotcom.swdc-vscode": "3.2.6"
+    },
+    "dependencies": {
+        "axios": "^0.19.2",
+        "clipboardy": "^2.3.0",
+        "moment-timezone": "^0.5.28",
+        "open": "^7.0.3",
+        "querystring": "^0.2.0",
+        "softwaredotcom.swdc-vscode": "2.2.6"
+    }
 }
