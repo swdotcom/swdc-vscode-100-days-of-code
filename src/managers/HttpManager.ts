@@ -1,7 +1,5 @@
 import axios from "axios";
-import { api_endpoint, zoom_api_endpoint } from "../utils/Constants";
-import { getItem, setItem } from "../utils/Util";
-import { access } from "fs";
+import { api_endpoint} from "../utils/Constants";
 
 const querystring = require("querystring");
 
@@ -10,9 +8,6 @@ const beApi = axios.create({
     baseURL: `${api_endpoint}`
 });
 
-const zoomApi = axios.create({
-    baseURL: `${zoom_api_endpoint}`
-});
 
 export async function serverIsAvailable() {
     return await softwareGet("/ping")
@@ -165,61 +160,4 @@ function getResponseStatus(resp: any) {
         status = resp.response.status;
     }
     return status;
-}
-
-export async function zoomGet(api: string, params: any = {}) {
-    const access_token = getItem("zoom_access_token");
-
-    zoomApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
-
-    if (params && Object.keys(params).length) {
-        const qryStr = querystring.stringify(params);
-        api = `${api}?${qryStr}`;
-    }
-
-    const resultData = await zoomApi
-        .get(api)
-        .then(resp => {
-            return { status: "success", data: resp.data };
-        })
-        .catch(e => {
-            console.log("Error retrieving Zoom data: ", e.message);
-            return { status: "failed", error: e, data: null };
-        });
-    return resultData;
-}
-
-export async function zoomPost(api: string, payload: any, tries: number = 0) {
-    const access_token = getItem("zoom_access_token");
-
-    zoomApi.defaults.headers.common["Authorization"] = `Bearer ${access_token}`;
-
-    const resultData: any = await zoomApi
-        .post(api, payload)
-        .then(resp => {
-            return { status: "success", data: resp.data };
-        })
-        .catch(async e => {
-            if (e.response && e.response.status === 401 && tries < 1) {
-                // refresh the access token and try again
-                const refreshResult = await softwarePost(
-                    "/auth/zoom/refreshAccessToken",
-                    {},
-                    getItem("jwt")
-                );
-                if (refreshResult && refreshResult.data) {
-                    const accessTokenInfo = refreshResult.data;
-                    setItem("zoom_access_token", accessTokenInfo.access_token);
-                    setItem(
-                        "zoom_refresh_token",
-                        accessTokenInfo.refresh_token
-                    );
-                    tries += 1;
-                    return zoomPost(api, payload, tries);
-                }
-            }
-            console.log("Error creating Zoom data: ", e.message);
-            return { status: "failed", error: e, data: null };
-        });
-    return resultData;
 }

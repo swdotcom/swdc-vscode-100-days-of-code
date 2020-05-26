@@ -8,7 +8,7 @@ import {
 	commands
 } from "vscode";
 import { TreeNode } from "../models/TreeNode";
-import { ZoomTreeItem } from "./ZoomTreeItem";
+import { DoCTreeItem } from "./DoCTreeItem";
 import {
 	getLearnMoreButton,
 	getDocGoalsButton,
@@ -20,19 +20,19 @@ import {
 } from "./TreeButtonManager";
 import { launchUrl, getItem } from "../utils/Util";
 
-const zoomCollapsedStateMap: any = {};
+const docCollapsedStateMap: any = {};
 
 export const connectDoCTreeView = (view: TreeView<TreeNode>) => {
 	return Disposable.from(
 		view.onDidCollapseElement(async e => {
 			const item: TreeNode = e.element;
-			zoomCollapsedStateMap[item.label] =
+			docCollapsedStateMap[item.label] =
 				TreeItemCollapsibleState.Collapsed;
 		}),
 
 		view.onDidExpandElement(async e => {
 			const item: TreeNode = e.element;
-			zoomCollapsedStateMap[item.label] =
+			docCollapsedStateMap[item.label] =
 				TreeItemCollapsibleState.Expanded;
 		}),
 
@@ -52,7 +52,7 @@ export const connectDoCTreeView = (view: TreeView<TreeNode>) => {
 				}
 			} else if (item.value) {
 				launchUrl(item.value);
-				commands.executeCommand("zoomtime.refreshTree");
+				commands.executeCommand("doctime.refreshTree");
 			}
 		}),
 
@@ -100,8 +100,8 @@ export class Tree100DoCProvider implements TreeDataProvider<TreeNode> {
 		}, 1000);
 	}
 
-	bindView(zoomTreeView: TreeView<TreeNode>): void {
-		this.view = zoomTreeView;
+	bindView(docTreeView: TreeView<TreeNode>): void {
+		this.view = docTreeView;
 	}
 
 	getParent(_p: TreeNode) {
@@ -116,17 +116,17 @@ export class Tree100DoCProvider implements TreeDataProvider<TreeNode> {
 		this._onDidChangeTreeData.fire(parent);
 	}
 
-	getTreeItem(p: TreeNode): ZoomTreeItem {
-		let treeItem: ZoomTreeItem;
+	getTreeItem(p: TreeNode): DoCTreeItem {
+		let treeItem: DoCTreeItem;
 		if (p.children.length) {
-			let collasibleState = zoomCollapsedStateMap[p.label];
+			let collasibleState = docCollapsedStateMap[p.label];
 			if (!collasibleState) {
-				treeItem = createZoomTreeItem(p, p.initialCollapsibleState);
+				treeItem = createDoCTreeItem(p, p.initialCollapsibleState);
 			} else {
-				treeItem = createZoomTreeItem(p, collasibleState);
+				treeItem = createDoCTreeItem(p, collasibleState);
 			}
 		} else {
-			treeItem = createZoomTreeItem(p, TreeItemCollapsibleState.None);
+			treeItem = createDoCTreeItem(p, TreeItemCollapsibleState.None);
 		}
 
 		return treeItem;
@@ -179,6 +179,6 @@ export class Tree100DoCProvider implements TreeDataProvider<TreeNode> {
  * @param p
  * @param cstate
  */
-function createZoomTreeItem(p: TreeNode, cstate: TreeItemCollapsibleState) {
-	return new ZoomTreeItem(p, cstate);
+function createDoCTreeItem(p: TreeNode, cstate: TreeItemCollapsibleState) {
+	return new DoCTreeItem(p, cstate);
 }

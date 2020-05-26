@@ -10,7 +10,7 @@ const resourcePath: string = path.join(
     "resources"
 );
 
-export class ZoomTreeItem extends TreeItem {
+export class DoCTreeItem extends TreeItem {
     constructor(
         private readonly treeItem: TreeNode,
         public readonly collapsibleState: TreeItemCollapsibleState,

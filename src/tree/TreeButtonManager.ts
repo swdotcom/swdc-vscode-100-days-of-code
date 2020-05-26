@@ -18,10 +18,6 @@ export function getActionButton(
     return item;
 }
 
-export function getDividerButton() {
-    return getActionButton("", "", "", "blue-line-96.png");
-}
-
 // export function getSubmitFeedbackButton() {
 //     return getActionButton(
 //         "Submit feedback",
@@ -35,7 +31,7 @@ export function getLearnMoreButton() {
     return getActionButton(
         "Learn more",
         "View the Code Time Readme to learn more",
-        "zoomtime.displayReadme",
+        "DoC.ViewReadme",
         "learn-more.svg"
     );
 }
@@ -60,9 +56,9 @@ export function getDoCToggleStatusBar() {
 
 export function getBlankBlueLine() {
     return getActionButton(
+        " ",
+        " ",
         "",
-        "",
-        "DoC.BlankBlueLine",
         "blue-line-96.png"
     );
 }

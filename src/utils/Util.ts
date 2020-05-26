@@ -1,17 +1,14 @@
 import { commands, ViewColumn, Uri, workspace, window } from "vscode";
-import { ZoomInfo } from "../models/ZoomInfo";
-import { isResponseOk, softwareGet, zoomGet } from "../managers/HttpManager";
-import { api_endpoint } from "./Constants";
+import { isResponseOk, softwareGet } from "../managers/HttpManager";
+// import { api_endpoint } from "./Constants";
 
 const fs = require("fs");
 const os = require("os");
 const open = require("open");
 const { exec } = require("child_process");
 
-let zoomFetchTimeout: any;
-
 export function getExtensionName() {
-    return "zoom-time";
+    return "100doc";
 }
 
 export function isWindows() {
@@ -75,7 +72,7 @@ export function displayReadmeIfNotExists(
     if (!displayedReadme || override) {
         if (!displayedReadme && launchTreeOnInit) {
             // reveal the tree
-            commands.executeCommand("zoomtime.displayTree");
+            // commands.executeCommand("zoomtime.displayTree");
         }
 
         const readmeUri = Uri.file(getLocalREADMEFile());
@@ -127,18 +124,18 @@ export function getSoftwareSessionAsJson() {
     return data ? data : {};
 }
 
-export function writeJsonData(data: ZoomInfo[], file: string) {
-    try {
-        const content = JSON.stringify(data, null, 4);
-        fs.writeFileSync(file, content, (err: { message: any }) => {
-            if (err) {
-                console.log(`error writing data: ${err.message}`);
-            }
-        });
-    } catch (e) {
-        console.log(`error writing data: ${e.message}`);
-    }
-}
+// export function writeJsonData(data: ZoomInfo[], file: string) {
+//     try {
+//         const content = JSON.stringify(data, null, 4);
+//         fs.writeFileSync(file, content, (err: { message: any }) => {
+//             if (err) {
+//                 console.log(`error writing data: ${err.message}`);
+//             }
+//         });
+//     } catch (e) {
+//         console.log(`error writing data: ${e.message}`);
+//     }
+// }
 
 export function getFileDataAsJson(file: string): any {
     let data = null;
@@ -298,119 +295,6 @@ export async function getAppJwt(serverIsOnline: boolean) {
         }
     }
     return null;
-}
-
-export async function connectZoom() {
-    const zoomAccessToken = getItem("zoom_access_token");
-    if (zoomAccessToken) {
-        // there's already an access token
-        window.showInformationMessage(`You have already connected Zoom.`);
-        commands.executeCommand("zoomtime.refreshTree");
-        return;
-    }
-
-    let jwt = getItem("jwt");
-    if (!jwt) {
-        // no jwt, get the app jwt
-        jwt = await getAppJwt(true);
-        await setItem("jwt", jwt);
-    }
-
-    jwt = getItem("jwt");
-    if (!jwt) {
-        return window.showInformationMessage(
-            `Our service is temporarily unavailable.\n\nPlease try again later.\n`
-        );
-    }
-
-    const encodedJwt = encodeURIComponent(jwt);
-    const connectUrl = `${api_endpoint}/auth/zoom?token=${encodedJwt}`;
-    launchUrl(connectUrl);
-    refetchZoomConnectStatusLazily();
-}
-
-export function refetchZoomConnectStatusLazily(
-    tryCountUntilFound: number = 40
-) {
-    if (zoomFetchTimeout) {
-        return;
-    }
-    // try again in 10 seconds
-    zoomFetchTimeout = setTimeout(() => {
-        zoomFetchTimeout = null;
-        zoomConnectStatusHandler(tryCountUntilFound);
-    }, 10000);
-}
-
-async function zoomConnectStatusHandler(tryCountUntilFound: number) {
-    let oauthResult = await getZoomTimeUserStatus();
-    if (!oauthResult.loggedOn) {
-        // try again if the count is not zero
-        if (tryCountUntilFound > 0) {
-            tryCountUntilFound -= 1;
-            refetchZoomConnectStatusLazily(tryCountUntilFound);
-        }
-    } else {
-        window.showInformationMessage("Successfully connected to Zoom");
-        // refresh the tree
-        commands.executeCommand("zoomtime.refreshTree");
-    }
-}
-
-export async function getZoomTimeUserStatus() {
-    // We don't have a user yet, check the users via the plugin/state
-    const jwt = getItem("jwt");
-    const zoom_refresh_token = getItem("zoom_refresh_token");
-
-    if (jwt || zoom_refresh_token) {
-        const api = "/users/plugin/state";
-        const additionalHeaders: any = zoom_refresh_token
-            ? { zoom_refresh_token }
-            : null;
-        const resp = await softwareGet(api, jwt, additionalHeaders);
-        if (isResponseOk(resp) && resp.data) {
-            // NOT_FOUND, ANONYMOUS, OK, UNKNOWN
-            const state = resp.data.state ? resp.data.state : "UNKNOWN";
-            if (state === "OK") {
-                /**
-                 * stateData only contains:
-                 * {email, jwt, state}
-                 */
-                const stateData = resp.data;
-                if (stateData.email) {
-                    setItem("name", stateData.email);
-                }
-                // check the jwt
-                if (stateData.jwt) {
-                    // update it
-                    setItem("jwt", stateData.jwt);
-                }
-
-                // get the user from the payload
-                const user = resp.data.user;
-                let foundZoomAuth = false;
-
-                if (user.auths && user.auths.length > 0) {
-                    for (let i = 0; i < user.auths.length; i++) {
-                        const auth = user.auths[i];
-
-                        // update the zoom access info if the auth matches
-                        if (auth.type === "zoom" && auth.access_token) {
-                            foundZoomAuth = true;
-                            setItem("zoom_access_token", auth.access_token);
-                            setItem("zoom_refresh_token", auth.refresh_token);
-                            break;
-                        }
-                    }
-                }
-
-                return { loggedOn: foundZoomAuth, state };
-            }
-            // return the state that is returned
-            return { loggedOn: false, state };
-        }
-    }
-    return { loggedOn: false, state: "UNKNOWN" };
 }
 
 export function launchInputBox(

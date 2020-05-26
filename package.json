@@ -19,7 +19,6 @@
     "categories": [
         "Other"
     ],
-    "icon": "images/zoomtime.png",
     "galleryBanner": {
         "color": "#384356",
         "theme": "dark"
@@ -27,9 +26,6 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/swdotcom/swdc-vscode-100-days-of-code"
-    },
-    "remote.extensionKind": {
-        "softwaredotcom.swdc-vscode-zoomtime": "ui"
     },
     "license": "SEE LICENSE IN LICENSE",
     "keywords": [
@@ -42,68 +38,16 @@
     "contributes": {
         "commands": [
             {
-                "command": "zoomtime.manageBookmarks",
-                "title": "Zoom Time: Edit your bookmarks"
-            },
-            {
-                "command": "zoomtime.displayReadme",
-                "title": "Zoom Time: Learn more"
-            },
-            {
-                "command": "zoomtime.sendFeedback",
-                "title": "Zoom Time: Submit feedback"
-            },
-            {
-                "command": "zoomtime.addZoomLink",
-                "title": "Add Zoom link",
-                "icon": {
-                    "light": "resources/light/add.png",
-                    "dark": "resources/dark/add.png"
-                }
-            },
-            {
-                "command": "zoomtime.createZoomMeeting",
-                "title": "Create Zoom meeting",
-                "icon": {
-                    "light": "resources/light/add.png",
-                    "dark": "resources/dark/add.png"
-                }
-            },
-            {
-                "command": "zoomtime.editZoomLink",
-                "title": "Edit Zoom link",
-                "icon": {
-                    "light": "resources/light/pencil.png",
-                    "dark": "resources/dark/pencil.png"
-                }
-            },
-            {
-                "command": "zoomtime.removeZoomLink",
-                "title": "Remove Zoom link",
-                "icon": {
-                    "light": "resources/light/remove.svg",
-                    "dark": "resources/dark/remove.svg"
-                }
-            },
-            {
-                "command": "zoomtime.copyZoomLink",
-                "title": "Copy Zoom link to clipboard",
-                "icon": {
-                    "light": "resources/light/copy.png",
-                    "dark": "resources/dark/copy.png"
-                }
-            },
-            {
                 "command": "DoC.LaunchSoftwareWebsite",
                 "title": "Goes to Software.com"
             },
             {
                 "command": "DoC.ToggleStatusbar",
-                "title": ""
+                "title": " "
             },
             {
                 "command": "DoC.BlankBlueLine",
-                "title": ""
+                "title": " "
             },
             {
                 "command": "DoC.goalsCMD",
@@ -133,37 +77,6 @@
                     "name": "100 DAYS OF CODE"
                 }
             ]
-        },
-        "menus": {
-            "view/item/context": [
-                {
-                    "command": "zoomtime.editZoomLink",
-                    "group": "inline@2",
-                    "when": "viewItem =~ /zoom-bookmark-parent/"
-                },
-                {
-                    "command": "zoomtime.removeZoomLink",
-                    "group": "inline@3",
-                    "when": "viewItem =~ /zoom-bookmark-parent/"
-                },
-                {
-                    "command": "zoomtime.copyZoomLink",
-                    "group": "inline@2",
-                    "when": "viewItem =~ /zoom-bookmark-child/"
-                }
-            ],
-            "view/title": [
-                {
-                    "command": "zoomtime.addZoomLink",
-                    "group": "navigation@2",
-                    "when": "view =~ /100DoC-bookmark-tree/"
-                },
-                {
-                    "command": "zoomtime.createZoomMeeting",
-                    "group": "navigation@2",
-                    "when": "view =~ /100DoC-daily-metrics-tree/"
-                }
-            ]
         }
     },
     "devDependencies": {
@@ -181,7 +94,6 @@
     },
     "dependencies": {
         "axios": "^0.19.2",
-        "clipboardy": "^2.3.0",
         "moment-timezone": "^0.5.28",
         "open": "^7.0.3",
         "querystring": "^0.2.0"
