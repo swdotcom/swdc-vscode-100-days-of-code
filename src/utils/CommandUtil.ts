@@ -109,7 +109,7 @@ export function createCommands(): { dispose: () => void } {
 
     // LAUNCH LEARN MORE PAGE
 
-    // LAUNCH GOALS PAGE
+    // // LAUNCH GOALS PAGE
     // cmds.push(
     //     commands.registerCommand("DoC.goalsCMD", () => {
     //         vscode.window.showInformationMessage("Goals Page");
