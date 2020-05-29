@@ -10,13 +10,14 @@ import {
 import { TreeNode } from "../models/TreeNode";
 import { DoCTreeItem } from "./DoCTreeItem";
 import {
-	getLearnMoreButton,
-	getDocGoalsButton,
-	getDocDiaryAddButton,
-	getDocDiaryButton,
+	getDoCLearnMoreButton,
 	getDocMilestonesButton,
-	getBlankBlueLine,
-	getDoCToggleStatusBar
+	getDoCBlankBlueLine,
+	getDoCToggleStatusBar,
+	getDoCLogDailyProgressButton,
+	getDoCLogsButon,
+	getDashboardButton,
+	getDocIdeasButton
 } from "./TreeButtonManager";
 import { launchUrl, getItem } from "../utils/Util";
 
@@ -85,7 +86,7 @@ export class Tree100DoCProvider implements TreeDataProvider<TreeNode> {
 		}
 
 		setTimeout(() => {
-			const learnMoreButton: TreeNode = getLearnMoreButton();
+			const learnMoreButton: TreeNode = getDoCLearnMoreButton();
 			try {
 				if (this.view) {
 					// select the readme item
@@ -151,24 +152,28 @@ export class Tree100DoCProvider implements TreeDataProvider<TreeNode> {
 		const toggleStatusBar: TreeNode = getDoCToggleStatusBar();
 		treeItems.push(toggleStatusBar);
 
-		const feedbackButton: TreeNode = getLearnMoreButton();
+		const feedbackButton: TreeNode = getDoCLearnMoreButton();
 		treeItems.push(feedbackButton);
 
-		const blueLineButton: TreeNode = getBlankBlueLine();
+		const blueLineButton: TreeNode = getDoCBlankBlueLine();
 		treeItems.push(blueLineButton);
 
 		// get the manage bookmarks button
-		const goalsButton: TreeNode = getDocGoalsButton();
-		treeItems.push(goalsButton);
 
-		const addDiaryButton: TreeNode = getDocDiaryAddButton();
-		treeItems.push(addDiaryButton);
+		const addLogsButton: TreeNode = getDoCLogDailyProgressButton();
+		treeItems.push(addLogsButton);
 
-		const diaryButton: TreeNode = getDocDiaryButton();
-		treeItems.push(diaryButton);
+		const dashboardButton: TreeNode = getDashboardButton();
+		treeItems.push(dashboardButton);
+
+		const logsButton: TreeNode = getDoCLogsButon();
+		treeItems.push(logsButton);
 
 		const milestoneButton: TreeNode = getDocMilestonesButton();
 		treeItems.push(milestoneButton);
+
+		const ideasButton: TreeNode = getDocIdeasButton();
+		treeItems.push(ideasButton);
 
 		return treeItems;
 	}

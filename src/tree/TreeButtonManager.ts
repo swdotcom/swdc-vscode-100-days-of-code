@@ -27,7 +27,7 @@ export function getActionButton(
 //     );
 // }
 
-export function getLearnMoreButton() {
+export function getDoCLearnMoreButton() {
     return getActionButton(
         "Learn more",
         "View the Code Time Readme to learn more",
@@ -54,7 +54,7 @@ export function getDoCToggleStatusBar() {
 //     );
 // }
 
-export function getBlankBlueLine() {
+export function getDoCBlankBlueLine() {
     return getActionButton(
         " ",
         " ",
@@ -63,30 +63,30 @@ export function getBlankBlueLine() {
     );
 }
 
-export function getDocGoalsButton() {
+export function getDoCLogDailyProgressButton() {
     return getActionButton(
-        "Goals",
-        "View your goals",
-        "DoC.goalsCMD",
-        "view-edit-goals.svg"
-    );
-}
-
-export function getDocDiaryAddButton() {
-    return getActionButton(
-        "Add page to Diary",
-        "Add a page to your Diary",
+        "Log Daily Progress",
+        "Log Daily Progress",
         "DoC.diaryAdd",
-        "add-diary.svg"
+        "log-progress.svg"
     );
 }
 
-export function getDocDiaryButton() {
+export function getDashboardButton(){
     return getActionButton(
-        "Diary",
-        "View your diary entries",
+        "Dashbard",
+        "View Dashboard",
+        "DoC.dashboardCMD",
+        "dashboard.svg"
+    ); 
+}
+
+export function getDoCLogsButon() {
+    return getActionButton(
+        "Logs",
+        "View your log entries",
         "DoC.diaryCMD",
-        "view-diary.svg"
+        "logs.svg"
     );
 }
 
@@ -95,7 +95,16 @@ export function getDocMilestonesButton() {
         "Milestones",
         "View your milestones",
         "DoC.milestonesCMD",
-        "view-milestone.svg"
+        "milestones.svg"
+    );
+}
+
+export function getDocIdeasButton() {
+    return getActionButton(
+        "Ideas",
+        "Get ideas for 100DoC",
+        "DoC.ideasCMD",
+        "ideas.svg"
     );
 }
 
