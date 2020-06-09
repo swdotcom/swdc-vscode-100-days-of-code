@@ -19,7 +19,7 @@ import {
 	getDashboardButton,
 	getDocIdeasButton
 } from "./TreeButtonManager";
-import { launchUrl, getItem } from "../utils/Util";
+import { launchUrl } from "../utils/Util";
 
 const docCollapsedStateMap: any = {};
 

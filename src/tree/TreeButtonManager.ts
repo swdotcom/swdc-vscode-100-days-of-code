@@ -67,16 +67,16 @@ export function getDoCLogDailyProgressButton() {
     return getActionButton(
         "Log Daily Progress",
         "Log Daily Progress",
-        "DoC.diaryAdd",
+        "DoC.addLog",
         "log-progress.svg"
     );
 }
 
 export function getDashboardButton(){
     return getActionButton(
-        "Dashbard",
+        "Dashboard",
         "View Dashboard",
-        "DoC.dashboardCMD",
+        "DoC.viewDashboard",
         "dashboard.svg"
     ); 
 }
@@ -85,7 +85,7 @@ export function getDoCLogsButon() {
     return getActionButton(
         "Logs",
         "View your log entries",
-        "DoC.diaryCMD",
+        "DoC.viewLogs",
         "logs.svg"
     );
 }
@@ -94,7 +94,7 @@ export function getDocMilestonesButton() {
     return getActionButton(
         "Milestones",
         "View your milestones",
-        "DoC.milestonesCMD",
+        "DoC.viewMilestones",
         "milestones.svg"
     );
 }
@@ -103,7 +103,7 @@ export function getDocIdeasButton() {
     return getActionButton(
         "Ideas",
         "Get ideas for 100DoC",
-        "DoC.ideasCMD",
+        "DoC.viewIdeas",
         "ideas.svg"
     );
 }

@@ -20,7 +20,7 @@ export async function serverIsAvailable() {
 }
 
 /**
- * Response returns a paylod with the following...
+ * Response returns a payload with the following...
  * data: <payload>, status: 200, statusText: "OK", config: Object
  * @param api
  * @param jwt
@@ -125,7 +125,7 @@ export function hasTokenExpired(resp: any) {
 }
 
 /**
- * check if the reponse is ok or not
+ * check if the response is ok or not
  * axios always sends the following
  * status:200
  * statusText:"OK"

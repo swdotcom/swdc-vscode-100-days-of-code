@@ -43,31 +43,27 @@
             },
             {
                 "command": "DoC.ToggleStatusbar",
-                "title": " "
+                "title": "View/Remove Status Bar text"
             },
             {
-                "command": "DoC.BlankBlueLine",
-                "title": " "
+                "command": "DoC.viewLogs",
+                "title": "View Logs"
             },
             {
-                "command": "DoC.goalsCMD",
-                "title": "Goals"
+                "command": "DoC.addLog",
+                "title": "Add Daily Progress Log"
             },
             {
-                "command": "DoC.diaryAdd",
-                "title": "Add Diary Page"
+                "command": "DoC.viewDashboard",
+                "title": "View Dashboard"
             },
             {
-                "command": "DoC.diaryCMD",
-                "title": "Diary"
+                "command": "DoC.viewMilestones",
+                "title": "View Milestones"
             },
             {
-                "command": "DoC.milestonesCMD",
-                "title": "Milestones"
-            },
-            {
-                "command": "DoC.shareCMD",
-                "title": "Share"
+                "command": "DoC.viewIdeas",
+                "title": "View Ideas (on Software.com)"
             }
         ],
         "views": {
@@ -98,6 +94,7 @@
         "open": "^7.0.3",
         "querystring": "^0.2.0"
     },
-    "extensionDependencies": ["softwaredotcom.swdc-vscode"]
-
+    "extensionDependencies": [
+        "softwaredotcom.swdc-vscode"
+    ]
 }

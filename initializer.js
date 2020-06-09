@@ -17,6 +17,12 @@ async function initialize() {
     );
 
     await runCommand(
+        `mkdir -p out${pathSep}assets`,
+        "Creating the out/assets directory if it doesn't exist",
+        true
+    );
+
+    await runCommand(
         `mkdir -p out${pathSep}src${pathSep}images`,
         "Creating the out/src/images directory if it doesn't exist",
         true
@@ -30,6 +36,11 @@ async function initialize() {
     await runCommand(
         `${copyCmd} resources${pathSep}* out${pathSep}resources${pathSep}.`,
         "Copy the resources to the out dir"
+    );
+
+    await runCommand(
+        `${copyCmd} src${pathSep}assets${pathSep}* out${pathSep}assets${pathSep}.`,
+        "Copy the assets to the out dir"
     );
 
     await runCommand(
