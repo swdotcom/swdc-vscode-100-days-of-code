@@ -257,6 +257,33 @@ export function updateLogByDate(log: Log) {
   }
 }
 
+export function editLogEntry(dayNumber: number, title: string, description: string, links: Array<string>){
+  const exists = checkLogsJson();
+  if (exists) {
+      const filepath = getLogsJson();
+      const rawLogs = fs.readFileSync(filepath).toString();
+      let logs = JSON.parse(rawLogs).logs;
+      for(var i = 0; i < logs.length; i++){
+          let log = logs[i];
+          if(log.day_number !== dayNumber){
+              continue;
+          }
+          log.title = title;
+          log.description = description;
+          log.links = links;
+          break;
+      }
+      const sendLogs = {logs}
+      fs.writeFile(filepath, JSON.stringify(sendLogs, null, 4), (err) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+          console.log("Log Json File Updated");
+      });
+    }
+}
+
 export function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
   const exists = checkLogsJson();
   if (exists) {

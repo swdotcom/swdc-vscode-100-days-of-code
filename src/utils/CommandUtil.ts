@@ -4,7 +4,7 @@ import {
   Tree100DoCProvider,
   connectDoCTreeView,
 } from "../tree/Tree100DoCProvider";
-import { getLogsHtml, updateLogsHtml, addLogToJson } from "./LogsUtil";
+import { getLogsHtml, updateLogsHtml, addLogToJson, editLogEntry } from "./LogsUtil";
 import {
   updateMilestonesHtml,
   getMilestonesHtml,
@@ -41,6 +41,12 @@ export function createCommands(): { dispose: () => void } {
           console.log(err);
         }
         panel.webview.html = data;
+        panel.webview.onDidReceiveMessage((message) => {
+          if(message.command === "editLog"){
+            const dayUpdate = message.value;
+            editLogEntry(parseInt(dayUpdate.day_number), dayUpdate.title, dayUpdate.description, dayUpdate.links);
+          }
+        });
       });
     })
   );
