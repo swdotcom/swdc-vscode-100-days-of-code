@@ -469,7 +469,7 @@ export function getUpdatedLogsHtmlString() {
       `\t\tposition: absolute;`,
       `\t\tbackground-color: rgba(0,0,0,0);`,
       `\t\tborder-color: rgba(0,0,0,0);`,
-      `\t\ttransform: translate(50px, -5px);`,
+      `\t\ttransform: translate(50px, -20px);`,
       `\t\tmargin: 5px;`,
       `\t}`,
       `\t.cardHeaderShareButtonIcon {`,
@@ -660,14 +660,23 @@ export function getUpdatedLogsHtmlString() {
           continue;
         }
 
-        let unix_timestamp = day.date;
+        var shareText = [
+          `Day ${day.day_number}/100 of 100DaysOfCode`,
+          `What I worked on: ${day.title}`,
+          `Metrics: Hours: ${day.codetime_metrics.hours}, Lines of Code: ${day.codetime_metrics.lines_added}, Keystrokes: ${day.codetime_metrics.keystrokes}`,
+          `Data supplied from @software_hq’s 100 Days Of Code VScode plugin`,
+        ].join("\n");
+        const shareURI = encodeURI(shareText);
+        const twitterShareUrl = `https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.software.com&text=${shareURI}&hashtags=100DaysOfCode%2CSoftware%2CDeveloper`;
+
+        const unix_timestamp = day.date;
 
         //Getting the date
-        var date = new Date(unix_timestamp);
-        var dayOfMonth = date.getDate();
-        var month = date.getMonth() + 1;
-        var year = date.getFullYear();
-        var formattedTime = month + "/" + dayOfMonth + "/" + year;
+        const date = new Date(unix_timestamp);
+        const dayOfMonth = date.getDate();
+        const month = date.getMonth() + 1;
+        const year = date.getFullYear();
+        const formattedTime = month + "/" + dayOfMonth + "/" + year;
 
         htmlString += [
           `\t<h2>Day ${day.day_number}</h2>`,
@@ -685,7 +694,7 @@ export function getUpdatedLogsHtmlString() {
           `\t\t\t<div class="cardHeaderButtonSection">`,
           `\t\t\t\t<button class="cardHeaderEditLogSubmit">Submit Log</button>`,
           `\t\t\t\t<button class="cardHeaderEditLogCancel">Cancel</button>`,
-          `\t\t\t\t<button class="cardHeaderShareButton"><img class="cardHeaderShareButtonIcon" src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg"></button>`,
+          `\t\t\t\t<a href="${twitterShareUrl}"><button class="cardHeaderShareButton"><img class="cardHeaderShareButtonIcon" src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg"></button></a>`,
           `\t\t\t\t<button class="cardHeaderEditLogButton">Edit Log</button>`,
           `\t\t\t\t<button class="cardHeaderDropDownButton"><img class="cardHeaderShareButtonIcon" src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Logs/dropDown.svg"></button>`,
           `\t\t\t</div>`,
@@ -713,10 +722,10 @@ export function getUpdatedLogsHtmlString() {
           linksText += day.links[_j] + ", ";
         }
 
-        let user = getUserObject();
-        let avgHours = user.hours / user.days;
-        let avgKeystrokes = user.keystrokes / user.days;
-        let avgLines = user.lines_added / user.days;
+        const user = getUserObject();
+        const avgHours = user.hours / user.days;
+        const avgKeystrokes = user.keystrokes / user.days;
+        const avgLines = user.lines_added / user.days;
 
         let percentHours = (day.codetime_metrics.hours / avgHours) * 100;
         percentHours = Math.round(percentHours * 100) / 100;
@@ -853,12 +862,12 @@ export function getUpdatedLogsHtmlString() {
         `\t\t\t\tcontent.style.maxHeight = null;`,
         `\t\t\t\tdropDownIcon.style.transform = 'rotate(180deg)';`,
         `\t\t\t\teditButton.style.visibility = 'hidden';`,
-        `\t\t\t\tshareButton.style.transform = 'translate(50px, -5px)'`,
+        `\t\t\t\tshareButton.style.transform = 'translate(50px, -20px)'`,
         `\t\t\t} else {`,
         `\t\t\t\tcontent.style.maxHeight = content.scrollHeight + "px";`,
         `\t\t\t\tdropDownIcon.style.transform = 'rotate(0deg)';`,
         `\t\t\t\teditButton.style.visibility = 'visible';`,
-        `\t\t\t\tshareButton.style.transform = 'translate(-48px, -5px)'`,
+        `\t\t\t\tshareButton.style.transform = 'translate(-48px, -20px)'`,
         `\t\t\t}`,
         `\t\t});`,
         `\t}`,
