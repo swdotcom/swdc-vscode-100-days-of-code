@@ -30,7 +30,7 @@ export function getUpdatedDashboardHtmlString() {
   const user: User = getUserObject();
 
   // Metrics
-  const avgHours = (user.hours / user.days).toFixed(2);
+  const avgHours = user.days===0? "0" : (user.hours / user.days).toFixed(2);
   const daysLevel = getDaysLevel(user.days);
   const hoursLevel = getHoursLevel(user.hours);
   const longStreakLevel = getLongStreakLevel(user.longest_streak);

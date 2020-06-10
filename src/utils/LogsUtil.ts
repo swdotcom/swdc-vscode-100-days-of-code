@@ -666,9 +666,16 @@ export function getUpdatedLogsHtmlString() {
       `\t<h1>Logs</h1>\n`,
     ].join("\n");
 
-    if (logs.length < 1) {
-      htmlString +=
-        "\t\t<h2 id='noLogs'>Log Daily Progress to see it here!</h2>\n";
+    if (logs.length < 1 || (logs.length === 1 && !logs[0].day_number)) {
+      htmlString += [
+        `\t\t<h2 id='noLogs'>Log Daily Progress to see it here! --> <a id="addLog" href="Add Log">Add log</a></h2></body>`,
+        `\t<script>\n\tconst vscode = acquireVsCodeApi();`,
+        `\tconst addLog = document.getElementById("addLog");`,
+        `\tif(addLog){`,
+        `\t\taddLog.addEventListener("click", function(){`,
+        `\t\t\tvscode.postMessage({command: "addLog"});`,
+        `\t\t});}\n\t</script>\n</html>`,
+      ].join("\n");
     } else {
       let mostRecentLog = logs[logs.length - 1];
       let LogDate = new Date(mostRecentLog.date);

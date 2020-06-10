@@ -5,9 +5,9 @@ import { getMostRecentLogObject, checkLogsJson } from "./LogsUtil";
 export function getUserJson() {
   let file = getSoftwareDir();
   if (isWindows()) {
-    file += "\\User.json";
+    file += "\\user.json";
   } else {
-    file += "/User.json";
+    file += "/user.json";
   }
   return file;
 }
@@ -33,7 +33,7 @@ export function checkUserJson() {
           `\t"curr_streak": 0,`,
           `\t"shares": 0,`,
           `\t"languages": [],`,
-          `\t"lastUpdated":  0'\n}`,
+          `\t"lastUpdated":  0\n}`,
         ].join("\n")
       );
       return true;

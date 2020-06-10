@@ -3,6 +3,9 @@ import fs = require("fs");
 import { window } from "vscode";
 import path = require("path");
 import { updateLogsMilestonesAndMetrics } from "./LogsUtil";
+import { User } from "../models/User";
+import { getUserObject } from "./UserUtil";
+import { getSessionCodetimeMetrics } from "./MetricUtil";
 // import { Milestone } from "../models/Milestone";
 
 export function getMilestonesJson() {
@@ -30,6 +33,87 @@ export function checkMilestonesJson() {
   }
 }
 
+export function checkCodeTimeMetricsMilestonesAchieved() {
+  var achievedMilestones = [];
+  const user: User = getUserObject();
+
+  // metrics of form [minutes, keystrokes, lines]
+  const codeTimeMetrics = getSessionCodetimeMetrics();
+
+  // check for aggregate codetime
+  const aggHours = user.hours + codeTimeMetrics[0] / 60;
+  if (aggHours >= 200) {
+    achievedMilestones.push(6);
+  } else if (aggHours >= 120) {
+    achievedMilestones.push(5);
+  } else if (aggHours >= 90) {
+    achievedMilestones.push(4);
+  } else if (aggHours >= 60) {
+    achievedMilestones.push(3);
+  } else if (aggHours >= 30) {
+    achievedMilestones.push(2);
+  } else if (aggHours >= 1) {
+    achievedMilestones.push(1);
+  }
+
+  // check for daily codetime. These will be given out daily
+  const dayHours = codeTimeMetrics[0] / 60;
+  if (dayHours >= 10) {
+    achievedMilestones.push(24);
+  } else if (dayHours >= 8) {
+    achievedMilestones.push(23);
+  } else if (dayHours >= 5) {
+    achievedMilestones.push(22);
+  } else if (dayHours >= 3) {
+    achievedMilestones.push(21);
+  } else if (dayHours >= 2) {
+    achievedMilestones.push(20);
+  } else if (dayHours >= 1) {
+    achievedMilestones.push(19);
+  }
+
+  // check for lines added
+  const lines = user.lines_added + codeTimeMetrics[2];
+  if (lines >= 10000) {
+    achievedMilestones.push(30);
+  } else if (lines >= 1000) {
+    achievedMilestones.push(29);
+  } else if (lines >= 100) {
+    achievedMilestones.push(28);
+  } else if (lines >= 50) {
+    achievedMilestones.push(27);
+  } else if (lines >= 16) {
+    achievedMilestones.push(26);
+  } else if (lines >= 1) {
+    achievedMilestones.push(25);
+  }
+
+  // check for keystrokes
+  const keystrokes = user.keystrokes + codeTimeMetrics[1];
+  if (keystrokes >= 42195) {
+    achievedMilestones.push(42);
+  } else if (keystrokes >= 21097) {
+    achievedMilestones.push(41);
+  } else if (keystrokes >= 10000) {
+    achievedMilestones.push(40);
+  } else if (keystrokes >= 5000) {
+    achievedMilestones.push(39);
+  } else if (keystrokes >= 1000) {
+    achievedMilestones.push(38);
+    // 100 keystrokes happen really fast. So need to update them with a 1000 
+    // for edge cases where both are achieved in 15 minutes.
+    achievedMilestones.push(37);
+  } else if (keystrokes >= 100) {
+    achievedMilestones.push(37);
+  }
+
+  if (achievedMilestones.length > 0) {
+    achievedMilestonesJson(achievedMilestones);
+  }
+}
+
+export function checkLanguageMilestonesAchieved() {}
+
 function checkIdRange(id: number) {
   const MIN_ID = 1;
   const MAX_ID = 56;
@@ -56,30 +140,67 @@ export function getMilestoneById(id: number) {
 }
 
 // Achieved Milestone change in json and logs
-export function achievedMilestonesJson(id: number) {
+function achievedMilestonesJson(ids: Array<number>) {
   const exists = checkMilestonesJson();
   if (!exists) {
     window.showErrorMessage("Cannot access Milestones file!");
   }
 
-  if (!checkIdRange(id)) {
-    window.showErrorMessage("Incorrect Milestone Id!");
-    return;
-  }
+  var updatedIds = [];
   const filepath = getMilestonesJson();
   let rawMilestones = fs.readFileSync(filepath).toString();
   let milestones = JSON.parse(rawMilestones).milestones;
-  const date = Date.now().valueOf(); // getting date in unix format
-  milestones[id - 1].achieved = true; // id is indexed starting 1
-  milestones[id - 1].date_achieved = date;
-  var sendMilestones = { milestones };
-  try {
-    fs.writeFileSync(filepath, JSON.stringify(sendMilestones, null, 4));
-  } catch (err) {
-    console.log(err);
+  const dateNow = new Date();
+  for (var i = 0; i < ids.length; i++) {
+    const id = ids[i];
+
+    // Usually would never be triggered
+    if (!checkIdRange(id)) {
+      window.showErrorMessage("Incorrect Milestone Id!");
+      continue;
+    }
+
+    // Updates daily - daily time and languages
+    if ((id > 18 && id < 25) || (id > 48 && id < 57)) {
+      const dateOb = new Date(milestones[id - 1].date_achieved);
+      // Updates only if it wasn't achieved that day
+      if (
+        dateNow.getDate() !== dateOb.getDate() ||
+        dateNow.getMonth() !== dateOb.getMonth() ||
+        dateNow.getFullYear() !== dateOb.getFullYear()
+      ) {
+        milestones[id - 1].achieved = true; // id is indexed starting 1
+        milestones[id - 1].date_achieved = dateNow.valueOf();
+        updatedIds.push(id);
+      }
+    }
+
+    // If no date entry for the milestone has been made
+    else if (
+      !(
+        milestones[id - 1].date_achieved && milestones[id - 1].date_achieved > 0
+      )
+    ) {
+      milestones[id - 1].achieved = true; // id is indexed starting 1
+      milestones[id - 1].date_achieved = dateNow.valueOf();
+      updatedIds.push(id);
+    }
   }
-  updateLogsMilestonesAndMetrics([id]);
+
+  if (updatedIds.length > 0) {
+    var sendMilestones = { milestones };
+    updateLogsMilestonesAndMetrics(updatedIds);
+    try {
+      fs.writeFileSync(filepath, JSON.stringify(sendMilestones, null, 4));
+    } catch (err) {
+      console.log(err);
+    }
+    window.showInformationMessage(
+      "Hurray! You just achieved another milestone. Please check 100 Days of Code Milestones to view it"
+    );
+  }
 }
+
 export function getMilestonesHtml() {
   let file = getSoftwareDir();
   if (isWindows()) {
