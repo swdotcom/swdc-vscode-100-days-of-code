@@ -70,7 +70,7 @@ export function addLogToJson(
 ) {
   const exists = checkLogsJson();
   if (!exists) {
-    console.error("error accessing json");
+    console.log("error accessing json");
     return false;
   }
   const dayNum = getLatestLogEntryNumber() + 1;
@@ -105,13 +105,12 @@ export function addLogToJson(
   }
 
   logs.logs.push(log);
-  fs.writeFile(filepath, JSON.stringify(logs, null, 4), (err) => {
-    if (err) {
-      console.error(err);
-      return false;
-    }
-    console.log("Json File Updated");
-  });
+  try {
+    fs.writeFileSync(filepath, JSON.stringify(logs, null, 4));
+  } catch (err) {
+    console.log(err);
+    return false;
+  }
   return true;
 }
 
@@ -244,44 +243,49 @@ export function updateLogByDate(log: Log) {
         logs[i].day_number = log.day_number;
         const sendLogs = { logs };
 
-        fs.writeFile(filepath, JSON.stringify(sendLogs, null, 4), (err) => {
-          if (err) {
-            console.error(err);
-            return;
-          }
+        try {
+          fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
           console.log("Json File Updated");
-        });
+        } catch (err) {
+          console.log(err);
+          return false;
+        }
         return true;
       }
     }
   }
 }
 
-export function editLogEntry(dayNumber: number, title: string, description: string, links: Array<string>){
+export function editLogEntry(
+  dayNumber: number,
+  title: string,
+  description: string,
+  links: Array<string>
+) {
   const exists = checkLogsJson();
   if (exists) {
-      const filepath = getLogsJson();
-      const rawLogs = fs.readFileSync(filepath).toString();
-      let logs = JSON.parse(rawLogs).logs;
-      for(var i = 0; i < logs.length; i++){
-          let log = logs[i];
-          if(log.day_number !== dayNumber){
-              continue;
-          }
-          log.title = title;
-          log.description = description;
-          log.links = links;
-          break;
+    const filepath = getLogsJson();
+    const rawLogs = fs.readFileSync(filepath).toString();
+    let logs = JSON.parse(rawLogs).logs;
+    for (var i = 0; i < logs.length; i++) {
+      let log = logs[i];
+      if (log.day_number !== dayNumber) {
+        continue;
       }
-      const sendLogs = {logs}
-      fs.writeFile(filepath, JSON.stringify(sendLogs, null, 4), (err) => {
-          if (err) {
-            console.error(err);
-            return;
-          }
-          console.log("Log Json File Updated");
-      });
+      log.title = title;
+      log.description = description;
+      log.links = links;
+      break;
     }
+    const sendLogs = { logs };
+    try {
+      fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
+      console.log("Json File Updated");
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
 }
 
 export function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
@@ -290,7 +294,7 @@ export function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
     const metrics: Array<number> = getSessionCodetimeMetrics();
     // metrics of form [minutes, keystrokes, lines]
     if (metrics === []) {
-      console.error("error fetching metrics");
+      console.log("error fetching metrics");
       return;
     }
     const logDate = new Date();
@@ -310,13 +314,13 @@ export function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
       logs.push(log);
       const sendLogs = { logs };
 
-      fs.writeFile(filepath, JSON.stringify(sendLogs, null, 4), (err) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        console.log("Log Json File Updated - Milestone");
-      });
+      try {
+        fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
+        console.log("Json File Updated");
+      } catch (err) {
+        console.log(err);
+        return false;
+      }
       return true;
     }
 
@@ -339,13 +343,13 @@ export function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
         logs[i].milestones = logs[i].milestones.concat(milestones);
         const sendLogs = { logs };
 
-        fs.writeFile(filepath, JSON.stringify(sendLogs, null, 4), (err) => {
-          if (err) {
-            console.error(err);
-            return;
-          }
-          console.log("Log Json File Updated - Milestone");
-        });
+        try {
+          fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
+          console.log("Json File Updated");
+        } catch (err) {
+          console.log(err);
+          return false;
+        }
         return true;
       }
     }
@@ -374,7 +378,6 @@ export function getUpdatedLogsHtmlString() {
     let htmlString = [
       `<html>`,
       `<head>`,
-      `\t<meta name="viewport" content="width=device-width, initial-scale=1">`,
       `\t<title>`,
       `\t\tLogs`,
       `\t</title>`,
@@ -594,7 +597,7 @@ export function getUpdatedLogsHtmlString() {
       `\t\tleft: 10px;`,
       `\t\tbackground-color: #555555;`,
       `\t}`,
-      `\t.cardMilstoneSection {`,
+      `\t.cardMilestoneSection {`,
       `\t\tdisplay: inline-block;`,
       `\t\tvertical-align: top;`,
       `\t\twidth: 200px;`,
@@ -621,7 +624,7 @@ export function getUpdatedLogsHtmlString() {
       `\t\tjustify-content: space-around;`,
       `\t\tdisplay: flex;`,
       `\t}`,
-      `\t.cardMilstone {`,
+      `\t.cardMilestone {`,
       `\t\tposition: relative;`,
       `\t\twidth: 55px;`,
       `\t\theight: 55px;`,
@@ -638,7 +641,7 @@ export function getUpdatedLogsHtmlString() {
       `\t\tleft: 50%;`,
       `\t\ttransform: translate(-50%, -50%);`,
       `\t}`,
-      `\t.cardMilstone .tooltiptext {`,
+      `\t.cardMilestone .tooltiptext {`,
       `\t\tvisibility: hidden;`,
       `\t\ttop: 8px;`,
       `\t\tright: 105%;`,
@@ -655,7 +658,7 @@ export function getUpdatedLogsHtmlString() {
       `\t\tposition: absolute;`,
       `\t\tz-index: 1;`,
       `\t}`,
-      `\t.cardMilstone:hover .tooltiptext {`,
+      `\t.cardMilestone:hover .tooltiptext {`,
       `\t\tvisibility: visible;`,
       `\t}`,
       `</style>`,
@@ -676,8 +679,7 @@ export function getUpdatedLogsHtmlString() {
         LogDate.getMonth() !== todaysDate.getMonth() ||
         LogDate.getFullYear() !== todaysDate.getFullYear()
       ) {
-        htmlString +=
-          "\t\t<h2 id='noLogs'>Don't forget to submit your log today!</h2>\n";
+        htmlString += `\t\t<h2>Don't forget to submit your log today! --> <a id="addLog" href="Add Log">Add log</a></h2>\n`;
       }
 
       for (var i = logs.length - 1; i >= 0; i--) {
@@ -705,6 +707,8 @@ export function getUpdatedLogsHtmlString() {
         const year = date.getFullYear();
         const formattedTime = month + "/" + dayOfMonth + "/" + year;
 
+        var descriptionRows = day.description === "" ? 2 : 3;
+
         htmlString += [
           `\t<h2>Day ${day.day_number}</h2>`,
           `\t<div class="logCard">`,
@@ -731,7 +735,7 @@ export function getUpdatedLogsHtmlString() {
           `\t\t\t\t<div class="cardTextGroup">`,
           `\t\t\t\t\t<div class="cardSubject">Subject:</div>`,
           `\t\t\t\t\t<div class="cardText">${day.description}</div>`,
-          `\t\t\t\t\t<textarea class="cardTextEditInput" rows="3" cols="70">${day.description}</textarea>`,
+          `\t\t\t\t\t<textarea class="cardTextEditInput" rows="${descriptionRows}" cols="70">${day.description}</textarea>`,
           `\t\t\t\t\t<br><br>`,
           `\t\t\t\t</div>`,
           `\t\t\t\t<div class="cardTextGroup">`,
@@ -828,7 +832,7 @@ export function getUpdatedLogsHtmlString() {
           `\t\t\t\t\t</div>`,
           `\t\t\t\t</div>`,
           `\t\t\t</div>`,
-          `\t\t\t<div class="cardMilstoneSection">`,
+          `\t\t\t<div class="cardMilestoneSection">`,
           `\t\t\t\t<div class="cardMilestoneTitle">Milestones</div>`,
           `\t\t\t\t<br>`,
           `\t\t\t\t<div class="cardMilestoneGrid">\n`,
@@ -844,7 +848,7 @@ export function getUpdatedLogsHtmlString() {
             let milestoneId = day.milestones[milestoneIndex];
             let milestone = getMilestoneById(milestoneId);
             htmlString += [
-              `\t\t\t\t\t\t<div class="cardMilstone">`,
+              `\t\t\t\t\t\t<div class="cardMilestone">`,
               `\t\t\t\t\t\t\t<span class="tooltiptext">`,
               `\t\t\t\t\t\t\t\t<div style="font-weight: bold;">${milestone.title}</div>`,
               `\t\t\t\t\t\t\t\t<div>${milestone.description}</div>`,
@@ -854,7 +858,7 @@ export function getUpdatedLogsHtmlString() {
             ].join("\n");
           } else {
             htmlString += [
-              `\t\t\t\t\t\t<div class="cardMilstone">`,
+              `\t\t\t\t\t\t<div class="cardMilestone">`,
               `\t\t\t\t\t\t</div>\n`,
             ].join("\n");
           }
@@ -877,8 +881,12 @@ export function getUpdatedLogsHtmlString() {
         `</body>`,
         `<script>`,
         `\tconst vscode = acquireVsCodeApi();`,
-        `\tvar dropDownButtons = document.getElementsByClassName("cardHeaderDropDownButton");`,
-        `\t`,
+        `\tvar dropDownButtons = document.getElementsByClassName("cardHeaderDropDownButton");\n`,
+        `\tconst addLog = document.getElementById("addLog");`,
+        `\tif(addLog){`,
+        `\t\taddLog.addEventListener("click", function(){`,
+        `\t\t\tvscode.postMessage({command: "addLog"});`,
+        `\t\t});}\n`,
         `\tfor (var i = 0; i < dropDownButtons.length; i++) {`,
         `\t\tdropDownButtons[i].addEventListener("click", function () {`,
         `\t\t\tvar shareButton = this.parentNode.getElementsByClassName("cardHeaderShareButton")[0];`,
@@ -1033,9 +1041,9 @@ export function updateLogsHtml() {
   //updates logs.html
 
   let filepath = getLogsHtml();
-  fs.writeFile(filepath, getUpdatedLogsHtmlString(), (err) => {
-    if (err) {
-      return console.error(err);
-    }
-  });
+  try {
+    fs.writeFileSync(filepath, getUpdatedLogsHtmlString());
+  } catch (err) {
+    console.log(err);
+  }
 }

@@ -4,11 +4,15 @@ import {
   Tree100DoCProvider,
   connectDoCTreeView,
 } from "../tree/Tree100DoCProvider";
-import { getLogsHtml, updateLogsHtml, addLogToJson, editLogEntry } from "./LogsUtil";
+import {
+  getLogsHtml,
+  updateLogsHtml,
+  addLogToJson,
+  editLogEntry,
+} from "./LogsUtil";
 import {
   updateMilestonesHtml,
   getMilestonesHtml,
-  achievedMilestonesJson,
 } from "./MilestonesUtil";
 import { updateAddLogHtml, getAddLogHtml } from "./addLogUtil";
 import { getDashboardHtml, updateDashboardHtml } from "./DashboardUtil";
@@ -42,9 +46,20 @@ export function createCommands(): { dispose: () => void } {
         }
         panel.webview.html = data;
         panel.webview.onDidReceiveMessage((message) => {
-          if(message.command === "editLog"){
-            const dayUpdate = message.value;
-            editLogEntry(parseInt(dayUpdate.day_number), dayUpdate.title, dayUpdate.description, dayUpdate.links);
+          switch (message.command) {
+            case "editLog":
+              const dayUpdate = message.value;
+              editLogEntry(
+                parseInt(dayUpdate.day_number),
+                dayUpdate.title,
+                dayUpdate.description,
+                dayUpdate.links
+              );
+              break;
+            case "addLog":
+              panel.dispose();
+              commands.executeCommand("DoC.addLog");
+              break;
           }
         });
       });
@@ -123,9 +138,8 @@ export function createCommands(): { dispose: () => void } {
         panel.webview.onDidReceiveMessage((message) => {
           switch (message.command) {
             case "cancel":
-              window.showErrorMessage("BYE");
               panel.dispose();
-              return;
+              break;
 
             case "log":
               log = message.value;
@@ -137,11 +151,9 @@ export function createCommands(): { dispose: () => void } {
                 log.lines,
                 log.links
               );
-              window.showInformationMessage(
-                "Thank you for submitting the log. You can now view it in Logs section under 100 Days of Code."
-              );
               panel.dispose();
-              return;
+              commands.executeCommand("DoC.viewLogs");
+              break;
           }
         });
       });

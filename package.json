@@ -43,27 +43,27 @@
             },
             {
                 "command": "DoC.ToggleStatusbar",
-                "title": "View/Remove Status Bar text"
+                "title": "100 Days of Code: View/Remove Status Bar text"
             },
             {
                 "command": "DoC.viewLogs",
-                "title": "View Logs"
+                "title": "100 Days of Code: View Logs"
             },
             {
                 "command": "DoC.addLog",
-                "title": "Add Daily Progress Log"
+                "title": "100 Days of Code: Add Daily Progress Log"
             },
             {
                 "command": "DoC.viewDashboard",
-                "title": "View Dashboard"
+                "title": "100 Days of Code: View Dashboard"
             },
             {
                 "command": "DoC.viewMilestones",
-                "title": "View Milestones"
+                "title": "100 Days of Code: View Milestones"
             },
             {
                 "command": "DoC.viewIdeas",
-                "title": "View Ideas (on Software.com)"
+                "title": "100 Days of Code: View Ideas (on Software.com)"
             }
         ],
         "views": {

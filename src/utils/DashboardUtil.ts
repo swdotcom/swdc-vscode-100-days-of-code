@@ -648,9 +648,9 @@ export function getUpdatedDashboardHtmlString() {
 
 export function updateDashboardHtml() {
   let filepath = getDashboardHtml();
-  fs.writeFile(filepath, getUpdatedDashboardHtmlString(), (err) => {
-    if (err) {
-      console.error(err);
-    }
-  });
+  try {
+    fs.writeFileSync(filepath, getUpdatedDashboardHtmlString());
+  } catch (err) {
+    console.log(err);
+  }
 }

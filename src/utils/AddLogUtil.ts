@@ -27,7 +27,7 @@ export function getUpdatedAddLogHtmlString() {
   // metrics is stored as [minutes, keystrokes, lines]
   const metrics: Array<number> = getSessionCodetimeMetrics();
   if(metrics===[]){
-    console.error("error fetching metrics");
+    console.log("error fetching metrics");
     return;
   }
 
@@ -202,7 +202,7 @@ export function getUpdatedAddLogHtmlString() {
     `\ttry {`,
     `\t\tvscode = acquireVsCodeApi();`,
     `\t} catch (err) {`,
-    `\t\tconsole.error(err);`,
+    `\t\tconsole.log(err);`,
     `\t}\n`,
     `\tcancel = document.getElementById("cancel");`,
     `\tsubmit = document.getElementById("submit");\n`,
@@ -245,9 +245,9 @@ export function getUpdatedAddLogHtmlString() {
 
 export function updateAddLogHtml() {
   let filepath = getAddLogHtml();
-  fs.writeFile(filepath, getUpdatedAddLogHtmlString(), (err) => {
-    if (err) {
-      console.error(err);
-    }
-  });
+  try {
+    fs.writeFileSync(filepath, getUpdatedAddLogHtmlString());
+  } catch (err) {
+    console.log(err);
+  }
 }

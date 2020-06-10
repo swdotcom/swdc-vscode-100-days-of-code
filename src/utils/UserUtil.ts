@@ -75,15 +75,12 @@ export function updateUserJson() {
     }
     user.lastUpdated = new Date().getTime();
     const filepath = getUserJson();
-    fs.writeFile(filepath, JSON.stringify(user, null, 4), (err) => {
-      if (err) {
-        console.error(err);
-        return;
-      }
-      console.log("Json File Updated");
-    });
-  } else {
-    console.log("Already updated User.json today");
+    try {
+      fs.writeFileSync(filepath, JSON.stringify(user, null, 4));
+    } catch (err) {
+      console.log(err);
+      return;
+    }
   }
 }
 export function getUserObject() {

@@ -124,19 +124,6 @@ export function getSoftwareSessionAsJson() {
     return data ? data : {};
 }
 
-// export function writeJsonData(data: ZoomInfo[], file: string) {
-//     try {
-//         const content = JSON.stringify(data, null, 4);
-//         fs.writeFileSync(file, content, (err: { message: any }) => {
-//             if (err) {
-//                 console.log(`error writing data: ${err.message}`);
-//             }
-//         });
-//     } catch (e) {
-//         console.log(`error writing data: ${e.message}`);
-//     }
-// }
-
 export function getFileDataAsJson(file: string): any {
     let data = null;
     if (fs.existsSync(file)) {
