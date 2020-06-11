@@ -1,13 +1,14 @@
 import { Disposable, commands, window, TreeView, ViewColumn } from "vscode";
 import { TreeNode } from "../models/TreeNode";
 import { Tree100DoCProvider, connectDoCTreeView } from "../tree/Tree100DoCProvider";
-import { getLogsHtml, updateLogsHtml, addLogToJson, editLogEntry } from "./LogsUtil";
+import { getLogsHtml, updateLogsHtml, addLogToJson, editLogEntry, updateLogShare } from "./LogsUtil";
 import {
     updateMilestonesHtml,
     getMilestonesHtml,
     checkDaysMilestones,
     checkLanguageMilestonesAchieved,
-    checkCodeTimeMetricsMilestonesAchieved
+    checkCodeTimeMetricsMilestonesAchieved,
+    updateMilestoneShare
 } from "./MilestonesUtil";
 import { updateAddLogHtml, getAddLogHtml } from "./addLogUtil";
 import { getDashboardHtml, updateDashboardHtml } from "./DashboardUtil";
@@ -53,6 +54,9 @@ export function createCommands(): { dispose: () => void } {
                             panel.dispose();
                             commands.executeCommand("DoC.addLog");
                             break;
+                        case "incrementShare":
+                            updateLogShare(message.value);
+                            break;
                     }
                 });
             });
@@ -91,13 +95,22 @@ export function createCommands(): { dispose: () => void } {
             checkLanguageMilestonesAchieved();
             checkDaysMilestones();
             updateMilestonesHtml();
-            const panel = window.createWebviewPanel("Milestones", "Milestones", ViewColumn.One, {});
+            const panel = window.createWebviewPanel("Milestones", "Milestones", ViewColumn.One, {
+                enableScripts: true
+            });
             const milestonesHtmlPath = getMilestonesHtml();
             fs.readFile(milestonesHtmlPath, "utf8", (err: Error, data: string) => {
                 if (err) {
                     console.log(err);
                 }
                 panel.webview.html = data;
+                panel.webview.onDidReceiveMessage(message => {
+                    switch (message.command) {
+                        case "incrementShare":
+                            updateMilestoneShare(message.value);
+                            break;
+                    }
+                });
             });
         })
     );

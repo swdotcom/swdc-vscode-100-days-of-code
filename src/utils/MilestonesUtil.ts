@@ -4,9 +4,10 @@ import { window } from "vscode";
 import path = require("path");
 import { updateLogsMilestonesAndMetrics } from "./LogsUtil";
 import { User } from "../models/User";
-import { getUserObject, updateUserMilestones } from "./UserUtil";
+import { getUserObject, updateUserMilestones, incrementUserShare } from "./UserUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import { getLanguages } from "./LanguageUtil";
+import { Milestone } from "../models/Milestone";
 
 export function getMilestonesJson(): string {
     let file = getSoftwareDir();
@@ -281,6 +282,25 @@ export function checkDaysMilestones(): void {
     }
 }
 
+export function checkSharesMilestones(): void {
+    const user: User = getUserObject();
+    const shares = user.shares;
+
+    if (shares >= 100) {
+        achievedMilestonesJson([36]);
+    } else if (shares >= 50) {
+        achievedMilestonesJson([35]);
+    } else if (shares >= 21) {
+        achievedMilestonesJson([34]);
+    } else if (shares >= 10) {
+        achievedMilestonesJson([33]);
+    } else if (shares >= 5) {
+        achievedMilestonesJson([32]);
+    } else if (shares >= 1) {
+        achievedMilestonesJson([31]);
+    }
+}
+
 function checkIdRange(id: number): boolean {
     const MIN_ID = 1;
     const MAX_ID = 56;
@@ -375,6 +395,34 @@ function achievedMilestonesJson(ids: Array<number>): void {
         window.showInformationMessage(
             "Hurray! You just achieved another milestone. Please check 100 Days of Code Milestones to view it"
         );
+    }
+}
+
+// checks if milestone was shared. if not makes it shared and updates user json
+export function updateMilestoneShare(id: number) {
+    const exists = checkMilestonesJson();
+    if (!exists) {
+        window.showErrorMessage("Cannot access Milestones file!");
+    }
+    if (!checkIdRange(id)) {
+        window.showErrorMessage("Incorrect Milestone Id!");
+        return;
+    }
+    const filepath = getMilestonesJson();
+    let rawMilestones = fs.readFileSync(filepath).toString();
+    let milestones = JSON.parse(rawMilestones).milestones;
+
+    // check and update milestones if not shared
+    if (!milestones[id - 1].shared) {
+        milestones[id - 1].shared = true;
+        let sendMilestones = { milestones };
+        try {
+            fs.writeFileSync(filepath, JSON.stringify(sendMilestones, null, 4));
+        } catch (err) {
+            console.log(err);
+        }
+        incrementUserShare();
+        checkSharesMilestones();
     }
 }
 
@@ -537,6 +585,9 @@ function getUpdatedMilestonesHtmlString(): string {
             `\t\tfont-weight: 600;`,
             `\t\ttext-align: center;`,
             `\t\t}`,
+            `\t\t.hiddenId{`,
+            `\t\tvisibility: hidden;`,
+            `\t\t}`,
             `\t</style>`,
             `\t<body>`,
             `\t\t<h1>Milestones</h1>`,
@@ -573,6 +624,7 @@ function getUpdatedMilestonesHtmlString(): string {
 
         for (let i = 0; i < milestones.length; i++) {
             const milestone = milestones[i];
+            const id: number = milestone.id;
             const title: string = milestone.title;
             const description: string = milestone.description;
             const level: number = milestone.level;
@@ -623,6 +675,7 @@ function getUpdatedMilestonesHtmlString(): string {
 
             const milestoneCardHtml: string = [
                 `\t\t<div class="milestoneCard ${grayedCard}">`,
+                `\t\t\t<div class="hiddenId">${id}</div>`,
                 `${levelHtml}`,
                 `${shareHtml}`,
                 `\t\t\t<div class="milestoneTitle">${title}</div>`,
@@ -654,7 +707,22 @@ function getUpdatedMilestonesHtmlString(): string {
         htmlString += allMilestones;
 
         // end
-        htmlString += `\t</body>\n</html>`;
+        htmlString += [
+            `\t</body>`,
+            `\t<script>`,
+            `\t\tconst vscode = acquireVsCodeApi();`,
+            `\t\tvar shareButtons = document.getElementsByClassName("milestoneShare");\n`,
+            `\t\tfor (let i = 0; i < shareButtons.length; i++) {`,
+            `\t\t\tshareButtons[i].addEventListener("click", function () {`,
+            `\t\t\t\tvar hiddenId = this.parentNode.parentNode.getElementsByClassName(`,
+            `\t\t\t\t\t"hiddenId"`,
+            `\t\t\t\t)[0].textContent;`,
+            `\t\t\t\tvscode.postMessage({command: "incrementShare", value: hiddenId});`,
+            `\t\t\t});`,
+            `\t\t}`,
+            `\t</script>`,
+            `</html>`
+        ].join("\n");
         return htmlString;
     } else {
         return "Couldn't get Milestones HTML";

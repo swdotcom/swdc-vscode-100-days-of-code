@@ -2,9 +2,9 @@ import { getSoftwareDir, isWindows } from "./Util";
 import fs = require("fs");
 import { CodetimeMetrics } from "../models/CodetimeMetrics";
 import { Log } from "../models/Log";
-import { checkMilestonesJson, getMilestoneById } from "./MilestonesUtil";
+import { checkMilestonesJson, getMilestoneById, checkSharesMilestones } from "./MilestonesUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
-import { getUserObject, checkUserJson } from "./UserUtil";
+import { getUserObject, checkUserJson, incrementUserShare } from "./UserUtil";
 
 export function getLogsJson() {
     let file = getSoftwareDir();
@@ -270,6 +270,27 @@ export function updateLogByDate(log: Log) {
                     return false;
                 }
                 return true;
+            }
+        }
+    }
+}
+
+export function updateLogShare(day: number) {
+    const exists = checkLogsJson();
+    if (exists) {
+        const filepath = getLogsJson();
+        let rawLogs = fs.readFileSync(filepath).toString();
+        let logs = JSON.parse(rawLogs).logs;
+
+        if (!logs[day - 1].shared) {
+            logs[day - 1].shared = true;
+            incrementUserShare();
+            checkSharesMilestones();
+            let sendLogs = { logs };
+            try {
+                fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
+            } catch (err) {
+                console.log(err);
             }
         }
     }
@@ -1035,6 +1056,13 @@ export function getUpdatedLogsHtmlString() {
                 `\t\t\t\t"links": links.replace(" ", "").split(",")`,
                 `\t\t\t};`,
                 `\t\t\tvscode.postMessage({command: "editLog", value: dayUpdate});`,
+                `\t\t});`,
+                `\t}`,
+                `\tlet shareButtons = document.getElementsByClassName("cardHeaderShareButton");`,
+                `\tfor (let i = 0; i < shareButtons.length; i++) {`,
+                `\t\tshareButtons[i].addEventListener("click", function () {`,
+                `\t\t\tlet dayNumber = this.parentNode.parentNode.parentNode.parentNode.previousElementSibling.innerHTML.split(" ")[1];`,
+                `\t\t\tvscode.postMessage({command: "incrementShare", value: dayNumber});`,
                 `\t\t});`,
                 `\t}`,
                 `</script>`,

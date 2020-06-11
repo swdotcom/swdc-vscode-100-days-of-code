@@ -2,8 +2,8 @@ import { getSoftwareDir, isWindows } from "./Util";
 import fs = require("fs");
 import { window } from "vscode";
 import { getMostRecentLogObject, checkLogsJson, checkIfOnStreak } from "./LogsUtil";
-import { cursorTo } from "readline";
 import { getLanguages } from "./LanguageUtil";
+import { User } from "../models/User";
 
 export function getUserJson() {
     let file = getSoftwareDir();
@@ -47,7 +47,6 @@ export function checkUserJson() {
 }
 
 export function updateUserJson() {
-    console.log(Date.now());
     const userExists = checkUserJson();
     const logsExists = checkLogsJson();
     if (!userExists || !logsExists) {
@@ -85,7 +84,6 @@ export function updateUserJson() {
         console.log(err);
         return;
     }
-    console.log(Date.now());
 }
 
 export function updateUserMilestones(newMilestones: Array<number>, totalMilestones: number) {
@@ -122,6 +120,19 @@ export function updateUserLanguages() {
     const reducedLanguages = Array.from(new Set(totalLanguages));
     user.languages = reducedLanguages;
     user.lastUpdated = new Date().getTime();
+    const filepath = getUserJson();
+    try {
+        fs.writeFileSync(filepath, JSON.stringify(user, null, 4));
+    } catch (err) {
+        console.log(err);
+        return;
+    }
+}
+
+export function incrementUserShare() {
+    const user: User = getUserObject();
+    user.shares++;
+
     const filepath = getUserJson();
     try {
         fs.writeFileSync(filepath, JSON.stringify(user, null, 4));

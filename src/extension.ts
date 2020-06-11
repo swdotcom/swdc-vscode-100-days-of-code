@@ -43,7 +43,7 @@ export function initializeIntervalJobs() {
         checkCodeTimeMetricsMilestonesAchieved();
         updateUserLanguages();
         checkLanguageMilestonesAchieved();
-    }, one_min_millis * 1);
+    }, one_min_millis * 15);
 }
 
 // this method is called when your extension is deactivated
