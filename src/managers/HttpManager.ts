@@ -1,5 +1,5 @@
 import axios from "axios";
-import { api_endpoint} from "../utils/Constants";
+import { api_endpoint } from "../utils/Constants";
 
 const querystring = require("querystring");
 
@@ -7,7 +7,6 @@ const querystring = require("querystring");
 const beApi = axios.create({
     baseURL: `${api_endpoint}`
 });
-
 
 export async function serverIsAvailable() {
     return await softwareGet("/ping")
@@ -25,11 +24,7 @@ export async function serverIsAvailable() {
  * @param api
  * @param jwt
  */
-export async function softwareGet(
-    api: string,
-    jwt: string = "",
-    additionHeaders: any = {}
-) {
+export async function softwareGet(api: string, jwt: string = "", additionHeaders: any = {}) {
     if (jwt) {
         beApi.defaults.headers.common["Authorization"] = jwt;
     }
@@ -61,9 +56,7 @@ export async function softwarePut(api: string, payload: any, jwt: string) {
             return resp;
         })
         .catch(err => {
-            console.log(
-                `error posting data for ${api}, message: ${err.message}`
-            );
+            console.log(`error posting data for ${api}, message: ${err.message}`);
             return err;
         });
 }
@@ -80,9 +73,7 @@ export async function softwarePost(api: string, payload: any, jwt: string) {
             return resp;
         })
         .catch(err => {
-            console.log(
-                `error posting data for ${api}, message: ${err.message}`
-            );
+            console.log(`error posting data for ${api}, message: ${err.message}`);
             return err;
         });
 }
@@ -98,9 +89,7 @@ export async function softwareDelete(api: string, jwt: string) {
             return resp;
         })
         .catch(err => {
-            console.log(
-                `error with delete request for ${api}, message: ${err.message}`
-            );
+            console.log(`error with delete request for ${api}, message: ${err.message}`);
             return err;
         });
 }
@@ -113,12 +102,7 @@ export function hasTokenExpired(resp: any) {
     // when a token expires, we'll get the following error data
     // err.response.status === 401
     // err.response.statusText = "Unauthorized"
-    if (
-        resp &&
-        resp.response &&
-        resp.response.status &&
-        resp.response.status === 401
-    ) {
+    if (resp && resp.response && resp.response.status && resp.response.status === 401) {
         return true;
     }
     return false;

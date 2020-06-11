@@ -1,22 +1,13 @@
 import { window, ExtensionContext } from "vscode";
 import { serverIsAvailable, isResponseOk, softwarePost } from "./HttpManager";
-import {
-    getItem,
-    setItem,
-    getHostname,
-    getOsUsername,
-    getAppJwt
-} from "../utils/Util";
+import { getItem, setItem, getHostname, getOsUsername, getAppJwt } from "../utils/Util";
 
 let secondary_window_activate_counter = 0;
 let retry_counter = 0;
 // 10 minutes
 const check_online_interval_ms = 1000 * 60 * 10;
 
-export async function onboardPlugin(
-    ctx: ExtensionContext,
-    successFunction: any
-) {
+export async function onboardPlugin(ctx: ExtensionContext, successFunction: any) {
     let windowState = window.state;
     // check if window state is focused or not and the
     // secondary_window_activate_counter is equal to zero
@@ -103,8 +94,7 @@ export async function showOfflinePrompt(addReconnectMsg: boolean = false) {
     // shows a prompt that we're not able to communicate with the app server
     let infoMsg = "Our service is temporarily unavailable. ";
     if (addReconnectMsg) {
-        infoMsg +=
-            "We will try to reconnect again in 10 minutes. Your status bar will not update at this time.";
+        infoMsg += "We will try to reconnect again in 10 minutes. Your status bar will not update at this time.";
     } else {
         infoMsg += "Please try again later.";
     }

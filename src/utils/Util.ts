@@ -64,10 +64,7 @@ export function getLocalREADMEFile() {
     return file;
 }
 
-export function displayReadmeIfNotExists(
-    override = false,
-    launchTreeOnInit = false
-) {
+export function displayReadmeIfNotExists(override = false, launchTreeOnInit = false) {
     const displayedReadme = getItem("vscode_ZtReadme");
     if (!displayedReadme || override) {
         if (!displayedReadme && launchTreeOnInit) {
@@ -77,11 +74,7 @@ export function displayReadmeIfNotExists(
 
         const readmeUri = Uri.file(getLocalREADMEFile());
 
-        commands.executeCommand(
-            "markdown.showPreview",
-            readmeUri,
-            ViewColumn.One
-        );
+        commands.executeCommand("markdown.showPreview", readmeUri, ViewColumn.One);
         setItem("vscode_ZtReadme", true);
     }
 }
@@ -143,24 +136,17 @@ export function openFileInEditor(file: string) {
     workspace.openTextDocument(file).then(
         doc => {
             // Show open document and set focus
-            window
-                .showTextDocument(doc, 1, false)
-                .then(undefined, (error: any) => {
-                    if (error.message) {
-                        window.showErrorMessage(error.message);
-                    } else {
-                        console.log(error);
-                    }
-                });
+            window.showTextDocument(doc, 1, false).then(undefined, (error: any) => {
+                if (error.message) {
+                    window.showErrorMessage(error.message);
+                } else {
+                    console.log(error);
+                }
+            });
         },
         (error: any) => {
-            if (
-                error.message &&
-                error.message.toLowerCase().includes("file not found")
-            ) {
-                window.showErrorMessage(
-                    `Cannot open ${file}.  File not found.`
-                );
+            if (error.message && error.message.toLowerCase().includes("file not found")) {
+                window.showErrorMessage(`Cannot open ${file}.  File not found.`);
             } else {
                 console.log(error);
             }
@@ -169,10 +155,7 @@ export function openFileInEditor(file: string) {
 }
 
 export function cleanJsonString(content: string) {
-    content = content
-        .replace(/\r\n/g, "")
-        .replace(/\n/g, "")
-        .trim();
+    content = content.replace(/\r\n/g, "").replace(/\n/g, "").trim();
     return content;
 }
 
@@ -214,23 +197,14 @@ export async function getCommandResultList(cmd: string, projectDir = null) {
     if (!result) {
         return [];
     }
-    const contentList = result
-        .replace(/\r\n/g, "\r")
-        .replace(/\n/g, "\r")
-        .split(/\r/);
+    const contentList = result.replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/);
     return contentList;
 }
 
-export async function wrapExecPromise(
-    cmd: string,
-    projectDir: any = ""
-): Promise<string> {
+export async function wrapExecPromise(cmd: string, projectDir: any = ""): Promise<string> {
     let result: string = "";
     try {
-        let opts =
-            projectDir !== undefined && projectDir !== null && projectDir
-                ? { cwd: projectDir }
-                : {};
+        let opts = projectDir !== undefined && projectDir !== null && projectDir ? { cwd: projectDir } : {};
         result = await execPromise(cmd, opts).catch(e => {
             if (e.message) {
                 console.log("task error: ", e.message);
@@ -247,7 +221,7 @@ export async function wrapExecPromise(
 }
 
 function execPromise(command: string, opts: any): Promise<string> {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         exec(command, opts, (error: any, stdout: any, stderr: any) => {
             if (error) {
                 reject(error);
@@ -284,11 +258,7 @@ export async function getAppJwt(serverIsOnline: boolean) {
     return null;
 }
 
-export function launchInputBox(
-    placeHolder: string,
-    usageMsg: string,
-    isUrl: boolean = false
-) {
+export function launchInputBox(placeHolder: string, usageMsg: string, isUrl: boolean = false) {
     return window.showInputBox({
         value: "",
         placeHolder,

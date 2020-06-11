@@ -4,11 +4,7 @@ async function initialize() {
     const copyCmd = !isWindows() ? "cp -R" : "xcopy /E";
     const pathSep = !isWindows() ? "/" : "\\";
 
-    await runCommand(
-        `mkdir -p out${pathSep}src`,
-        "Creating the out/src directory if it doesn't exist",
-        true
-    );
+    await runCommand(`mkdir -p out${pathSep}src`, "Creating the out/src directory if it doesn't exist", true);
 
     await runCommand(
         `mkdir -p out${pathSep}resources`,
@@ -16,11 +12,7 @@ async function initialize() {
         true
     );
 
-    await runCommand(
-        `mkdir -p out${pathSep}assets`,
-        "Creating the out/assets directory if it doesn't exist",
-        true
-    );
+    await runCommand(`mkdir -p out${pathSep}assets`, "Creating the out/assets directory if it doesn't exist", true);
 
     await runCommand(
         `mkdir -p out${pathSep}src${pathSep}images`,
@@ -28,10 +20,7 @@ async function initialize() {
         true
     );
 
-    await runCommand(
-        `${copyCmd} README.md out${pathSep}.`,
-        "Copy the README.md to the out directory"
-    );
+    await runCommand(`${copyCmd} README.md out${pathSep}.`, "Copy the README.md to the out directory");
 
     await runCommand(
         `${copyCmd} resources${pathSep}* out${pathSep}resources${pathSep}.`,
@@ -77,7 +66,7 @@ async function wrapExecPromise(cmd, dir) {
 }
 
 function execPromise(command, opts) {
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
         exec(command, opts, (error, stdout, stderr) => {
             if (stderr) {
                 resolve({ status: "failed", message: stderr.trim() });

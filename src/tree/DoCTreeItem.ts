@@ -2,13 +2,7 @@ import { TreeItem, TreeItemCollapsibleState, Command } from "vscode";
 import * as path from "path";
 import { TreeNode } from "../models/TreeNode";
 
-const resourcePath: string = path.join(
-    __filename,
-    "..",
-    "..",
-    "..",
-    "resources"
-);
+const resourcePath: string = path.join(__filename, "..", "..", "..", "resources");
 
 export class DoCTreeItem extends TreeItem {
     constructor(
@@ -56,14 +50,8 @@ export class DoCTreeItem extends TreeItem {
 
 function getTreeItemIcon(treeItem: TreeNode): any {
     const iconName = treeItem.icon;
-    const lightPath =
-        iconName && treeItem.children.length === 0
-            ? path.join(resourcePath, "light", iconName)
-            : null;
-    const darkPath =
-        iconName && treeItem.children.length === 0
-            ? path.join(resourcePath, "dark", iconName)
-            : null;
+    const lightPath = iconName && treeItem.children.length === 0 ? path.join(resourcePath, "light", iconName) : null;
+    const darkPath = iconName && treeItem.children.length === 0 ? path.join(resourcePath, "dark", iconName) : null;
     return { lightPath, darkPath };
 }
 

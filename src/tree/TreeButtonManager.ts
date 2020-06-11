@@ -28,21 +28,11 @@ export function getActionButton(
 // }
 
 export function getDoCLearnMoreButton() {
-    return getActionButton(
-        "Learn more",
-        "View the Code Time Readme to learn more",
-        "DoC.ViewReadme",
-        "learn-more.svg"
-    );
+    return getActionButton("Learn more", "View the Code Time Readme to learn more", "DoC.ViewReadme", "learn-more.svg");
 }
 
 export function getDoCToggleStatusBar() {
-    return getActionButton(
-        "Hide status bar metrics",
-        "Hide status bar metrics",
-        "DoC.ToggleStatusbar",
-        "visible.svg"
-    );
+    return getActionButton("Hide status bar metrics", "Hide status bar metrics", "DoC.ToggleStatusbar", "visible.svg");
 }
 
 // export function getLaunchSoftwareWebButton() {
@@ -55,59 +45,25 @@ export function getDoCToggleStatusBar() {
 // }
 
 export function getDoCBlankBlueLine() {
-    return getActionButton(
-        " ",
-        " ",
-        "",
-        "blue-line-96.png"
-    );
+    return getActionButton(" ", " ", "", "blue-line-96.png");
 }
 
 export function getDoCLogDailyProgressButton() {
-    return getActionButton(
-        "Log Daily Progress",
-        "Log Daily Progress",
-        "DoC.addLog",
-        "log-progress.svg"
-    );
+    return getActionButton("Log Daily Progress", "Log Daily Progress", "DoC.addLog", "log-progress.svg");
 }
 
-export function getDashboardButton(){
-    return getActionButton(
-        "Dashboard",
-        "View Dashboard",
-        "DoC.viewDashboard",
-        "dashboard.svg"
-    ); 
+export function getDashboardButton() {
+    return getActionButton("Dashboard", "View Dashboard", "DoC.viewDashboard", "dashboard.svg");
 }
 
 export function getDoCLogsButon() {
-    return getActionButton(
-        "Logs",
-        "View your log entries",
-        "DoC.viewLogs",
-        "logs.svg"
-    );
+    return getActionButton("Logs", "View your log entries", "DoC.viewLogs", "logs.svg");
 }
 
 export function getDocMilestonesButton() {
-    return getActionButton(
-        "Milestones",
-        "View your milestones",
-        "DoC.viewMilestones",
-        "milestones.svg"
-    );
+    return getActionButton("Milestones", "View your milestones", "DoC.viewMilestones", "milestones.svg");
 }
 
 export function getDocIdeasButton() {
-    return getActionButton(
-        "Ideas",
-        "Get ideas for 100DoC",
-        "DoC.viewIdeas",
-        "ideas.svg"
-    );
+    return getActionButton("Ideas", "Get ideas for 100DoC", "DoC.viewIdeas", "ideas.svg");
 }
-
-
-
-

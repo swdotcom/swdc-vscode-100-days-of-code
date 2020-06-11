@@ -2,13 +2,17 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
 import { createCommands } from "./utils/CommandUtil";
-import {checkCodeTimeMetricsMilestonesAchieved, checkMilestonesJson } from "./utils/MilestonesUtil";
+import {
+    checkCodeTimeMetricsMilestonesAchieved,
+    checkMilestonesJson,
+    checkLanguageMilestonesAchieved
+} from "./utils/MilestonesUtil";
 import { checkLogsJson } from "./utils/LogsUtil";
-import { checkUserJson } from "./utils/UserUtil";
+import { checkUserJson, updateUserLanguages } from "./utils/UserUtil";
 
 let fifteen_minute_interval: NodeJS.Timeout;
 
-const one_min_millis = 1000*60;
+const one_min_millis = 1000 * 60;
 
 // this method is called when the extension is activated
 export function activate(ctx: vscode.ExtensionContext) {
@@ -22,8 +26,7 @@ export function activate(ctx: vscode.ExtensionContext) {
     ctx.subscriptions.push(createCommands());
 }
 
-export function initializePlugin(){
-
+export function initializePlugin() {
     // Checks if all the files exist
     checkLogsJson();
     checkMilestonesJson();
@@ -33,12 +36,14 @@ export function initializePlugin(){
     initializeIntervalJobs();
 }
 
-export function initializeIntervalJobs(){
+export function initializeIntervalJobs() {
     // every 15 minute tasks
     fifteen_minute_interval = setInterval(async () => {
         console.log("CHECKED MILESTONES");
         checkCodeTimeMetricsMilestonesAchieved();
-    }, one_min_millis*15);
+        updateUserLanguages();
+        checkLanguageMilestonesAchieved();
+    }, one_min_millis * 1);
 }
 
 // this method is called when your extension is deactivated

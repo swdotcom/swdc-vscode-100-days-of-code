@@ -14,6 +14,5 @@ export class TreeNode {
     public icon: string = "";
     public children: TreeNode[] = [];
     public eventDescription: string = "";
-    public initialCollapsibleState: TreeItemCollapsibleState =
-        TreeItemCollapsibleState.Collapsed;
+    public initialCollapsibleState: TreeItemCollapsibleState = TreeItemCollapsibleState.Collapsed;
 }
