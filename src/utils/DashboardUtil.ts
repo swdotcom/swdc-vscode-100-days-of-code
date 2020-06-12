@@ -27,18 +27,26 @@ export function getUpdatedDashboardHtmlString() {
 
     // Metrics
     const hours = parseFloat((user.hours + user.currentHours).toFixed(2));
-    const days = user.days;
-    const avgHours = (hours / days).toFixed(2);
+    let days = user.days;
+    let streaks = user.longest_streak;
+    let avgHours = parseFloat((hours / days).toFixed(2));
+    if (user.currentHours < 0.5) {
+        days--;
+        streaks--;
+        if (days === 0) {
+            avgHours = 0;
+        }
+    }
     const daysLevel = getDaysLevel(days);
     const hoursLevel = getHoursLevel(hours);
-    const longStreakLevel = getLongStreakLevel(user.longest_streak);
+    const longStreakLevel = getLongStreakLevel(streaks);
     const milestoneLevel = getMilestonesEarnedLevel(user.milestones);
-    const avgHoursLevel = getAverageHoursLevel(parseFloat(avgHours));
+    const avgHoursLevel = getAverageHoursLevel(avgHours);
     const shareText = [
         `100 Days Of Code Progress:`,
         `Days: ${days}`,
         `Total Hours: ${hours} hrs`,
-        `Longest Streak: ${user.longest_streak} days`,
+        `Longest Streak: ${streaks} days`,
         `Milestones Earned: ${user.milestones}`,
         `Avg Hours/Day: ${avgHours} hrs\n`,
         `Data supplied from @software_hq’s 100 Days Of Code VScode plugin`
@@ -60,10 +68,6 @@ export function getUpdatedDashboardHtmlString() {
         for (let i = 0; i < codeTimeHours.length; i++) {
             let size = (codeTimeHours[i] * 200) / max;
             let transform = 200 - size;
-            if (max === 0) {
-                size = 200;
-                transform = 0;
-            }
             barsHtml += `\t\t\t\t<div class="chartBar" style="height: ${size}px; transform: translateY(${transform}px);"></div>\n`;
         }
         if (codeTimeHours.length < 4) {
@@ -107,8 +111,8 @@ export function getUpdatedDashboardHtmlString() {
         }
     }
     // no days
-    if (barsHtml === "") {
-        barsHtml = `<h2>Waiting for your data!</h2>`;
+    if (barsHtml === "" || max === 0) {
+        barsHtml = `<h2>Waiting for your Code Time data!</h2>`;
     }
 
     // Logs
@@ -562,7 +566,7 @@ export function getUpdatedDashboardHtmlString() {
         `\t\t<div class="metricsBody">hours coded</div>`,
         `\t\t</div>\n`,
         `\t\t<div class="metricsCard level${longStreakLevel}">`,
-        `\t\t<div class="metricsHead">${user.longest_streak}</div>`,
+        `\t\t<div class="metricsHead">${streaks}</div>`,
         `\t\t<div class="metricsBody">longest streak (days)</div>`,
         `\t\t</div>\n`,
         `\t\t<div class="metricsCard level${milestoneLevel}">`,
@@ -604,7 +608,7 @@ export function getUpdatedDashboardHtmlString() {
         `\t\t</div>\n`,
         `\t\t<div id="right">`,
         `\t\t<div id="chart">`,
-        `\t\t\t<div id="chartTitle">Code Time: ${codeTimeHours.length} Days</div>`,
+        `\t\t\t<div id="chartTitle">Code Time: ${days} Days</div>`,
         `\t\t\t<div id="chartXMin"></div>`,
         `\t\t\t<div class="chartYLabel" style="bottom: 45px">${min} hr</div>`,
         `\t\t\t<div id="chartXMid"></div>`,
