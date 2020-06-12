@@ -244,7 +244,13 @@ export function checkLanguageMilestonesAchieved(): void {
 
 export function checkDaysMilestones(): void {
     const user: User = getUserObject();
-    const days = user.days - 1;
+
+    // days are completed only after a certain threshold hours are met
+    if (user.currentHours < 0.5) {
+        return;
+    }
+
+    const days = user.days;
     const streaks = user.longest_streak;
     let achievedMilestones = [];
 
