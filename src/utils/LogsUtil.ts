@@ -369,15 +369,15 @@ export function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
                 logDate.getMonth() === dateOb.getMonth() &&
                 logDate.getFullYear() === dateOb.getFullYear()
             ) {
-                if (!logs[i].day_number) {
-                    // If user added extra hours, we don't want to reduce those
-                    logs[i].codetime_metrics.hours = Math.max(
-                        logs[i].codetime_metrics.hours,
-                        parseFloat((metrics[0] / 60).toFixed(1))
-                    );
-                    logs[i].codetime_metrics.keystrokes = metrics[1];
-                    logs[i].codetime_metrics.lines_added = metrics[2];
-                }
+
+                // If user added extra hours, we don't want to reduce those
+                logs[i].codetime_metrics.hours = Math.max(
+                    logs[i].codetime_metrics.hours,
+                    parseFloat((metrics[0] / 60).toFixed(1))
+                );
+                logs[i].codetime_metrics.keystrokes = metrics[1];
+                logs[i].codetime_metrics.lines_added = metrics[2];
+
                 logs[i].milestones = logs[i].milestones.concat(milestones);
                 const sendLogs = { logs };
 
@@ -801,10 +801,22 @@ export function getUpdatedLogsHtmlString() {
 
                 let percentHours = (day.codetime_metrics.hours / avgHours) * 100;
                 percentHours = Math.round(percentHours * 100) / 100;
+                if (!avgHours || avgHours === 0) {
+                    percentHours = 100;
+                    avgHours = 0;
+                }
                 let percentKeystrokes = (day.codetime_metrics.keystrokes / avgKeystrokes) * 100;
                 percentKeystrokes = Math.round(percentKeystrokes * 100) / 100;
+                if (!avgKeystrokes || avgKeystrokes === 0) {
+                    percentKeystrokes = 100;
+                    avgKeystrokes = 0;
+                }
                 let percentLines = (day.codetime_metrics.lines_added / avgLines) * 100;
                 percentLines = Math.round(percentLines * 100) / 100;
+                if (!avgLines || avgLines === 0) {
+                    percentLines = 100;
+                    avgLines = 0;
+                }
 
                 let barPxHours = Math.round(percentHours);
                 let barColorHours = "00b4ee";

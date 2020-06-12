@@ -60,6 +60,10 @@ export function getUpdatedDashboardHtmlString() {
         for (let i = 0; i < codeTimeHours.length; i++) {
             let size = (codeTimeHours[i] * 200) / max;
             let transform = 200 - size;
+            if (max === 0) {
+                size = 200;
+                transform = 0;
+            }
             barsHtml += `\t\t\t\t<div class="chartBar" style="height: ${size}px; transform: translateY(${transform}px);"></div>\n`;
         }
         if (codeTimeHours.length < 4) {
