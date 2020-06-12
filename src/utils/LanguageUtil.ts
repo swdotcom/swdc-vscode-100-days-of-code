@@ -15,7 +15,17 @@ export function getLanguages() {
     const fileSummaryFile = getFileSummaryJson();
     let filesString: string;
     try {
-        filesString = fs.readFileSync(fileSummaryFile).toString();
+        let exists = false;
+        let retries = 5;
+        while (retries > 0 && !exists) {
+            exists = fs.existsSync(fileSummaryFile);
+            retries--;
+        }
+        if (exists) {
+            filesString = fs.readFileSync(fileSummaryFile).toString();
+        } else {
+            return [];
+        }
     } catch (err) {
         console.log(err);
         return [];
