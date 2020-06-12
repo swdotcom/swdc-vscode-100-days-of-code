@@ -1,7 +1,7 @@
 import { CodetimeMetrics } from "./CodetimeMetrics";
 
 export class Log {
-    public day_number?: number = undefined;
+    public day_number: number = 0;
     public date: number = 0;
     public title: string = "";
     public description: string = "";

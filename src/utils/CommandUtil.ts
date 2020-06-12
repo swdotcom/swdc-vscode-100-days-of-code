@@ -12,7 +12,6 @@ import {
 } from "./MilestonesUtil";
 import { updateAddLogHtml, getAddLogHtml } from "./addLogUtil";
 import { getDashboardHtml, updateDashboardHtml } from "./DashboardUtil";
-import { updateUserJson } from "./UserUtil";
 const fs = require("fs");
 
 export function createCommands(): { dispose: () => void } {
@@ -143,7 +142,6 @@ export function createCommands(): { dispose: () => void } {
                         case "log":
                             log = message.value;
                             addLogToJson(log.title, log.description, log.hours, log.keystrokes, log.lines, log.links);
-                            updateUserJson();
                             checkLanguageMilestonesAchieved();
                             checkDaysMilestones();
                             panel.dispose();

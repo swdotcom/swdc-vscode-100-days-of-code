@@ -4,7 +4,7 @@ import { window } from "vscode";
 import path = require("path");
 import { updateLogsMilestonesAndMetrics } from "./LogsUtil";
 import { User } from "../models/User";
-import { getUserObject, updateUserMilestones, incrementUserShare } from "./UserUtil";
+import { getUserObject, updateUserMilestones, incrementUserShare, updateUserLanguages } from "./UserUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import { getLanguages } from "./LanguageUtil";
 import { Milestone } from "../models/Milestone";
@@ -43,7 +43,7 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
 
     // prev code time users already have some metrics that
     // need to be taken into account for the day
-    const onboarding = user.lastUpdated === 0;
+    const onboarding = user.days <= 1;
 
     // check for aggregate codetime
     const aggHours = user.hours + codeTimeMetrics[0] / 60;
@@ -176,6 +176,7 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
 }
 
 export function checkLanguageMilestonesAchieved(): void {
+    updateUserLanguages();
     const user: User = getUserObject();
     const languages = getLanguages();
     let milestones: Set<number> = new Set<number>();
@@ -470,8 +471,8 @@ function getUpdatedMilestonesHtmlString(): string {
             `\t\thr{`,
             `\t\t\theight: 3px;`,
             `\t\t\tborder: none; `,
-            `\t\t\tcolor: #333333; `,
-            `\t\t\tbackground-color: #333333;`,
+            `\t\t\tcolor: rgba(255,255,255,0.05); `,
+            `\t\t\tbackground-color: rgba(255,255,255,0.05);`,
             `\t\t}\n`,
             `\t\t/* levels */`,
             `\t\t.keys{`,
@@ -481,7 +482,7 @@ function getUpdatedMilestonesHtmlString(): string {
             `\t\t}`,
             `\t\t.top-levels{`,
             `\t\t\tdisplay: inline-block;`,
-            `\t\t\tborder-radius: 3px;`,
+            `\t\t\tborder-radius: 1px;`,
             `\t\t\twidth: 80px;`,
             `\t\t\tfont-size: 20px;`,
             `\t\t\ttext-align: center;`,
@@ -491,35 +492,35 @@ function getUpdatedMilestonesHtmlString(): string {
             `\t\t\tmargin-right: 5px;`,
             `\t\t}`,
             `\t\t.level1{`,
-            `\t\t\tbackground: linear-gradient(180deg, rgba(251, 0, 0, 0.2) 0%, rgba(255, 151, 213, 0.2) 100%);`,
+            `\t\t\tbackground: linear-gradient(180deg, rgba(251, 0, 0, 0.35) 0%, rgba(255, 151, 213, 0.35) 100%);`,
             `\t\t}`,
             `\t\t.level2{`,
-            `\t\t\tbackground: linear-gradient(180deg, rgba(255, 245, 0, 0.2) 0%, rgba(133, 250, 56, 0.2) 70.3%, rgba(0, 140, 39, 0.2) 100%);`,
+            `\t\t\tbackground: linear-gradient(180deg, rgba(255, 245, 0, 0.35) 0%, rgba(133, 250, 56, 0.35) 70.3%, rgba(0, 140, 39, 0.35) 100%);`,
             `\t\t}`,
             `\t\t.level3{`,
-            `\t\t\tbackground: linear-gradient(180deg, rgba(214, 126, 255, 0.2) 0%, rgba(86, 113, 255, 0.2) 67.71%, rgba(0, 224, 255, 0.2) 100%);`,
+            `\t\t\tbackground: linear-gradient(180deg, rgba(214, 126, 255, 0.35) 0%, rgba(86, 113, 255, 0.35) 67.71%, rgba(0, 224, 255, 0.35) 100%);`,
             `\t\t}`,
             `\t\t.level4{`,
-            `\t\t\tbackground: linear-gradient(180deg, rgba(255, 0, 0, 0.2) 2.05%, rgba(255, 168, 0, 0.2) 73.44%, rgba(255, 245, 0, 0.2) 100%);`,
+            `\t\t\tbackground: linear-gradient(180deg, rgba(255, 0, 0, 0.35) 2.05%, rgba(255, 168, 0, 0.35) 73.44%, rgba(255, 245, 0, 0.35) 100%);`,
             `\t\t}`,
             `\t\t.level5{`,
-            `\t\t\tbackground: linear-gradient(180deg, rgba(0, 224, 255, 0.2) 0%, rgba(219, 0, 255, 0.2) 49.6%, rgba(253, 106, 0, 0.2) 100%);`,
+            `\t\t\tbackground: linear-gradient(180deg, rgba(0, 224, 255, 0.35) 0%, rgba(219, 0, 255, 0.35) 49.6%, rgba(253, 106, 0, 0.35) 100%);`,
             `\t\t}`,
             `\t\t.level6{`,
-            `\t\t\tbackground: linear-gradient(180deg, rgba(219, 0, 255, 0.2) 3.41%, rgba(103, 115, 255, 0.2) 18.6%, rgba(13, 208, 255, 0.2) 32.96%, rgba(88, 213, 51, 0.2) 51.83%, rgba(255, 237, 1, 0.2) 75.22%, rgba(255, 97, 1, 0.2) 86.71%, rgba(255, 10, 1, 0.2) 100%);`,
+            `\t\t\tbackground: linear-gradient(180deg, rgba(219, 0, 255, 0.35) 3.41%, rgba(103, 115, 255, 0.35) 18.6%, rgba(13, 208, 255, 0.35) 32.96%, rgba(88, 213, 51, 0.35) 51.83%, rgba(255, 237, 1, 0.35) 75.22%, rgba(255, 97, 1, 0.35) 86.71%, rgba(255, 10, 1, 0.35) 100%);`,
             `\t\t}`,
             `\t\t.inf{`,
             `\t\t\tfont-size: larger;`,
             `\t\t}\n`,
             `\t\t/* Milestone card */`,
             `\t\t.milestoneCard{`,
-            `\t\t\tbackground-color: #333333;`,
+            `\t\t\tbackground-color: rgba(255,255,255,0.05);`,
             `\t\t\tdisplay: inline-block;`,
             `\t\t\tmargin: 10px;`,
             `\t\t\tposition: relative;`,
             `\t\t\theight: 235px;`,
             `\t\t\twidth: 200px;`,
-            `\t\t\tborder-radius: 10px;`,
+            `\t\t\tborder-radius: 1px;`,
             `\t\t}`,
             `\t\t.milestoneShare{`,
             `\t\t\tposition: absolute;`,
@@ -537,7 +538,7 @@ function getUpdatedMilestonesHtmlString(): string {
             `\t\t\tline-height: 18px;`,
             `\t\t\tfont-size: 12px;`,
             `\t\t\tfont-weight: 250;`,
-            `\t\t\tborder-radius: 3px;`,
+            `\t\t\tborder-radius: 1px;`,
             `\t\t\ttext-align: center;`,
             `\t\t\tvertical-align: middle;`,
             `\t\t}`,
@@ -686,7 +687,7 @@ function getUpdatedMilestonesHtmlString(): string {
             ].join("\n");
 
             // Within a week of today
-            if (date - dateAchieved < 604800001) {
+            if (date - dateAchieved < 86400000) {
                 if (recents === "") {
                     recents += `\n\t\t<h2>Recents</h2>\n`;
                 }
@@ -699,7 +700,7 @@ function getUpdatedMilestonesHtmlString(): string {
         // If no milestones earned within a week
         if (recents === "") {
             recents += `\n\t\t<h2>Recents</h2>\n`;
-            recents += `\t\t<div class="noMilestones">No Milestones in the Past Week</div>\n`;
+            recents += `\t\t<div class="noMilestones">No Milestones in the Past 24 hours</div>\n`;
         }
 
         // adding recent and all milestones to html

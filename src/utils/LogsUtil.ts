@@ -4,7 +4,7 @@ import { CodetimeMetrics } from "../models/CodetimeMetrics";
 import { Log } from "../models/Log";
 import { checkMilestonesJson, getMilestoneById, checkSharesMilestones } from "./MilestonesUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
-import { getUserObject, checkUserJson, incrementUserShare } from "./UserUtil";
+import { getUserObject, checkUserJson, incrementUserShare, updateUserJson } from "./UserUtil";
 
 export function getLogsJson() {
     let file = getSoftwareDir();
@@ -75,9 +75,8 @@ export function addLogToJson(
     }
     const dayNum = getLatestLogEntryNumber() + 1;
 
-    // this would usually never be triggered
-    if (dayNum === 0) {
-        console.log("Day already exists");
+    if (dayNum === -1) {
+        console.log("Logs json could not be read");
         return false;
     }
 
@@ -98,6 +97,7 @@ export function addLogToJson(
     log.date = Date.now();
     log.codetime_metrics = codetimeMetrics;
     log.day_number = dayNum;
+
     // if date exists, we need to edit log not create one
     const dateExists = checkIfDateExists();
     if (dateExists) {
@@ -111,6 +111,7 @@ export function addLogToJson(
         console.log(err);
         return false;
     }
+    updateUserJson();
     return true;
 }
 
@@ -122,21 +123,9 @@ export function getLatestLogEntryNumber() {
         let rawLogs = fs.readFileSync(filepath).toString();
         let logs = JSON.parse(rawLogs).logs;
 
-        for (let i = logs.length - 1; i >= 0; i--) {
-            if (logs[i].day_number) {
-                const dateOb = new Date(logs[i].date);
-                if (
-                    dateNow.getDate() === dateOb.getDate() &&
-                    dateNow.getMonth() === dateOb.getMonth() &&
-                    dateNow.getFullYear() === dateOb.getFullYear()
-                ) {
-                    return -1;
-                }
-                return logs[i].day_number;
-            }
-        }
-        return 0;
+        return logs.length;
     }
+    return -2;
 }
 
 export function getMostRecentLogObject() {
@@ -146,7 +135,11 @@ export function getMostRecentLogObject() {
         let rawLogs = fs.readFileSync(logFilepath).toString();
         let logs = JSON.parse(rawLogs).logs;
 
-        return logs[logs.length - 1];
+        if (logs.length > 0) {
+            return logs[logs.length - 1];
+        } else {
+            return new Log();
+        }
     }
 }
 
@@ -211,8 +204,9 @@ export function checkIfOnStreak(): boolean {
         const filepath = getLogsJson();
         let rawLogs = fs.readFileSync(filepath).toString();
         let logs = JSON.parse(rawLogs).logs;
+        // one day streak
         if (logs.length < 2) {
-            return false;
+            return true;
         }
         const currDay = logs[logs.length - 1];
         const prevDay = logs[logs.length - 2];
@@ -259,8 +253,10 @@ export function updateLogByDate(log: Log) {
                 logs[i].description = log.description;
                 logs[i].links = log.links;
                 logs[i].date = log.date;
-                logs[i].codetime_metrics = log.codetime_metrics;
-                logs[i].day_number = log.day_number;
+                logs[i].codetime_metrics.keystrokes = log.codetime_metrics.keystrokes;
+                logs[i].codetime_metrics.lines_added = log.codetime_metrics.lines_added;
+                // If user added extra hours, we don't want to reduce those
+                logs[i].codetime_metrics.hours = Math.max(logs[i].codetime_metrics.hours, log.codetime_metrics.hours);
                 const sendLogs = { logs };
 
                 try {
@@ -340,12 +336,17 @@ export function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
         const dateExists = checkIfDateExists();
         if (!dateExists) {
             let log = new Log();
+            const dayNum = getLatestLogEntryNumber() + 1;
             log.date = logDate.valueOf();
             log.milestones = milestones;
             log.codetime_metrics.hours = parseFloat((metrics[0] / 60).toFixed(1));
             log.codetime_metrics.keystrokes = metrics[1];
             log.codetime_metrics.lines_added = metrics[2];
+            log.day_number = dayNum;
+            log.title = "No Title";
+            log.description = "No Description";
             logs.push(log);
+
             const sendLogs = { logs };
 
             try {
@@ -354,6 +355,8 @@ export function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
                 console.log(err);
                 return false;
             }
+
+            updateUserJson();
             return true;
         }
 
@@ -367,7 +370,11 @@ export function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
                 logDate.getFullYear() === dateOb.getFullYear()
             ) {
                 if (!logs[i].day_number) {
-                    logs[i].codetime_metrics.hours = parseFloat((metrics[0] / 60).toFixed(1));
+                    // If user added extra hours, we don't want to reduce those
+                    logs[i].codetime_metrics.hours = Math.max(
+                        logs[i].codetime_metrics.hours,
+                        parseFloat((metrics[0] / 60).toFixed(1))
+                    );
                     logs[i].codetime_metrics.keystrokes = metrics[1];
                     logs[i].codetime_metrics.lines_added = metrics[2];
                 }
@@ -380,6 +387,7 @@ export function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
                     console.log(err);
                     return false;
                 }
+                updateUserJson();
                 return true;
             }
         }
@@ -416,12 +424,12 @@ export function getUpdatedLogsHtmlString() {
             `\t.logCard {`,
             `\t\tdisplay: inline-block;`,
             `\t\tfont-family: sans-serif;`,
-            `\t\tbackground: #333333;`,
-            `\t\tborder-width: 3px;`,
+            `\t\tbackground: rgba(255,255,255,0.05);`,
+            `\t\tborder-width: 1px;`,
             `\t\tborder-style: solid;`,
             `\t\tborder-color: #555555;`,
             `\t\tbox-sizing: border-box;`,
-            `\t\tborder-radius: 5px;`,
+            `\t\tborder-radius: 1px;`,
             `\t\tpadding: 8px;`,
             `\t\tpadding-left: 10px;`,
             `\t}`,
@@ -482,8 +490,8 @@ export function getUpdatedLogsHtmlString() {
             `\t\tfont-size: 18px;`,
             `\t\ttext-align: center;`,
             `\t\tcolor: #FFFFFF;`,
-            `\t\tbackground-color: #444444;`,
-            `\t\tborder-radius: 5px;`,
+            `\t\tbackground-color: rgba(255,255,255,0.05);`,
+            `\t\tborder-radius: 1px;`,
             `\t\tborder-color: #666666;`,
             `\t\tpadding: 5px;`,
             `\t\tvertical-align: middle;`,
@@ -499,7 +507,7 @@ export function getUpdatedLogsHtmlString() {
             `\t\ttext-align: center;`,
             `\t\tcolor: #FFFFFF;`,
             `\t\tbackground-color: #00b4ee;`,
-            `\t\tborder-radius: 5px;`,
+            `\t\tborder-radius: 1px;`,
             `\t\tborder-color: #0491c0;`,
             `\t\tpadding: 5px;`,
             `\t\tvertical-align: middle;`,
@@ -516,7 +524,7 @@ export function getUpdatedLogsHtmlString() {
             `\t\ttext-align: center;`,
             `\t\tcolor: #FFFFFF;`,
             `\t\tbackground-color: #F3AB3C;`,
-            `\t\tborder-radius: 5px;`,
+            `\t\tborder-radius: 1px;`,
             `\t\tborder-color: #c98d33;`,
             `\t\tpadding: 5px;`,
             `\t\tvertical-align: middle;`,
@@ -578,8 +586,8 @@ export function getUpdatedLogsHtmlString() {
             `\t\twidth: 30%;`,
             `\t\tdisplay: inline-flex;`,
             `\t\talign-items: center;`,
-            `\t\tbackground: #444444;`,
-            `\t\tborder-radius: 3px;`,
+            `\t\tbackground: rgba(255,255,255,0.05);`,
+            `\t\tborder-radius: 1px;`,
             `\t\tdisplay: flex;`,
             `\t\tflex-direction: column;`,
             `\t\tjustify-content: space-around;`,
@@ -607,7 +615,7 @@ export function getUpdatedLogsHtmlString() {
             `\t\theight: 40px;`,
             `\t\ttop: 0px;`,
             `\t\tleft: 0px;`,
-            `\t\tborder-radius: 2px;`,
+            `\t\tborder-radius: 1px;`,
             `\t\tbackground-color: #777777;`,
             `\t}`,
             `\t.cardMetricBarRight{`,
@@ -616,7 +624,7 @@ export function getUpdatedLogsHtmlString() {
             `\t\theight: 40px;`,
             `\t\ttop: 0px;`,
             `\t\tleft: 110px;`,
-            `\t\tborder-radius: 2px;`,
+            `\t\tborder-radius: 1px;`,
             `\t\tbackground-color: #777777;`,
             `\t}`,
             `\t.cardMetricBarMiddle{`,
@@ -658,8 +666,8 @@ export function getUpdatedLogsHtmlString() {
             `\t\tposition: relative;`,
             `\t\twidth: 55px;`,
             `\t\theight: 55px;`,
-            `\t\tbackground: #444444;`,
-            `\t\tborder-radius: 3px;`,
+            `\t\tbackground: rgba(255,255,255,0.05);`,
+            `\t\tborder-radius: 1px;`,
             `\t\tdisplay: inline-flex;`,
             `\t\talign-items: center;`,
             `\t}`,
@@ -675,11 +683,7 @@ export function getUpdatedLogsHtmlString() {
             `\t\tvisibility: hidden;`,
             `\t\ttop: 8px;`,
             `\t\tright: 105%;`,
-            `\t\tbackground-color: rgba(109, 109, 109, .8);`,
-            `\t\tborder-color: rgba(255, 255, 255, 1);`,
-            `\t\tborder-style: solid;`,
-            `\t\tborder-width: 1px;`,
-            `\t\tborder-radius: 6px;`,
+            `\t\tbackground-color: rgba(109, 109, 109, .9);`,
             `\t\tbackground-blend-mode: darken;`,
             `\t\tcolor: #fff;`,
             `\t\ttext-align: center;`,
@@ -721,10 +725,6 @@ export function getUpdatedLogsHtmlString() {
 
             for (let i = logs.length - 1; i >= 0; i--) {
                 const day = logs[i];
-
-                if (!day.day_number) {
-                    continue;
-                }
 
                 let shareText = [
                     `Day ${day.day_number}/100 of 100DaysOfCode`,
@@ -791,9 +791,13 @@ export function getUpdatedLogsHtmlString() {
                 }
 
                 const user = getUserObject();
-                const avgHours = user.hours / user.days;
-                const avgKeystrokes = user.keystrokes / user.days;
-                const avgLines = user.lines_added / user.days;
+                const hours = user.hours + user.currentHours;
+                const keystrokes = user.keystrokes + user.currentKeystrokes;
+                const lines = user.lines_added + user.currentLines;
+                const days = user.days;
+                let avgHours = parseFloat((hours / days).toFixed(2));
+                let avgKeystrokes = parseFloat((keystrokes / days).toFixed(2));
+                let avgLines = parseFloat((lines / days).toFixed(2));
 
                 let percentHours = (day.codetime_metrics.hours / avgHours) * 100;
                 percentHours = Math.round(percentHours * 100) / 100;

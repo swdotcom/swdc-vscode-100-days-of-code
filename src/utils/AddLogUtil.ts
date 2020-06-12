@@ -1,7 +1,8 @@
 import { getSoftwareDir, isWindows } from "./Util";
 import fs = require("fs");
-import { getLatestLogEntryNumber } from "./LogsUtil";
+import { getMostRecentLogObject, getLatestLogEntryNumber } from "./LogsUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
+import { Log } from "../models/Log";
 
 export function getAddLogHtml() {
     let file = getSoftwareDir();
@@ -14,15 +15,28 @@ export function getAddLogHtml() {
 }
 
 export function getUpdatedAddLogHtmlString() {
-    const day = getLatestLogEntryNumber() + 1;
-    if (day === 0) {
-        return "<html><body><br><br><h1>Today's Log already exists. If you want to edit it, please update the Log from the Logs tab in 100 Days of Code.</h1></body></html>";
-    }
-
+    const log: Log = getMostRecentLogObject();
     const dateOb = new Date();
     const date = dateOb.getDate();
     const month = dateOb.getMonth() + 1; // Month is 0 indexed
     const year = dateOb.getFullYear();
+    const logDate = new Date(log.date);
+    let day = getLatestLogEntryNumber() + 1;
+
+    if (
+        logDate.getDate() === dateOb.getDate() &&
+        logDate.getMonth() === dateOb.getMonth() &&
+        logDate.getFullYear() === dateOb.getFullYear() &&
+        log.title !== "No Title"
+    ) {
+        return "<html><body><br><br><h1>Today's Log already exists. If you want to edit it, please update the Log from the Logs tab in 100 Days of Code.</h1></body></html>";
+    } else if (
+        logDate.getDate() === dateOb.getDate() &&
+        logDate.getMonth() === dateOb.getMonth() &&
+        logDate.getFullYear() === dateOb.getFullYear()
+    ) {
+        day = log.day_number;
+    }
 
     // metrics is stored as [minutes, keystrokes, lines]
     const metrics: Array<number> = getSessionCodetimeMetrics();
@@ -50,8 +64,8 @@ export function getUpdatedAddLogHtmlString() {
         `\tmargin-top: -325px;`,
         `\tleft: 50%;`,
         `\tmargin-left: -300px;`,
-        `\tbackground: #333333;`,
-        `\tborder-radius: 20px;`,
+        `\tbackground: rgba(255,255,255,0.05);`,
+        `\tborder-radius: 1px;`,
         `\t}\n`,
         `\t/* Headings */`,
         `\t#head1 {`,
@@ -83,7 +97,7 @@ export function getUpdatedAddLogHtmlString() {
         `\tmargin-bottom: 5px;`,
         `\twidth: 540px;`,
         `\tfont-size: 18px;`,
-        `\tborder-radius: 5px;`,
+        `\tborder-radius: 1px;`,
         `\tpadding-left: 5px;`,
         `\tpadding-right: 5px;`,
         `\t}\n`,
@@ -104,7 +118,7 @@ export function getUpdatedAddLogHtmlString() {
         `\tmargin-top: 5px;`,
         `\twidth: 40px;`,
         `\tfont-size: 18px;`,
-        `\tborder-radius: 5px;`,
+        `\tborder-radius: 1px;`,
         `\tpadding-left: 5px;`,
         `\tpadding-right: 5px;`,
         `\t}`,
@@ -126,7 +140,7 @@ export function getUpdatedAddLogHtmlString() {
         `\tbackground: #6d6d6d;`,
         `\tborder: 1px solid #1e1e1e;`,
         `\tbox-sizing: border-box;`,
-        `\tborder-radius: 5px;`,
+        `\tborder-radius: 1px;`,
         `\tmargin-right: 10px;`,
         `\t}`,
         `\t#submit {`,
@@ -138,10 +152,10 @@ export function getUpdatedAddLogHtmlString() {
         `\t\trgba(0, 180, 238, 0.2),`,
         `\t\trgba(0, 180, 238, 0.2)`,
         `\t\t),`,
-        `\t\t#333333;`,
+        `\t\trgba(255,255,255,0.05);`,
         `\tborder: 1px solid #00b4ee;`,
         `\tbox-sizing: border-box;`,
-        `\tborder-radius: 5px;`,
+        `\tborder-radius: 1px;`,
         `\t}`,
         `</style>`,
         `<body>`,

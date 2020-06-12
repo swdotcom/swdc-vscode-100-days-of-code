@@ -4,6 +4,7 @@ import { window } from "vscode";
 import { getMostRecentLogObject, checkLogsJson, checkIfOnStreak } from "./LogsUtil";
 import { getLanguages } from "./LanguageUtil";
 import { User } from "../models/User";
+import { Log } from "../models/Log";
 
 export function getUserJson() {
     let file = getSoftwareDir();
@@ -27,6 +28,10 @@ export function checkUserJson() {
                     `{\n\t"name": "",`,
                     `\t"email": "",`,
                     `\t"days": 0,`,
+                    `\t"currentDate": 0,`,
+                    `\t"currentHours": 0,`,
+                    `\t"currentKeystrokes": 0,`,
+                    `\t"currentLines": 0,`,
                     `\t"hours": 0,`,
                     `\t"longest_streak": 0,`,
                     `\t"milestones": 0,`,
@@ -52,23 +57,35 @@ export function updateUserJson() {
     if (!userExists || !logsExists) {
         return;
     }
-    let user = getUserObject();
-    const log = getMostRecentLogObject();
+    let user: User = getUserObject();
+    const log: Log = getMostRecentLogObject();
     const onStreak = checkIfOnStreak();
+    const currentDate = new Date(user.currentDate);
+    const dateOb = new Date();
 
-    user.days += 1;
-    user.hours += log.codetime_metrics.hours;
-    user.keystrokes += log.codetime_metrics.keystrokes;
-    user.lines_added += log.codetime_metrics.lines_added;
+    if (
+        currentDate.getDate() !== dateOb.getDate() ||
+        currentDate.getMonth() !== dateOb.getMonth() ||
+        currentDate.getFullYear() !== dateOb.getFullYear()
+    ) {
+        user.days += 1;
+        user.hours += user.currentHours;
+        user.keystrokes += user.currentKeystrokes;
+        user.lines_added += user.currentLines;
+        user.currentDate = dateOb.valueOf();
 
-    if (onStreak) {
-        user.curr_streak += 1;
-        if (user.curr_streak > user.longest_streak) {
-            user.longest_streak = user.curr_streak;
+        if (onStreak) {
+            user.curr_streak += 1;
+            if (user.curr_streak > user.longest_streak) {
+                user.longest_streak = user.curr_streak;
+            }
+        } else {
+            user.curr_streak = 1;
         }
-    } else {
-        user.curr_streak = 1;
     }
+    user.currentHours = log.codetime_metrics.hours;
+    user.currentKeystrokes = log.codetime_metrics.keystrokes;
+    user.currentLines = log.codetime_metrics.lines_added;
 
     const newLanguages = getLanguages();
     const currLanguages = user.languages;

@@ -7,8 +7,8 @@ import {
     checkMilestonesJson,
     checkLanguageMilestonesAchieved
 } from "./utils/MilestonesUtil";
-import { checkLogsJson } from "./utils/LogsUtil";
-import { checkUserJson, updateUserLanguages } from "./utils/UserUtil";
+import { checkLogsJson, updateLogsMilestonesAndMetrics } from "./utils/LogsUtil";
+import { checkUserJson } from "./utils/UserUtil";
 
 let fifteen_minute_interval: NodeJS.Timeout;
 
@@ -31,6 +31,9 @@ export function initializePlugin() {
     checkLogsJson();
     checkMilestonesJson();
     checkUserJson();
+    updateLogsMilestonesAndMetrics([]);
+    checkCodeTimeMetricsMilestonesAchieved();
+    checkLanguageMilestonesAchieved();
 
     // Setup interval jobs
     initializeIntervalJobs();
@@ -39,11 +42,11 @@ export function initializePlugin() {
 export function initializeIntervalJobs() {
     // every 15 minute tasks
     fifteen_minute_interval = setInterval(async () => {
-        console.log("CHECKED MILESTONES");
+        // updates logs with latest metrics
+        updateLogsMilestonesAndMetrics([]);
         checkCodeTimeMetricsMilestonesAchieved();
-        updateUserLanguages();
         checkLanguageMilestonesAchieved();
-    }, one_min_millis * 15);
+    }, one_min_millis * 1);
 }
 
 // this method is called when your extension is deactivated
