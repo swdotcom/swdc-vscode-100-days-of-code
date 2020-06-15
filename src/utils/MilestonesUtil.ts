@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows } from "./Util";
+import { getSoftwareDir, isWindows, compareDates } from "./Util";
 import fs = require("fs");
 import { window } from "vscode";
 import path = require("path");
@@ -358,11 +358,7 @@ function achievedMilestonesJson(ids: Array<number>): void {
         if ((id > 18 && id < 25) || (id > 48 && id < 57)) {
             const dateOb = new Date(milestones[id - 1].date_achieved);
             // Updates only if it wasn't achieved that day
-            if (
-                dateNow.getDate() !== dateOb.getDate() ||
-                dateNow.getMonth() !== dateOb.getMonth() ||
-                dateNow.getFullYear() !== dateOb.getFullYear()
-            ) {
+            if (!compareDates(dateOb, dateNow)) {
                 milestones[id - 1].achieved = true; // id is indexed starting 1
                 milestones[id - 1].date_achieved = dateNow.valueOf();
                 updatedIds.push(id);
@@ -692,8 +688,10 @@ function getUpdatedMilestonesHtmlString(): string {
                 `\t\t</div>\n`
             ].join("\n");
 
-            // Within a week of today
-            if (date - dateAchieved < 86400000) {
+            // Checks for the same date
+            const dateNow = new Date();
+            const dateOb = new Date(dateAchieved);
+            if (compareDates(dateOb, dateNow)) {
                 if (recents === "") {
                     recents += `\n\t\t<h2>Recents</h2>\n`;
                 }

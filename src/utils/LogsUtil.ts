@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows } from "./Util";
+import { getSoftwareDir, isWindows, compareDates } from "./Util";
 import fs = require("fs");
 import { CodetimeMetrics } from "../models/CodetimeMetrics";
 import { Log } from "../models/Log";
@@ -46,11 +46,7 @@ function checkIfDateExists() {
             }
 
             // Checking if date exists
-            if (
-                dateNow.getDate() === dateOb.getDate() &&
-                dateNow.getMonth() === dateOb.getMonth() &&
-                dateNow.getFullYear() === dateOb.getFullYear()
-            ) {
+            if (compareDates(dateOb, dateNow)) {
                 return true;
             }
         }
@@ -244,11 +240,7 @@ export function updateLogByDate(log: Log) {
             const dateOb = new Date(logs[i].date);
 
             // Checking if date matches
-            if (
-                logDate.getDate() === dateOb.getDate() &&
-                logDate.getMonth() === dateOb.getMonth() &&
-                logDate.getFullYear() === dateOb.getFullYear()
-            ) {
+            if (compareDates(dateOb, logDate)) {
                 logs[i].title = log.title;
                 logs[i].description = log.description;
                 logs[i].links = log.links;
@@ -364,12 +356,7 @@ export function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
         for (let i = logs.length - 1; i >= 0; i--) {
             const dateOb = new Date(logs[i].date);
             // Checking if date matches
-            if (
-                logDate.getDate() === dateOb.getDate() &&
-                logDate.getMonth() === dateOb.getMonth() &&
-                logDate.getFullYear() === dateOb.getFullYear()
-            ) {
-
+            if (compareDates(dateOb, logDate)) {
                 // If user added extra hours, we don't want to reduce those
                 logs[i].codetime_metrics.hours = Math.max(
                     logs[i].codetime_metrics.hours,
@@ -712,14 +699,10 @@ export function getUpdatedLogsHtmlString() {
             ].join("\n");
         } else {
             let mostRecentLog = logs[logs.length - 1];
-            let LogDate = new Date(mostRecentLog.date);
-            let todaysDate = new Date();
+            let logDate = new Date(mostRecentLog.date);
+            let dateNow = new Date();
 
-            if (
-                LogDate.getDate() !== todaysDate.getDate() ||
-                LogDate.getMonth() !== todaysDate.getMonth() ||
-                LogDate.getFullYear() !== todaysDate.getFullYear()
-            ) {
+            if (!compareDates(dateNow, logDate)) {
                 htmlString += `\t\t<h2>Don't forget to submit your log today! --> <a id="addLog" href="Add Log">Add log</a></h2>\n`;
             }
 

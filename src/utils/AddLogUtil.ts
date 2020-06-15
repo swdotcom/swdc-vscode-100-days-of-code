@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows } from "./Util";
+import { getSoftwareDir, isWindows, compareDates } from "./Util";
 import fs = require("fs");
 import { getMostRecentLogObject, getLatestLogEntryNumber } from "./LogsUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
@@ -23,18 +23,9 @@ export function getUpdatedAddLogHtmlString() {
     const logDate = new Date(log.date);
     let day = getLatestLogEntryNumber() + 1;
 
-    if (
-        logDate.getDate() === dateOb.getDate() &&
-        logDate.getMonth() === dateOb.getMonth() &&
-        logDate.getFullYear() === dateOb.getFullYear() &&
-        log.title !== "No Title"
-    ) {
+    if (compareDates(dateOb, logDate) && log.title !== "No Title") {
         return "<html><body><br><br><h1>Today's Log already exists. If you want to edit it, please update the Log from the Logs tab in 100 Days of Code.</h1></body></html>";
-    } else if (
-        logDate.getDate() === dateOb.getDate() &&
-        logDate.getMonth() === dateOb.getMonth() &&
-        logDate.getFullYear() === dateOb.getFullYear()
-    ) {
+    } else if (compareDates(dateOb, logDate)) {
         day = log.day_number;
     }
 
