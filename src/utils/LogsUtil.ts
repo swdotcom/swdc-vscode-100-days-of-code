@@ -702,7 +702,7 @@ export function getUpdatedLogsHtmlString() {
             let logDate = new Date(mostRecentLog.date);
             let dateNow = new Date();
 
-            if (!compareDates(dateNow, logDate)) {
+            if (!compareDates(dateNow, logDate) || mostRecentLog.title === "No Title") {
                 htmlString += `\t\t<h2>Don't forget to submit your log today! --> <a id="addLog" href="Add Log">Add log</a></h2>\n`;
             }
 
