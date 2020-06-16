@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows } from "./Util";
+import { getSoftwareDir, isWindows, compareDates } from "./Util";
 import fs = require("fs");
 import { window } from "vscode";
 import { getMostRecentLogObject, checkLogsJson, checkIfOnStreak } from "./LogsUtil";
@@ -63,11 +63,7 @@ export function updateUserJson() {
     const currentDate = new Date(user.currentDate);
     const dateOb = new Date();
 
-    if (
-        currentDate.getDate() !== dateOb.getDate() ||
-        currentDate.getMonth() !== dateOb.getMonth() ||
-        currentDate.getFullYear() !== dateOb.getFullYear()
-    ) {
+    if (!compareDates(dateOb, currentDate)) {
         user.days += 1;
         user.hours += user.currentHours;
         user.keystrokes += user.currentKeystrokes;

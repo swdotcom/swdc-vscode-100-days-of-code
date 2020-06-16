@@ -1,4 +1,4 @@
-import { Disposable, commands, window, TreeView, ViewColumn } from "vscode";
+import { Disposable, commands, window, TreeView, ViewColumn, WebviewPanel } from "vscode";
 import { TreeNode } from "../models/TreeNode";
 import { Tree100DoCProvider, connectDoCTreeView } from "../tree/Tree100DoCProvider";
 import { getLogsHtml, updateLogsHtml, addLogToJson, editLogEntry, updateLogShare, editLogHours } from "./LogsUtil";
@@ -16,6 +16,7 @@ const fs = require("fs");
 
 export function createCommands(): { dispose: () => void } {
     let cmds: any[] = [];
+    let currentPanel: WebviewPanel | undefined = undefined;
 
     const Doc100SftwProvider = new Tree100DoCProvider();
     const Doc100SftwTreeView: TreeView<TreeNode> = window.createTreeView("100DoC-tree", {
@@ -28,17 +29,52 @@ export function createCommands(): { dispose: () => void } {
     cmds.push(
         commands.registerCommand("DoC.viewLogs", () => {
             updateLogsHtml();
-
-            const panel = window.createWebviewPanel("Logs", "Logs", ViewColumn.One, {
-                enableScripts: true
-            });
             const logsHtmlPath = getLogsHtml();
-            fs.readFile(logsHtmlPath, "utf8", (err: Error, data: string) => {
-                if (err) {
-                    console.log(err);
+
+            if (currentPanel) {
+                if (currentPanel.title !== "Logs") {
+                    currentPanel.dispose();
+                    commands.executeCommand("DoC.viewLogs");
+                } else {
+                    fs.readFile(logsHtmlPath, "utf8", (err: Error, data: string) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                        // have to implement this check for worst case scenario
+                        if (currentPanel) {
+                            currentPanel.webview.html = data;
+                        }
+                    });
+                    currentPanel.reveal(ViewColumn.One);
                 }
-                panel.webview.html = data;
-                panel.webview.onDidReceiveMessage(message => {
+            } else {
+                currentPanel = window.createWebviewPanel("Logs", "Logs", ViewColumn.One, {
+                    enableScripts: true
+                });
+
+                fs.readFile(logsHtmlPath, "utf8", (err: Error, data: string) => {
+                    if (err) {
+                        console.log(err);
+                    }
+                    if (currentPanel) {
+                        currentPanel.webview.html = data;
+                    }
+                });
+
+                const logInterval = setInterval(() => {
+                    updateLogsHtml();
+                    fs.readFile(logsHtmlPath, "utf8", (err: Error, data: string) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                        // have to implement this check for worst case scenario
+                        if (currentPanel) {
+                            currentPanel.webview.html = data;
+                        }
+                    });
+                }, 60000);
+
+                currentPanel.webview.onDidReceiveMessage(message => {
                     switch (message.command) {
                         case "editLog":
                             const dayUpdate = message.value;
@@ -51,7 +87,9 @@ export function createCommands(): { dispose: () => void } {
                             editLogHours(parseInt(dayUpdate.day_number), parseFloat(dayUpdate.hours));
                             break;
                         case "addLog":
-                            panel.dispose();
+                            if (currentPanel) {
+                                currentPanel.dispose();
+                            }
                             commands.executeCommand("DoC.addLog");
                             break;
                         case "incrementShare":
@@ -59,33 +97,85 @@ export function createCommands(): { dispose: () => void } {
                             break;
                     }
                 });
-            });
+
+                currentPanel.onDidDispose(() => {
+                    clearInterval(logInterval);
+                    currentPanel = undefined;
+                });
+            }
         })
     );
 
     cmds.push(
         commands.registerCommand("DoC.viewDashboard", () => {
             updateDashboardHtml();
-            const panel = window.createWebviewPanel("Dashboard", "Dashboard", ViewColumn.One, { enableScripts: true });
             const dashboardHtmlPath = getDashboardHtml();
-            fs.readFile(dashboardHtmlPath, "utf8", (err: Error, data: string) => {
-                if (err) {
-                    console.log(err);
+
+            if (currentPanel) {
+                if (currentPanel.title !== "Dashboard") {
+                    currentPanel.dispose();
+                    commands.executeCommand("DoC.viewDashboard");
+                } else {
+                    fs.readFile(dashboardHtmlPath, "utf8", (err: Error, data: string) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                        // have to implement this check for worst case scenario
+                        if (currentPanel) {
+                            currentPanel.webview.html = data;
+                        }
+                    });
+                    currentPanel.reveal(ViewColumn.One);
                 }
-                panel.webview.html = data;
-                panel.webview.onDidReceiveMessage(message => {
+            } else {
+                currentPanel = window.createWebviewPanel("Dashboard", "Dashboard", ViewColumn.One, {
+                    enableScripts: true
+                });
+
+                fs.readFile(dashboardHtmlPath, "utf8", (err: Error, data: string) => {
+                    if (err) {
+                        console.log(err);
+                    }
+                    if (currentPanel) {
+                        currentPanel.webview.html = data;
+                    }
+                });
+
+                currentPanel.webview.onDidReceiveMessage(message => {
                     switch (message.command) {
                         case "Logs":
-                            panel.dispose();
-                            commands.executeCommand("DoC.viewLogs");
+                            if (currentPanel) {
+                                currentPanel.dispose();
+                                commands.executeCommand("DoC.viewLogs");
+                            }
                             break;
                         case "Milestones":
-                            panel.dispose();
-                            commands.executeCommand("DoC.viewMilestones");
+                            if (currentPanel) {
+                                currentPanel.dispose();
+                                commands.executeCommand("DoC.viewMilestones");
+                            }
                             break;
                     }
                 });
-            });
+
+                const dashboardInterval = setInterval(() => {
+                    updateDashboardHtml();
+                    fs.readFile(dashboardHtmlPath, "utf8", (err: Error, data: string) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                        // have to implement this check for worst case scenario
+                        if (currentPanel) {
+                            currentPanel.webview.html = data;
+                        }
+                    });
+                }, 60000);
+
+                currentPanel.onDidDispose(() => {
+                    clearInterval(dashboardInterval);
+                    currentPanel = undefined;
+                });
+            }
         })
     );
 
@@ -95,62 +185,139 @@ export function createCommands(): { dispose: () => void } {
             checkLanguageMilestonesAchieved();
             checkDaysMilestones();
             updateMilestonesHtml();
-            const panel = window.createWebviewPanel("Milestones", "Milestones", ViewColumn.One, {
-                enableScripts: true
-            });
             const milestonesHtmlPath = getMilestonesHtml();
-            fs.readFile(milestonesHtmlPath, "utf8", (err: Error, data: string) => {
-                if (err) {
-                    console.log(err);
+
+            if (currentPanel) {
+                if (currentPanel.title !== "Milestones") {
+                    currentPanel.dispose();
+                    commands.executeCommand("DoC.viewMilestones");
+                } else {
+                    fs.readFile(milestonesHtmlPath, "utf8", (err: Error, data: string) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                        // have to implement this check for worst case scenario
+                        if (currentPanel) {
+                            currentPanel.webview.html = data;
+                        }
+                    });
+                    currentPanel.reveal(ViewColumn.One);
                 }
-                panel.webview.html = data;
-                panel.webview.onDidReceiveMessage(message => {
+            } else {
+                currentPanel = window.createWebviewPanel("Milestones", "Milestones", ViewColumn.One, {
+                    enableScripts: true
+                });
+                fs.readFile(milestonesHtmlPath, "utf8", (err: Error, data: string) => {
+                    if (err) {
+                        console.log(err);
+                    }
+                    // have to implement this check for worst case scenario
+                    if (currentPanel) {
+                        currentPanel.webview.html = data;
+                    }
+                });
+
+                const milestoneInterval = setInterval(() => {
+                    updateMilestonesHtml();
+                    fs.readFile(milestonesHtmlPath, "utf8", (err: Error, data: string) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                        // have to implement this check for worst case scenario
+                        if (currentPanel) {
+                            currentPanel.webview.html = data;
+                        }
+                    });
+                }, 60000);
+
+                currentPanel.webview.onDidReceiveMessage(message => {
                     switch (message.command) {
                         case "incrementShare":
                             updateMilestoneShare(message.value);
                             break;
                     }
                 });
-            });
+
+                currentPanel.onDidDispose(() => {
+                    clearInterval(milestoneInterval);
+                    currentPanel = undefined;
+                });
+            }
         })
     );
 
     cmds.push(
         commands.registerCommand("DoC.addLog", () => {
-            // updateLogsMilestones([5,8,21]);
             updateAddLogHtml();
-            const panel = window.createWebviewPanel(
-                "Add Daily Progress Log",
-                "Add Daily Progress Log",
-                ViewColumn.One,
-                { enableScripts: true }
-            );
             const addLogHtmlPath = getAddLogHtml();
-            fs.readFile(addLogHtmlPath, "utf8", (err: Error, data: string) => {
-                if (err) {
-                    console.log(err);
+
+            if (currentPanel) {
+                if (currentPanel.title !== "Add Daily Progress Log") {
+                    currentPanel.dispose();
+                    commands.executeCommand("DoC.addLog");
+                } else {
+                    fs.readFile(addLogHtmlPath, "utf8", (err: Error, data: string) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                        // have to implement this check for worst case scenario
+                        if (currentPanel) {
+                            currentPanel.webview.html = data;
+                        }
+                    });
+                    currentPanel.reveal(ViewColumn.One);
                 }
-                panel.webview.html = data;
+            } else {
+                currentPanel = window.createWebviewPanel(
+                    "Add Daily Progress Log",
+                    "Add Daily Progress Log",
+                    ViewColumn.One,
+                    { enableScripts: true }
+                );
+
+                fs.readFile(addLogHtmlPath, "utf8", (err: Error, data: string) => {
+                    if (err) {
+                        console.log(err);
+                    }
+                    if (currentPanel) {
+                        currentPanel.webview.html = data;
+                    }
+                });
 
                 // handle submit or cancel
                 let log;
-                panel.webview.onDidReceiveMessage(message => {
+                currentPanel.webview.onDidReceiveMessage(message => {
                     switch (message.command) {
                         case "cancel":
-                            panel.dispose();
+                            if (currentPanel) {
+                                currentPanel.dispose();
+                            }
                             break;
 
                         case "log":
-                            log = message.value;
-                            addLogToJson(log.title, log.description, log.hours, log.keystrokes, log.lines, log.links);
-                            checkLanguageMilestonesAchieved();
-                            checkDaysMilestones();
-                            panel.dispose();
-                            commands.executeCommand("DoC.viewLogs");
+                            if (currentPanel) {
+                                log = message.value;
+                                addLogToJson(
+                                    log.title,
+                                    log.description,
+                                    log.hours,
+                                    log.keystrokes,
+                                    log.lines,
+                                    log.links
+                                );
+                                checkLanguageMilestonesAchieved();
+                                checkDaysMilestones();
+                                currentPanel.dispose();
+                                commands.executeCommand("DoC.viewLogs");
+                            }
                             break;
                     }
                 });
-            });
+
+                currentPanel.onDidDispose(() => {
+                    currentPanel = undefined;
+                });
+            }
         })
     );
 

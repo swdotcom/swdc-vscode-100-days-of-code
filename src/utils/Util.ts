@@ -53,6 +53,14 @@ export function getSoftwareSessionFile() {
     return file;
 }
 
+export function compareDates(day1: Date, day2: Date) {
+    return (
+        day1.getDate() === day2.getDate() &&
+        day1.getMonth() === day2.getMonth() &&
+        day1.getFullYear() === day2.getFullYear()
+    );
+}
+
 export function getLocalREADMEFile() {
     let file = __dirname;
     // the readme is one directory above the util
