@@ -120,6 +120,47 @@ export function updateUserMilestones(newMilestones: Array<number>, totalMileston
     }
 }
 
+export function getUserTotalHours() {
+    const userExists = checkUserJson();
+    if (!userExists) {
+        return;
+    }
+    let user = getUserObject();
+    return user.hours;
+}
+
+export function setUserTotalHours(newHours: number) {
+    const userExists = checkUserJson();
+    if (!userExists) {
+        return;
+    }
+    let user = getUserObject();
+    user.hours = newHours;
+    const filepath = getUserJson();
+    try {
+        fs.writeFileSync(filepath, JSON.stringify(user, null, 4));
+    } catch (err) {
+        console.log(err);
+        return;
+    }
+}
+
+export function setUserCurrentHours(newCurrentHours: number) {
+    const userExists = checkUserJson();
+    if (!userExists) {
+        return;
+    }
+    let user = getUserObject();
+    user.currentHours = newCurrentHours;
+    const filepath = getUserJson();
+    try {
+        fs.writeFileSync(filepath, JSON.stringify(user, null, 4));
+    } catch (err) {
+        console.log(err);
+        return;
+    }
+}
+
 export function updateUserLanguages() {
     const userExists = checkUserJson();
     if (!userExists) {
