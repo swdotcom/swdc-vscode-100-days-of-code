@@ -42,6 +42,27 @@ export function getUpdatedDashboardHtmlString() {
     const longStreakLevel = getLongStreakLevel(streaks);
     const milestoneLevel = getMilestonesEarnedLevel(user.milestones);
     const avgHoursLevel = getAverageHoursLevel(avgHours);
+
+    const daysLevelHtml =
+        daysLevel === 0
+            ? '\t\t<div class="tooltiptext">Complete more days to reach the  Level 1 of Days Milestones</div>'
+            : `\t\t<div class="tooltiptext">Based on Level ${daysLevel} of Days Milestones</div>`;
+    const hoursLevelHtml =
+        hoursLevel === 0
+            ? '\t\t<div class="tooltiptext">Complete more hours to reach the  Level 1 of Hours Milestones</div>'
+            : `\t\t<div class="tooltiptext">Based on Level ${hoursLevel} of Hours Milestones</div>`;
+    const streakLevelHtml =
+        longStreakLevel === 0
+            ? '\t\t<div class="tooltiptext">Have longer streaks to reach the  Level 1 of Streaks Milestones</div>'
+            : `\t\t<div class="tooltiptext">Based on Level ${longStreakLevel} of Streaks Milestones</div>`;
+    const milestoneLevelHtml =
+        milestoneLevel === 0
+            ? '\t\t<div class="tooltiptext">Accomplish more milestones to reach the  Level 1 of Milestones</div>'
+            : `\t\t<div class="tooltiptext">Based on Level ${milestoneLevel} of Milestones</div>`;
+    const avgHoursLevelHtml =
+        avgHoursLevel === 0
+            ? '\t\t<div class="tooltiptext">Work longer hours to reach the  Level 1 of Avg Hours</div>'
+            : `\t\t<div class="tooltiptext">Based on Level ${avgHoursLevel} of Avg Hours</div>`;
     const shareText = [
         `100 Days Of Code Progress:`,
         `Days: ${days}`,
@@ -402,7 +423,7 @@ export function getUpdatedDashboardHtmlString() {
         `\t\twidth: 700px;`,
         `\t\tleft: 60px;`,
         `\t\tbottom: 20px;`,
-        `\t\tjustify-content: space-between;`,
+        `\t\tjustify-content: ${dateJustifyContent};`,
         `\t}\n`,
         `\t.chartDateText {`,
         `\t\tfont-size: 12px;`,
@@ -464,6 +485,23 @@ export function getUpdatedDashboardHtmlString() {
         `\t\tcolor: #919EAB;`,
         `\t\tword-wrap: break-word;\n`,
         `\t}`,
+        `\t.metricsCard .tooltiptext {`,
+        `\t\tposition: relative;`,
+        `\t\tvisibility: hidden;`,
+        `\t\twidth: 130px;`,
+        `\t\tbottom: -20px;`,
+        `\t\tleft: 5px;`,
+        `\t\tborder-radius: 3px;`,
+        `\t\tbackground-color: rgba(109, 109, 109, .9);`,
+        `\t\tbackground-blend-mode: darken;`,
+        `\t\tcolor: #fff;`,
+        `\t\ttext-align: center;`,
+        `\t\tpadding: 5px;`,
+        `\t\tz-index: 1;`,
+        `\t}`,
+        `\t.metricsCard:hover .tooltiptext {`,
+        `\t\tvisibility: visible;`,
+        `\t}`,
         `</style>`,
         `\t<body>`,
         `\t<div id="head">`,
@@ -476,22 +514,27 @@ export function getUpdatedDashboardHtmlString() {
         `\t\t<div class="metricsCard level${daysLevel}">`,
         `\t\t<div class="metricsHead">${days}</div>`,
         `\t\t<div class="metricsBody">days complete</div>`,
+        `${daysLevelHtml}`,
         `\t\t</div>\n`,
         `\t\t<div class="metricsCard level${hoursLevel}">`,
         `\t\t<div class="metricsHead">${hours}</div>`,
         `\t\t<div class="metricsBody">hours coded</div>`,
+        `${hoursLevelHtml}`,
         `\t\t</div>\n`,
         `\t\t<div class="metricsCard level${longStreakLevel}">`,
         `\t\t<div class="metricsHead">${streaks}</div>`,
-        `\t\t<div class="metricsBody">longest streak (days)</div>`,
+        `\t\t<div class="metricsBody">longest streaks</div>`,
+        `${streakLevelHtml}`,
         `\t\t</div>\n`,
         `\t\t<div class="metricsCard level${milestoneLevel}">`,
         `\t\t<div class="metricsHead">${user.milestones}</div>`,
         `\t\t<div class="metricsBody">milestones earned</div>`,
+        `${milestoneLevelHtml}`,
         `\t\t</div>\n`,
         `\t\t<div class="metricsCard level${avgHoursLevel}">`,
         `\t\t<div class="metricsHead">${avgHours}</div>`,
         `\t\t<div class="metricsBody">average hours/day</div>`,
+        `${avgHoursLevelHtml}`,
         `\t\t</div>`,
         `\t</div>\n`,
         `\t<div id="bigGrid">`,
