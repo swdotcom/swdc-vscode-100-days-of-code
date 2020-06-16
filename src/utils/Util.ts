@@ -72,10 +72,6 @@ export function getLocalREADMEFile() {
     return file;
 }
 
-export function compareDates(day1: Date, day2: Date) {
-    return day1.getDate() === day2.getDate() && day1.getMonth() === day2.getMonth() && day1.getFullYear() === day2.getFullYear();
-}
-
 export function displayReadmeIfNotExists(override = false, launchTreeOnInit = false) {
     const displayedReadme = getItem("vscode_ZtReadme");
     if (!displayedReadme || override) {
