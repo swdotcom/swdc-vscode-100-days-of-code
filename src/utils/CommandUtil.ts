@@ -158,6 +158,22 @@ export function createCommands(): { dispose: () => void } {
                                 commands.executeCommand("DoC.viewMilestones");
                             }
                             break;
+                        case "Certificate":
+                            window
+                                .showInputBox({
+                                    placeHolder: "Your name, Your email",
+                                    prompt:
+                                        "Please enter your name and email for getting the certificate. Please make sure that they are in the right order and separated by a comma.",
+                                    validateInput: text => {
+                                        let email = text.split(",")[1].replace(" ", "");
+                                        if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
+                                            return "Please enter a valid email";
+                                        } else {
+                                            return "";
+                                        }
+                                    }
+                                })
+                                .then(text => {});
                     }
                 });
 

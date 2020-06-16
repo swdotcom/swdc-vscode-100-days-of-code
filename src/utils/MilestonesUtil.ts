@@ -369,6 +369,12 @@ function achievedMilestonesJson(ids: Array<number>): void {
         else if (!(milestones[id - 1].date_achieved && milestones[id - 1].date_achieved > 0)) {
             milestones[id - 1].achieved = true; // id is indexed starting 1
             milestones[id - 1].date_achieved = dateNow.valueOf();
+            // For certificate
+            if (id === 11) {
+                window.showInformationMessage("Whoa! You just unlocked the #100DaysOfCode Certificate", {
+                    modal: true
+                });
+            }
             updatedIds.push(id);
         }
     }
@@ -719,7 +725,7 @@ function getUpdatedMilestonesHtmlString(): string {
             const dateOb = new Date(dateAchieved);
             if (compareDates(dateOb, dateNow)) {
                 if (recents === "") {
-                    recents += `\n\t\t<h2>Recents</h2>\n`;
+                    recents += `\n\t\t<h2>Today's Milestones</h2>\n`;
                 }
                 recents += milestoneCardHtml;
             }
@@ -729,7 +735,7 @@ function getUpdatedMilestonesHtmlString(): string {
 
         // If no milestones earned within a week
         if (recents === "") {
-            recents += `\n\t\t<h2>Recents</h2>\n`;
+            recents += `\n\t\t<h2>Today's Milestones</h2>\n`;
             recents += `\t\t<div class="noMilestones">No Milestones in the Past 24 hours</div>\n`;
         }
 

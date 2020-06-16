@@ -43,26 +43,135 @@ export function getUpdatedDashboardHtmlString() {
     const milestoneLevel = getMilestonesEarnedLevel(user.milestones);
     const avgHoursLevel = getAverageHoursLevel(avgHours);
 
-    const daysLevelHtml =
-        daysLevel === 0
-            ? '\t\t<div class="tooltiptext">Complete more days to reach the  Level 1 of Days Milestones</div>'
-            : `\t\t<div class="tooltiptext">Based on Level ${daysLevel} of Days Milestones</div>`;
-    const hoursLevelHtml =
-        hoursLevel === 0
-            ? '\t\t<div class="tooltiptext">Complete more hours to reach the  Level 1 of Hours Milestones</div>'
-            : `\t\t<div class="tooltiptext">Based on Level ${hoursLevel} of Hours Milestones</div>`;
-    const streakLevelHtml =
-        longStreakLevel === 0
-            ? '\t\t<div class="tooltiptext">Have longer streaks to reach the  Level 1 of Streaks Milestones</div>'
-            : `\t\t<div class="tooltiptext">Based on Level ${longStreakLevel} of Streaks Milestones</div>`;
-    const milestoneLevelHtml =
-        milestoneLevel === 0
-            ? '\t\t<div class="tooltiptext">Accomplish more milestones to reach the  Level 1 of Milestones</div>'
-            : `\t\t<div class="tooltiptext">Based on Level ${milestoneLevel} of Milestones</div>`;
-    const avgHoursLevelHtml =
-        avgHoursLevel === 0
-            ? '\t\t<div class="tooltiptext">Work longer hours to reach the  Level 1 of Avg Hours</div>'
-            : `\t\t<div class="tooltiptext">Based on Level ${avgHoursLevel} of Avg Hours</div>`;
+    let daysLevelHtml;
+    switch (daysLevel) {
+        case 0:
+            daysLevelHtml =
+                '\t\t<div class="tooltiptext">Complete 1 more day to reach Level 1 of Days Milestones</div>';
+            break;
+        case 1:
+            daysLevelHtml = `\t\t<div class="tooltiptext">You're at Level 1 of Days Milestones. Complete 10 days to reach Level 2.</div>`;
+            break;
+        case 2:
+            daysLevelHtml = `\t\t<div class="tooltiptext">You're at Level 2 of Days Milestones. Complete 50 days to reach Level 3.</div>`;
+            break;
+        case 3:
+            daysLevelHtml = `\t\t<div class="tooltiptext">You're at Level 3 of Days Milestones. Complete 75 days to reach Level 4.</div>`;
+            break;
+        case 4:
+            daysLevelHtml = `\t\t<div class="tooltiptext">You're at Level 4 of Days Milestones. Complete 100 days to reach Level 5.</div>`;
+            break;
+        case 5:
+            daysLevelHtml = `\t\t<div class="tooltiptext">You're at Level 5 of Days Milestones. Complete 110 days to reach Level <span class="inf">∞</span>.</div>`;
+            break;
+        case 6:
+            daysLevelHtml = `\t\t<div class="tooltiptext">Congratulations, you're at Level <span class="inf">∞</span> of Days Milestones!</div>`;
+            break;
+    }
+
+    let hoursLevelHtml;
+    switch (hoursLevel) {
+        case 0:
+            hoursLevelHtml =
+                '\t\t<div class="tooltiptext">Complete 1 more hour to reach Level 1 of Hours Milestones</div>';
+            break;
+        case 1:
+            hoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 1 of Hours Milestones. Complete 30 hours to reach Level 2.</div>`;
+            break;
+        case 2:
+            hoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 2 of Hours Milestones. Complete 60 hours to reach Level 3.</div>`;
+            break;
+        case 3:
+            hoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 3 of Hours Milestones. Complete 90 hours to reach Level 4.</div>`;
+            break;
+        case 4:
+            hoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 4 of Hours Milestones. Complete 120 hours to reach Level 5.</div>`;
+            break;
+        case 5:
+            hoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 5 of Hours Milestones. Complete 200 hours to reach Level <span class="inf">∞</span>.</div>`;
+            break;
+        case 6:
+            hoursLevelHtml = `\t\t<div class="tooltiptext">Congratulations, you're at Level <span class="inf">∞</span> of Hours Milestones!</div>`;
+            break;
+    }
+
+    let streakLevelHtml;
+    switch (longStreakLevel) {
+        case 0:
+            streakLevelHtml =
+                '\t\t<div class="tooltiptext">Complete a 2 day streak to reach Level 1 of Streaks Milestones</div>';
+            break;
+        case 1:
+            streakLevelHtml = `\t\t<div class="tooltiptext">You're at Level 1 of Streaks Milestones. Complete a 7 day streak to reach Level 2.</div>`;
+            break;
+        case 2:
+            streakLevelHtml = `\t\t<div class="tooltiptext">You're at Level 2 of Streaks Milestones. Complete a 14 day streak to reach Level 3.</div>`;
+            break;
+        case 3:
+            streakLevelHtml = `\t\t<div class="tooltiptext">You're at Level 3 of Streaks Milestones. Complete a 30 day streak to reach Level 4.</div>`;
+            break;
+        case 4:
+            streakLevelHtml = `\t\t<div class="tooltiptext">You're at Level 4 of Streaks Milestones. Complete a 60 day streak to reach Level 5.</div>`;
+            break;
+        case 5:
+            streakLevelHtml = `\t\t<div class="tooltiptext">You're at Level 5 of Streaks Milestones. Complete a 100 day streak to reach Level <span class="inf">∞</span>.</div>`;
+            break;
+        case 6:
+            streakLevelHtml = `\t\t<div class="tooltiptext">Congratulations, you're at Level <span class="inf">∞</span> of Streaks Milestones!</div>`;
+            break;
+    }
+
+    let milestoneLevelHtml;
+    switch (milestoneLevel) {
+        case 0:
+            milestoneLevelHtml =
+                '\t\t<div class="tooltiptext">Achieve 1 Milestone to reach Level 1 of Milestones</div>';
+            break;
+        case 1:
+            milestoneLevelHtml = `\t\t<div class="tooltiptext">You're at Level 1 of Milestones. Achieve 10 Milestones to reach Level 2.</div>`;
+            break;
+        case 2:
+            milestoneLevelHtml = `\t\t<div class="tooltiptext">You're at Level 2 of Milestones. Achieve 20 Milestones to reach Level 3.</div>`;
+            break;
+        case 3:
+            milestoneLevelHtml = `\t\t<div class="tooltiptext">You're at Level 3 of Milestones. Achieve 30 Milestones to reach Level 4.</div>`;
+            break;
+        case 4:
+            milestoneLevelHtml = `\t\t<div class="tooltiptext">You're at Level 4 of Milestones. Achieve 40 Milestones to reach Level 5.</div>`;
+            break;
+        case 5:
+            milestoneLevelHtml = `\t\t<div class="tooltiptext">You're at Level 5 of Milestones. Achieve 50 Milestones to reach Level <span class="inf">∞</span>.</div>`;
+            break;
+        case 6:
+            milestoneLevelHtml = `\t\t<div class="tooltiptext">Congratulations, you're at Level <span class="inf">∞</span> of Milestones!</div>`;
+            break;
+    }
+
+    let avgHoursLevelHtml;
+    switch (avgHoursLevel) {
+        case 0:
+            avgHoursLevelHtml =
+                '\t\t<div class="tooltiptext">Achieve a 0.5 hour average to reach Level 1 of Average Hours</div>';
+            break;
+        case 1:
+            avgHoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 1 of Average Hours. Achieve a 1.0 hour average to reach Level 2.</div>`;
+            break;
+        case 2:
+            avgHoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 2 of Average Hours. Achieve a 1.5 hour average to reach Level 3.</div>`;
+            break;
+        case 3:
+            avgHoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 3 of Average Hours. Achieve a 2.0 hour average to reach Level 4.</div>`;
+            break;
+        case 4:
+            avgHoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 4 of Average Hours. Achieve a 2.5 hour average to reach Level 5.</div>`;
+            break;
+        case 5:
+            avgHoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 5 of Average Hours. Achieve a 3.0 hour average to reach Level <span class="inf">∞</span>.</div>`;
+            break;
+        case 6:
+            avgHoursLevelHtml = `\t\t<div class="tooltiptext">Congratulations, you're at Level <span class="inf">∞</span> of Average Hours!</div>`;
+            break;
+    }
     const shareText = [
         `100 Days Of Code Progress:`,
         `Days: ${days}`,
@@ -87,8 +196,8 @@ export function getUpdatedDashboardHtmlString() {
         max = Math.max(...codeTimeHours);
         mid = (max - min) / 2;
         for (let i = 0; i < codeTimeHours.length; i++) {
-            let size = (codeTimeHours[i] * 200) / max;
-            let transform = 200 - size;
+            let size = (codeTimeHours[i] * 250) / max;
+            let transform = 250 - size;
             barsHtml += `\t\t\t\t<div class="chartBar" style="height: ${size}px; transform: translateY(${transform}px);"></div>\n`;
         }
         if (codeTimeHours.length < 4) {
@@ -220,11 +329,25 @@ export function getUpdatedDashboardHtmlString() {
         `\t\tdisplay: inline;`,
         `\t}\n`,
         `\t#shareProgress {`,
-        `\t\tfont-size: 20px;`,
+        `\t\tfont-size: 16px;`,
+        `\t\tline-height: 24px;`,
         `\t\tcolor: #ffffff;`,
         `\t\tfloat: right;`,
         `\t\tbackground-color: #00b4ee;`,
         `\t\tborder-color: #00b4ee;`,
+        `\t\tborder-radius: 3px;`,
+        `\t\tcursor: pointer;`,
+        `\t}\n`,
+        `\t#certificate {`,
+        // `\t\tvisibility: hidden;`,
+        `\t\tfont-size: 16px;`,
+        `\t\tline-height: 24px;`,
+        `\t\tpadding: 2px;`,
+        `\t\twidth: 150px;`,
+        `\t\tcolor: #ffffff;`,
+        `\t\tfloat: right;`,
+        `\t\tmargin-right: 10px;`,
+        `\t\tborder-color: rgba(0, 0, 0, 0);`,
         `\t\tborder-radius: 3px;`,
         `\t\tcursor: pointer;`,
         `\t}\n`,
@@ -285,7 +408,7 @@ export function getUpdatedDashboardHtmlString() {
         `\t.metricsHead {`,
         `\t\tpadding-top: 15px;`,
         `\t\tpadding-left: 10px;`,
-        `\t\tfont-size: 18px;`,
+        `\t\tfont-size: 21px;`,
         `\t\tfont-weight: 600;`,
         `\t}\n`,
         `\t.metricsBody {`,
@@ -293,7 +416,7 @@ export function getUpdatedDashboardHtmlString() {
         `\t\tpadding-left: 10px;`,
         `\t\tpadding-right: 10px;`,
         `\t\tfont-size: 16px;`,
-        `\t\tfont-weight: 200;`,
+        `\t\tfont-weight: 400;`,
         `\t\tword-wrap: break-word;`,
         `\t}\n`,
         `\t#bigGrid {`,
@@ -301,9 +424,11 @@ export function getUpdatedDashboardHtmlString() {
         `\t\tgrid-template-columns: 450px 350px;`,
         `\t}\n`,
         `\t#logs {`,
-        `\t\tmargin-top: 20px;`,
-        `\t\tpadding: 5px;`,
-        `\t\twidth: 450px;`,
+        `\t\tmargin-top: 10px;`,
+        `\t\tpadding-left: 16px;`,
+        `\t\tpadding-top: 5px;`,
+        `\t\tpadding-right: 5px;`,
+        `\t\twidth: 430px;`,
         `\t\tmin-height: 285px;`,
         `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
         `\t\tborder-radius: 3px;`,
@@ -317,7 +442,7 @@ export function getUpdatedDashboardHtmlString() {
         `\t\tmargin-top: 5px;`,
         `\t\tmargin-right: 5px;`,
         `\t\tfloat: right;`,
-        `\t\tfont-size: 16px;`,
+        `\t\tfont-size: 14px;`,
         `\t\tline-height: 25px;`,
         `\t\tborder-radius: 3px;`,
         `\t\tborder-color: rgba(0, 0, 0, 0);`,
@@ -327,16 +452,16 @@ export function getUpdatedDashboardHtmlString() {
         `\t}\n`,
         `\t#logHeadings {`,
         `\t\tdisplay: grid;`,
-        `\t\twidth: 101%;`,
-        `\t\tmargin-left: -1%;`,
-        `\t\tpadding-left: 5px;`,
-        `\t\tgrid-template-columns: 50px 160px 240px;`,
+        `\t\twidth: 435px;`,
+        `\t\tmargin-left: -15px;`,
+        `\t\tpadding-left: 15px;`,
+        `\t\tgrid-template-columns: 50px 160px 220px;`,
         `\t\tfont-size: 16px;`,
-        `\t\tline-height: 20px;`,
+        `\t\tline-height: 25px;`,
         `\t\tfont-weight: 400;`,
         `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
         `\t\tmargin-top: 15px;`,
-        `\t\theight: 20px;`,
+        `\t\theight: 25px;`,
         `\t\tvertical-align: middle;`,
         `\t}\n`,
         `\t.logBody {`,
@@ -344,7 +469,7 @@ export function getUpdatedDashboardHtmlString() {
         `\t\tdisplay: grid;`,
         `\t\tpadding: 2px;`,
         `\t\twidth: 100%;`,
-        `\t\tgrid-template-columns: 50px 160px 240px;`,
+        `\t\tgrid-template-columns: 50px 160px 220px;`,
         `\t\tfont-size: 16px;`,
         `\t\tword-wrap: break-word;`,
         `\t}\n`,
@@ -374,7 +499,7 @@ export function getUpdatedDashboardHtmlString() {
         `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
         `\t\twidth: 720px;`,
         `\t\theight: 1px;`,
-        `\t\tbottom: 150px;`,
+        `\t\tbottom: 185px;`,
         `\t\tleft: 40px;`,
         `\t}\n`,
         `\t#chartXMax {`,
@@ -382,18 +507,16 @@ export function getUpdatedDashboardHtmlString() {
         `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
         `\t\twidth: 720px;`,
         `\t\theight: 1px;`,
-        `\t\tbottom: 250px;`,
+        `\t\tbottom: 300px;`,
         `\t\tleft: 40px;`,
         `\t}\n`,
         `\t#chartTitle {`,
-        `\t\tposition: flex;`,
-        `\t\twidth: 100%;`,
         `\t\ttext-align: center;`,
-        `\t\tfont-size: 36px;`,
+        `\t\tfont-size: 20px;`,
         `\t}\n`,
         `\t#chartBarContainer {`,
         `\t\twidth: 700px;`,
-        `\t\theight: 200px;`,
+        `\t\theight: 250px;`,
         `\t\tposition: absolute;`,
         `\t\tdisplay: flex;`,
         `\t\tbottom: 50px;`,
@@ -430,10 +553,12 @@ export function getUpdatedDashboardHtmlString() {
         `\t}\n`,
         `\t/* milestones */`,
         `\t#milestones {`,
-        `\t\tmargin-top: 20px;`,
-        `\t\tmargin-left: 20px;`,
-        `\t\tpadding: 5px;`,
-        `\t\twidth: 320px;`,
+        `\t\tmargin-top: 10px;`,
+        `\t\tmargin-left: 13px;`,
+        `\t\tpadding-left: 16px;`,
+        `\t\tpadding-top: 5px;`,
+        `\t\tpadding-right: 5px;`,
+        `\t\twidth: 315px;`,
         `\t\tmin-height: 285px;`,
         `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
         `\t\tborder-radius: 3px;`,
@@ -448,7 +573,7 @@ export function getUpdatedDashboardHtmlString() {
         `\t\tmargin-top: 5px;`,
         `\t\tmargin-right: 5px;`,
         `\t\tfloat: right;`,
-        `\t\tfont-size: 16px;`,
+        `\t\tfont-size: 14px;`,
         `\t\tline-height: 25px;`,
         `\t\tborder-radius: 3px;`,
         `\t\tborder-color: rgba(0, 0, 0, 0);`,
@@ -502,6 +627,9 @@ export function getUpdatedDashboardHtmlString() {
         `\t.metricsCard:hover .tooltiptext {`,
         `\t\tvisibility: visible;`,
         `\t}`,
+        `\t.inf {`,
+        `\t\tfont-size: larger;`,
+        `\t}`,
         `</style>`,
         `\t<body>`,
         `\t<div id="head">`,
@@ -509,6 +637,7 @@ export function getUpdatedDashboardHtmlString() {
         `\t<a`,
         `\t\thref="${twitterShareUrl}"><button`,
         `\t\t\tid="shareProgress" title="Share dashboard metrics on Twitter">Share Progress</button></a>`,
+        `\t<button id="certificate" class="level6">Get your Certificate</button>`,
         `\t</div>`,
         `\t<div id="topMetrics">`,
         `\t\t<div class="metricsCard level${daysLevel}">`,
@@ -562,9 +691,9 @@ export function getUpdatedDashboardHtmlString() {
         `\t\t\t<div id="chartXMin"></div>`,
         `\t\t\t<div class="chartYLabel" style="bottom: 45px">${min} hr</div>`,
         `\t\t\t<div id="chartXMid"></div>`,
-        `\t\t\t<div class="chartYLabel" style="bottom: 145px">${mid} hr</div>`,
+        `\t\t\t<div class="chartYLabel" style="bottom: 180px">${mid} hr</div>`,
         `\t\t\t<div id="chartXMax"></div>`,
-        `\t\t\t<div class="chartYLabel" style="bottom: 245px">${max} hr</div>`,
+        `\t\t\t<div class="chartYLabel" style="bottom: 295px">${max} hr</div>`,
         `\t\t\t<div id="chartBarContainer">`,
         `${barsHtml}`,
         `\t\t\t</div>`,
@@ -579,6 +708,10 @@ export function getUpdatedDashboardHtmlString() {
         `\t\tconst vscode = acquireVsCodeApi();`,
         `\t\tconst milestonesButton = document.getElementById("viewMilestones");`,
         `\t\tconst logsButton = document.getElementById("viewLogs");`,
+        `\t\tconst certificate = document.getElementById("certificate");`,
+        `\t\tcertificate.addEventListener("click", function () {`,
+        `\t\t\tvscode.postMessage({command: "Certificate"})`,
+        `\t\t})`,
         `\t\tlogsButton.addEventListener("click", function(){`,
         `\t\t\tvscode.postMessage({command: "Logs"});`,
         `\t\t});`,
