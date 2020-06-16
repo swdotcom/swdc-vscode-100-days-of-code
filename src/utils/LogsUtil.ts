@@ -4,7 +4,15 @@ import { CodetimeMetrics } from "../models/CodetimeMetrics";
 import { Log } from "../models/Log";
 import { checkMilestonesJson, getMilestoneById, checkSharesMilestones } from "./MilestonesUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
-import { getUserObject, checkUserJson, incrementUserShare, updateUserJson, getUserTotalHours, setUserCurrentHours, setUserTotalHours } from "./UserUtil";
+import {
+    getUserObject,
+    checkUserJson,
+    incrementUserShare,
+    updateUserJson,
+    getUserTotalHours,
+    setUserCurrentHours,
+    setUserTotalHours
+} from "./UserUtil";
 
 export function getLogsJson() {
     let file = getSoftwareDir();
@@ -297,7 +305,6 @@ export function editLogHours(dayNumber: number, editedHours: number) {
             console.log(userTotalHours);
             setUserTotalHours(userTotalHours);
         }
-
     }
 }
 
@@ -837,6 +844,7 @@ export function getUpdatedLogsHtmlString() {
             `\t<h1>Logs</h1>\n`
         ].join("\n");
 
+        let submittedLogToday: boolean;
         if (logs.length < 1 || (logs.length === 1 && !logs[0].day_number)) {
             htmlString += [
                 `\t\t<h2 id='noLogs'>Log Daily Progress to see it here! --> <a id="addLog" href="Add Log">Add log</a></h2></body>`,
@@ -851,12 +859,17 @@ export function getUpdatedLogsHtmlString() {
             let mostRecentLog = logs[logs.length - 1];
             let logDate = new Date(mostRecentLog.date);
             let dateNow = new Date();
+            submittedLogToday = compareDates(dateNow, logDate) && mostRecentLog.title !== "No Title";
 
-            if (!compareDates(dateNow, logDate) || mostRecentLog.title === "No Title") {
+            if (!submittedLogToday) {
                 htmlString += `\t\t<h2>Don't forget to submit your log today! --> <a id="addLog" href="Add Log">Add log</a></h2>\n`;
             }
 
             for (let i = logs.length - 1; i >= 0; i--) {
+                if (!submittedLogToday && i === logs.length - 1) {
+                    continue;
+                }
+
                 const day = logs[i];
 
                 // Share link
@@ -879,7 +892,6 @@ export function getUpdatedLogsHtmlString() {
                 const formattedTime = month + "/" + dayOfMonth + "/" + year;
 
                 let descriptionRows = day.description === "" ? 2 : 3;
-
 
                 // Header and description
                 htmlString += [

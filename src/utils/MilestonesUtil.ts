@@ -371,9 +371,12 @@ function achievedMilestonesJson(ids: Array<number>): void {
             milestones[id - 1].date_achieved = dateNow.valueOf();
             // For certificate
             if (id === 11) {
-                window.showInformationMessage("Whoa! You just unlocked the #100DaysOfCode Certificate", {
-                    modal: true
-                });
+                window.showInformationMessage(
+                    "Whoa! You just unlocked the #100DaysOfCode Certificate. Please view it on the 100 Days of Code Dashboard.",
+                    {
+                        modal: true
+                    }
+                );
             }
             updatedIds.push(id);
         }

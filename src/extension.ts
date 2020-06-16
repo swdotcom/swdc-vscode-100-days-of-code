@@ -5,7 +5,8 @@ import { createCommands } from "./utils/CommandUtil";
 import {
     checkCodeTimeMetricsMilestonesAchieved,
     checkMilestonesJson,
-    checkLanguageMilestonesAchieved
+    checkLanguageMilestonesAchieved,
+    checkDaysMilestones
 } from "./utils/MilestonesUtil";
 import { checkLogsJson, updateLogsMilestonesAndMetrics } from "./utils/LogsUtil";
 import { checkUserJson } from "./utils/UserUtil";
@@ -34,6 +35,7 @@ export function initializePlugin() {
     updateLogsMilestonesAndMetrics([]);
     checkCodeTimeMetricsMilestonesAchieved();
     checkLanguageMilestonesAchieved();
+    checkDaysMilestones();
 
     // Setup interval jobs
     initializeIntervalJobs();
@@ -46,6 +48,7 @@ export function initializeIntervalJobs() {
         updateLogsMilestonesAndMetrics([]);
         checkCodeTimeMetricsMilestonesAchieved();
         checkLanguageMilestonesAchieved();
+        checkDaysMilestones();
     }, one_min_millis);
 }
 

@@ -37,6 +37,10 @@ export function getUpdatedDashboardHtmlString() {
             avgHours = 0;
         }
     }
+    let certificateVisibility = "hidden";
+    if (days >= 100) {
+        certificateVisibility = "visible";
+    }
     const daysLevel = getDaysLevel(days);
     const hoursLevel = getHoursLevel(hours);
     const longStreakLevel = getLongStreakLevel(streaks);
@@ -339,7 +343,7 @@ export function getUpdatedDashboardHtmlString() {
         `\t\tcursor: pointer;`,
         `\t}\n`,
         `\t#certificate {`,
-        // `\t\tvisibility: hidden;`,
+        `\t\tvisibility: ${certificateVisibility};`,
         `\t\tfont-size: 16px;`,
         `\t\tline-height: 24px;`,
         `\t\tpadding: 2px;`,
