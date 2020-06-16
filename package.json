@@ -38,14 +38,6 @@
     "contributes": {
         "commands": [
             {
-                "command": "DoC.LaunchSoftwareWebsite",
-                "title": "Goes to Software.com"
-            },
-            {
-                "command": "DoC.ToggleStatusbar",
-                "title": "100 Days of Code: View/Remove Status Bar text"
-            },
-            {
                 "command": "DoC.viewLogs",
                 "title": "100 Days of Code: View Logs"
             },
@@ -60,10 +52,6 @@
             {
                 "command": "DoC.viewMilestones",
                 "title": "100 Days of Code: View Milestones"
-            },
-            {
-                "command": "DoC.viewIdeas",
-                "title": "100 Days of Code: View Ideas (on Software.com)"
             }
         ],
         "views": {

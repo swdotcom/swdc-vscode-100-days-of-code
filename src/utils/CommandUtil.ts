@@ -62,16 +62,19 @@ export function createCommands(): { dispose: () => void } {
                 });
 
                 const logInterval = setInterval(() => {
-                    updateLogsHtml();
-                    fs.readFile(logsHtmlPath, "utf8", (err: Error, data: string) => {
-                        if (err) {
-                            console.log(err);
-                        }
-                        // have to implement this check for worst case scenario
-                        if (currentPanel) {
-                            currentPanel.webview.html = data;
-                        }
-                    });
+                    // updates only in the background
+                    if (currentPanel && !currentPanel.active) {
+                        updateLogsHtml();
+                        fs.readFile(logsHtmlPath, "utf8", (err: Error, data: string) => {
+                            if (err) {
+                                console.log(err);
+                            }
+                            // have to implement this check for worst case scenario
+                            if (currentPanel) {
+                                currentPanel.webview.html = data;
+                            }
+                        });
+                    }
                 }, 60000);
 
                 currentPanel.webview.onDidReceiveMessage(message => {

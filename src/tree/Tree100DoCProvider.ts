@@ -12,12 +12,8 @@ import { DoCTreeItem } from "./DoCTreeItem";
 import {
     getDoCLearnMoreButton,
     getDocMilestonesButton,
-    getDoCBlankBlueLine,
-    getDoCToggleStatusBar,
-    getDoCLogDailyProgressButton,
     getDoCLogsButon,
-    getDashboardButton,
-    getDocIdeasButton
+    getDashboardButton
 } from "./TreeButtonManager";
 import { launchUrl } from "../utils/Util";
 
@@ -115,11 +111,11 @@ export class Tree100DoCProvider implements TreeDataProvider<TreeNode> {
     getTreeItem(p: TreeNode): DoCTreeItem {
         let treeItem: DoCTreeItem;
         if (p.children.length) {
-            let collasibleState = docCollapsedStateMap[p.label];
-            if (!collasibleState) {
+            let collapsibleState = docCollapsedStateMap[p.label];
+            if (!collapsibleState) {
                 treeItem = createDoCTreeItem(p, p.initialCollapsibleState);
             } else {
-                treeItem = createDoCTreeItem(p, collasibleState);
+                treeItem = createDoCTreeItem(p, collapsibleState);
             }
         } else {
             treeItem = createDoCTreeItem(p, TreeItemCollapsibleState.None);
@@ -144,19 +140,10 @@ export class Tree100DoCProvider implements TreeDataProvider<TreeNode> {
     async getMenuParents(): Promise<TreeNode[]> {
         const treeItems: TreeNode[] = [];
 
-        const toggleStatusBar: TreeNode = getDoCToggleStatusBar();
-        treeItems.push(toggleStatusBar);
-
         const feedbackButton: TreeNode = getDoCLearnMoreButton();
         treeItems.push(feedbackButton);
 
-        const blueLineButton: TreeNode = getDoCBlankBlueLine();
-        treeItems.push(blueLineButton);
-
         // get the manage bookmarks button
-
-        const addLogsButton: TreeNode = getDoCLogDailyProgressButton();
-        treeItems.push(addLogsButton);
 
         const dashboardButton: TreeNode = getDashboardButton();
         treeItems.push(dashboardButton);
@@ -166,9 +153,6 @@ export class Tree100DoCProvider implements TreeDataProvider<TreeNode> {
 
         const milestoneButton: TreeNode = getDocMilestonesButton();
         treeItems.push(milestoneButton);
-
-        const ideasButton: TreeNode = getDocIdeasButton();
-        treeItems.push(ideasButton);
 
         return treeItems;
     }

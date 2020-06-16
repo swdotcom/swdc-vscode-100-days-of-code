@@ -10,7 +10,7 @@ import {
 import { checkLogsJson, updateLogsMilestonesAndMetrics } from "./utils/LogsUtil";
 import { checkUserJson } from "./utils/UserUtil";
 
-let fifteen_minute_interval: NodeJS.Timeout;
+let one_minute_interval: NodeJS.Timeout;
 
 const one_min_millis = 1000 * 60;
 
@@ -40,16 +40,16 @@ export function initializePlugin() {
 }
 
 export function initializeIntervalJobs() {
-    // every 15 minute tasks
-    fifteen_minute_interval = setInterval(async () => {
+    // every 1 minute tasks
+    one_minute_interval = setInterval(async () => {
         // updates logs with latest metrics
         updateLogsMilestonesAndMetrics([]);
         checkCodeTimeMetricsMilestonesAchieved();
         checkLanguageMilestonesAchieved();
-    }, one_min_millis * 1);
+    }, one_min_millis);
 }
 
 // this method is called when your extension is deactivated
 export function deactivate(ctx: vscode.ExtensionContext) {
-    clearInterval(fifteen_minute_interval);
+    clearInterval(one_minute_interval);
 }
