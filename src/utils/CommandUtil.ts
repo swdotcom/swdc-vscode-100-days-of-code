@@ -173,7 +173,7 @@ export function createCommands(): { dispose: () => void } {
                                         }
                                     }
                                 })
-                                .then(text => {});
+                                .then(text => { });
                     }
                 });
 

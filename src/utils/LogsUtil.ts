@@ -43,8 +43,8 @@ function checkIfDateExists() {
     if (exists) {
         const dateNow = new Date();
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
+        const rawLogs = fs.readFileSync(filepath).toString();
+        const logs = JSON.parse(rawLogs).logs;
 
         for (let i = logs.length - 1; i >= 0; i--) {
             const dateOb = new Date(logs[i].date);
@@ -85,7 +85,7 @@ export function addLogToJson(
     }
 
     const filepath = getLogsJson();
-    let rawLogs = fs.readFileSync(filepath).toString();
+    const rawLogs = fs.readFileSync(filepath).toString();
     let logs = JSON.parse(rawLogs);
 
     let codetimeMetrics = new CodetimeMetrics();
@@ -124,8 +124,8 @@ export function getLatestLogEntryNumber() {
     if (exists) {
         const dateNow = new Date();
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
+        const rawLogs = fs.readFileSync(filepath).toString();
+        const logs = JSON.parse(rawLogs).logs;
 
         return logs.length;
     }
@@ -136,7 +136,7 @@ export function getMostRecentLogObject() {
     const exists = checkLogsJson();
     if (exists) {
         const logFilepath = getLogsJson();
-        let rawLogs = fs.readFileSync(logFilepath).toString();
+        const rawLogs = fs.readFileSync(logFilepath).toString();
         let logs = JSON.parse(rawLogs).logs;
 
         if (logs.length > 0) {
@@ -151,8 +151,8 @@ export function getLogDateRange(): Array<number> {
     const exists = checkLogsJson();
     if (exists) {
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
+        const rawLogs = fs.readFileSync(filepath).toString();
+        const logs = JSON.parse(rawLogs).logs;
         let dates = [];
         dates.push(logs[0].date);
         dates.push(logs[logs.length - 1].date);
@@ -167,8 +167,8 @@ export function getAllCodetimeHours(): Array<number> {
     const exists = checkLogsJson();
     if (exists) {
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
+        const rawLogs = fs.readFileSync(filepath).toString();
+        const logs = JSON.parse(rawLogs).logs;
 
         let sendHours: Array<number> = [];
         for (let i = 0; i < logs.length; i++) {
@@ -185,8 +185,8 @@ export function getLastSevenLoggedDays(): Array<Log> {
     const exists = checkLogsJson();
     if (exists) {
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
+        const rawLogs = fs.readFileSync(filepath).toString();
+        const logs = JSON.parse(rawLogs).logs;
 
         let sendLogs = [];
         for (let i = logs.length - 1; i >= 0; i--) {
@@ -206,8 +206,8 @@ export function checkIfOnStreak(): boolean {
     const exists = checkLogsJson();
     if (exists) {
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
+        const rawLogs = fs.readFileSync(filepath).toString();
+        const logs = JSON.parse(rawLogs).logs;
         // one day streak
         if (logs.length < 2) {
             return true;
@@ -228,7 +228,7 @@ export function updateLogByDate(log: Log) {
     if (exists) {
         const logDate = new Date(log.date);
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
+        const rawLogs = fs.readFileSync(filepath).toString();
         let logs = JSON.parse(rawLogs).logs;
 
         const dateExists = checkIfDateExists();
@@ -276,7 +276,7 @@ export function editLogHours(dayNumber: number, editedHours: number) {
     const userExists = checkUserJson();
     if (logsExists && userExists) {
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
+        const rawLogs = fs.readFileSync(filepath).toString();
         let logs = JSON.parse(rawLogs).logs;
         let log = logs[dayNumber - 1];
         const currentLoggedHours = log.codetime_metrics.hours;
@@ -296,13 +296,11 @@ export function editLogHours(dayNumber: number, editedHours: number) {
         }
 
         let userTotalHours = getUserTotalHours();
-        console.log(userTotalHours);
         if (dayNumber === logs.length) {
             setUserCurrentHours(editedHours);
         } else {
             userTotalHours -= currentLoggedHours;
             userTotalHours += editedHours;
-            console.log(userTotalHours);
             setUserTotalHours(userTotalHours);
         }
     }
@@ -366,7 +364,7 @@ export function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
         }
         const logDate = new Date();
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
+        const rawLogs = fs.readFileSync(filepath).toString();
         let logs = JSON.parse(rawLogs).logs;
 
         // if date doesn't exist, create a log with just milestones and a date
@@ -442,7 +440,7 @@ export function getUpdatedLogsHtmlString() {
     const userExists = checkUserJson();
     if (logsExists && milestonesExists && userExists) {
         const logFilepath = getLogsJson();
-        let rawLogs = fs.readFileSync(logFilepath).toString();
+        const rawLogs = fs.readFileSync(logFilepath).toString();
         let logs = JSON.parse(rawLogs).logs;
 
         // CSS
@@ -1072,22 +1070,19 @@ export function getUpdatedLogsHtmlString() {
                     "\n"
                 );
             }
-
-            let dayNumber = 1;
-            let title = "Blah Blah Title";
             // Edit logs card
             htmlString += [
                 `\t<div id="editLogCard">`,
                 `\t\t<div id="editLogCardContent">`,
                 `\t\t\t<div id="head1">Edit Log</div>`,
-                `\t\t\t<div id="editLogsDayAndDate" class="head2">Day ${dayNumber} |  May 20, 2020</div>`,
+                `\t\t\t<div id="editLogsDayAndDate" class="head2"></div>`,
                 `\t\t\t<div class="head2">Title</div>`,
                 `\t\t\t<input`,
                 `\t\t\t\ttype="text"`,
                 `\t\t\t\tclass="text"`,
                 `\t\t\t\tid="editLogsTitle"`,
                 `\t\t\t\tplaceholder="Title for today's work log"`,
-                `\t\t\t\tvalue="${title}"`,
+                `\t\t\t\tvalue=""`,
                 `\t\t\t/>`,
                 `\t\t\t<div class="head2">Description</div>`,
                 `\t\t\t<textarea`,
@@ -1161,7 +1156,6 @@ export function getUpdatedLogsHtmlString() {
                 `\t`,
                 `\tfor (let i = 0; i < editButtons.length; i++) {`,
                 `\t\teditButtons[i].addEventListener("click", function () {`,
-                `\t\t\t`,
                 `\t\t\tconst title = this.parentNode.parentNode.getElementsByClassName("cardSubject")[0].innerHTML;`,
                 `\t\t\tlet titleSplit = title.split(" ");`,
                 `\t\t\ttitleSplit.shift();`,
@@ -1175,12 +1169,11 @@ export function getUpdatedLogsHtmlString() {
                 `\t\t\tconst titleString = titleSplit.join(" ");`,
                 `\t\t\tconst descAndLinks = this.parentNode.parentNode.parentNode.getElementsByClassName("cardText");`,
                 `\t\t\tconst descriptionString = descAndLinks[0].innerHTML;`,
-                `\t\t\tlet linksElementArray = this.parentNode.parentNode.parentNode.getElementsByClassName("cardLinkText");`,
+                `\t\t\tconst linksElementArray = this.parentNode.parentNode.parentNode.getElementsByClassName("cardLinkText");`,
                 `\t\t\tlet linksArray = [];`,
                 `\t\t\tfor(let _j = 0; _j < linksElementArray.length; _j++){`,
                 `\t\t\t\tlinksArray.push(linksElementArray[_j].innerHTML.trim());`,
                 `\t\t\t}`,
-                `\t\t\tconsole.log(linksArray);`,
                 `\t\t\tconst linksString = linksArray.join(", ");`,
                 `\t\t\tconst hours = this.parentNode.parentNode.parentNode.getElementsByClassName("cardMetricText")[1].innerHTML;`,
                 `\t\t\tconst keystrokes = this.parentNode.parentNode.parentNode.getElementsByClassName("cardMetricText")[5].innerHTML;`,
@@ -1209,7 +1202,7 @@ export function getUpdatedLogsHtmlString() {
                 `\t});`,
                 // Submit Button
                 `\tvar submitButton = document.getElementById("editLogSubmitButton");`,
-                `\submitButton.addEventListener("click", function () {`,
+                `\tsubmitButton.addEventListener("click", function () {`,
                 `\t\tlet dayAndDateTitle = document.getElementById("editLogsDayAndDate");`,
                 `\t\tconst dayNumber = dayAndDateTitle.innerHTML.split(" ")[1];`,
                 `\t\tlet titleField = document.getElementById("editLogsTitle");`,
@@ -1287,7 +1280,7 @@ export function getUpdatedLogsHtmlString() {
                 `\tlet shareButtons = document.getElementsByClassName("cardHeaderShareButton"); `,
                 `\tfor(let i = 0; i < shareButtons.length; i++) {`,
                 `\t\tshareButtons[i].addEventListener("click", function () {`,
-                `\t\t\tlet dayNumber = this.parentNode.parentNode.parentNode.parentNode.previousElementSibling.innerHTML.split(" ")[1]; `,
+                `\t\t\tconst dayNumber = this.parentNode.parentNode.parentNode.parentNode.previousElementSibling.innerHTML.split(" ")[1]; `,
                 `\t\t\tvscode.postMessage({ command: "incrementShare", value: dayNumber }); `,
                 `\t\t}); `,
                 `\t} `,
@@ -1302,7 +1295,7 @@ export function getUpdatedLogsHtmlString() {
 export function updateLogsHtml() {
     //updates logs.html
 
-    let filepath = getLogsHtml();
+    const filepath = getLogsHtml();
     try {
         fs.writeFileSync(filepath, getUpdatedLogsHtmlString());
     } catch (err) {
