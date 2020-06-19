@@ -368,8 +368,8 @@ function checkIfDateExists(): boolean {
     if (exists) {
         const dateNow = new Date();
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
+        const rawLogs = fs.readFileSync(filepath).toString();
+        const logs = JSON.parse(rawLogs).logs;
 
         for (let i = logs.length - 1; i >= 0; i--) {
             const dateOb = new Date(logs[i].date);
@@ -408,7 +408,7 @@ export async function addLogToJson(
     }
 
     const filepath = getLogsJson();
-    let rawLogs = fs.readFileSync(filepath).toString();
+    const rawLogs = fs.readFileSync(filepath).toString();
     let logs = JSON.parse(rawLogs);
 
     let codetimeMetrics = new CodetimeMetrics();
@@ -447,8 +447,8 @@ export function getLatestLogEntryNumber(): number {
     if (exists) {
         const dateNow = new Date();
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
+        const rawLogs = fs.readFileSync(filepath).toString();
+        const logs = JSON.parse(rawLogs).logs;
 
         return logs.length;
     }
@@ -459,7 +459,7 @@ export function getMostRecentLogObject() {
     const exists = checkLogsJson();
     if (exists) {
         const logFilepath = getLogsJson();
-        let rawLogs = fs.readFileSync(logFilepath).toString();
+        const rawLogs = fs.readFileSync(logFilepath).toString();
         let logs = JSON.parse(rawLogs).logs;
 
         if (logs.length > 0) {
@@ -475,8 +475,8 @@ export function getLogDateRange(): Array<number> {
     const exists = checkLogsJson();
     if (exists) {
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
+        const rawLogs = fs.readFileSync(filepath).toString();
+        const logs = JSON.parse(rawLogs).logs;
         let dates = [];
         dates.push(logs[0].date);
         dates.push(logs[logs.length - 1].date);
@@ -491,8 +491,8 @@ export function getAllCodetimeHours(): Array<number> {
     const exists = checkLogsJson();
     if (exists) {
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
+        const rawLogs = fs.readFileSync(filepath).toString();
+        const logs = JSON.parse(rawLogs).logs;
 
         let sendHours: Array<number> = [];
         for (let i = 0; i < logs.length; i++) {
@@ -509,8 +509,8 @@ export function getLastSevenLoggedDays(): Array<Log> {
     const exists = checkLogsJson();
     if (exists) {
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
+        const rawLogs = fs.readFileSync(filepath).toString();
+        const logs = JSON.parse(rawLogs).logs;
 
         let sendLogs = [];
         for (let i = logs.length - 1; i >= 0; i--) {
@@ -530,8 +530,8 @@ export function checkIfOnStreak(): boolean {
     const exists = checkLogsJson();
     if (exists) {
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
+        const rawLogs = fs.readFileSync(filepath).toString();
+        const logs = JSON.parse(rawLogs).logs;
         // one day streak
         if (logs.length < 2) {
             return true;
@@ -548,7 +548,7 @@ export async function updateLogByDate(log: Log) {
     if (exists) {
         const logDate = new Date(log.date);
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
+        const rawLogs = fs.readFileSync(filepath).toString();
         let logs = JSON.parse(rawLogs).logs;
 
         const dateExists = checkIfDateExists();
@@ -667,7 +667,7 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
         }
         const logDate = new Date();
         const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
+        const rawLogs = fs.readFileSync(filepath).toString();
         let logs = JSON.parse(rawLogs).logs;
 
         // if date doesn't exist, create a log with just milestones and a date
@@ -745,7 +745,7 @@ export function getUpdatedLogsHtmlString(): string {
     const userExists = checkUserJson();
     if (logsExists && milestonesExists && userExists) {
         const logFilepath = getLogsJson();
-        let rawLogs = fs.readFileSync(logFilepath).toString();
+        const rawLogs = fs.readFileSync(logFilepath).toString();
         let logs = JSON.parse(rawLogs).logs;
 
         // CSS
@@ -778,7 +778,17 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tpadding-left: 10px;`,
             `\t\talign-items: center;`,
             `\t\tcolor: #FFFFFF;`,
-            `\t\tvisibility: visible;`,
+            `\t}`,
+            `\t.cardLinkText {`,
+            `\t\tfont-style: normal;`,
+            `\t\tfont-weight: normal;`,
+            `\t\tfont-size: 14px;`,
+            `\t\tline-height: 128.91%;`,
+            `\t\tdisplay: flex;`,
+            `\t\tpadding-left: 10px;`,
+            `\t\talign-items: center;`,
+            `\t\tmargin-bottom: 8px;`,
+            `\t\tcolor: #999999;`,
             `\t}`,
             `\t.cardTextEditInput {`,
             `\t\tposition: absolute;`,
@@ -1226,8 +1236,8 @@ export function getUpdatedLogsHtmlString(): string {
                 let linksText = "";
                 for (let _j = 0; _j < day.links.length; _j++) {
                     htmlString += [
-                        `\t\t\t\t\t\t<a href="${day.links[_j]}" style="background-color: blue; width: initial;">`,
-                        `\t\t\t\t\t\t\t<div class="cardText" style="overflow-wrap: break-word;">${day.links[_j]}</div>`,
+                        `\t\t\t\t\t\t<a class="cardLinkText" href="${day.links[_j]}">`,
+                        `\t\t\t\t\t\t\t${day.links[_j]}`,
                         `\t\t\t\t\t\t</a>\n`
                     ].join("\n");
                     linksText += day.links[_j] + ", ";
@@ -1365,22 +1375,19 @@ export function getUpdatedLogsHtmlString(): string {
                     "\n"
                 );
             }
-
-            let dayNumber = 1;
-            let title = "Blah Blah Title";
             // Edit logs card
             htmlString += [
                 `\t<div id="editLogCard">`,
                 `\t\t<div id="editLogCardContent">`,
                 `\t\t\t<div id="head1">Edit Log</div>`,
-                `\t\t\t<div id="editLogsDayAndDate" class="head2">Day ${dayNumber} |  May 20, 2020</div>`,
+                `\t\t\t<div id="editLogsDayAndDate" class="head2"></div>`,
                 `\t\t\t<div class="head2">Title</div>`,
                 `\t\t\t<input`,
                 `\t\t\t\ttype="text"`,
                 `\t\t\t\tclass="text"`,
                 `\t\t\t\tid="editLogsTitle"`,
                 `\t\t\t\tplaceholder="Title for today's work log"`,
-                `\t\t\t\tvalue="${title}"`,
+                `\t\t\t\tvalue=""`,
                 `\t\t\t/>`,
                 `\t\t\t<div class="head2">Description</div>`,
                 `\t\t\t<textarea`,
@@ -1454,7 +1461,6 @@ export function getUpdatedLogsHtmlString(): string {
                 `\t`,
                 `\tfor (let i = 0; i < editButtons.length; i++) {`,
                 `\t\teditButtons[i].addEventListener("click", function () {`,
-                `\t\t\t`,
                 `\t\t\tconst title = this.parentNode.parentNode.getElementsByClassName("cardSubject")[0].innerHTML;`,
                 `\t\t\tlet titleSplit = title.split(" ");`,
                 `\t\t\ttitleSplit.shift();`,
@@ -1468,9 +1474,10 @@ export function getUpdatedLogsHtmlString(): string {
                 `\t\t\tconst titleString = titleSplit.join(" ");`,
                 `\t\t\tconst descAndLinks = this.parentNode.parentNode.parentNode.getElementsByClassName("cardText");`,
                 `\t\t\tconst descriptionString = descAndLinks[0].innerHTML;`,
+                `\t\t\tconst linksElementArray = this.parentNode.parentNode.parentNode.getElementsByClassName("cardLinkText");`,
                 `\t\t\tlet linksArray = [];`,
-                `\t\t\tfor(let _j = 1; _j < descAndLinks.length; _j++){`,
-                `\t\t\t\tlinksArray.push(descAndLinks[_j].innerHTML);`,
+                `\t\t\tfor(let _j = 0; _j < linksElementArray.length; _j++){`,
+                `\t\t\t\tlinksArray.push(linksElementArray[_j].innerHTML.trim());`,
                 `\t\t\t}`,
                 `\t\t\tconst linksString = linksArray.join(", ");`,
                 `\t\t\tconst hours = this.parentNode.parentNode.parentNode.getElementsByClassName("cardMetricText")[1].innerHTML;`,
@@ -1500,7 +1507,7 @@ export function getUpdatedLogsHtmlString(): string {
                 `\t});`,
                 // Submit Button
                 `\tvar submitButton = document.getElementById("editLogSubmitButton");`,
-                `\submitButton.addEventListener("click", function () {`,
+                `\tsubmitButton.addEventListener("click", function () {`,
                 `\t\tlet dayAndDateTitle = document.getElementById("editLogsDayAndDate");`,
                 `\t\tconst dayNumber = dayAndDateTitle.innerHTML.split(" ")[1];`,
                 `\t\tlet titleField = document.getElementById("editLogsTitle");`,
@@ -1526,7 +1533,7 @@ export function getUpdatedLogsHtmlString(): string {
                 `\t\t\t\tlet link = links[_j]; `,
                 // `\t\t\t\tlet linkDisplay = link.replace('http://','').replace('https://','').split(/[/?#]/)[0];`,
                 `\t\t\t\tvar a = document.createElement("a"); `,
-                `\t\t\t\ta.className = "cardText"; `,
+                `\t\t\t\ta.className = "cardLinkText"; `,
                 `\t\t\t\ta.href = link; `,
                 `\t\t\t\ta.innerHTML = link; `,
                 `\t\t\t\tlinksRoot.append(a); `,
@@ -1540,9 +1547,27 @@ export function getUpdatedLogsHtmlString(): string {
                 `\t\t\tdiv.append(text); `,
                 `\t\t\tlinksRoot.append(a); `,
                 `\t\t}`,
-                `\t\tconst editHoursAmount = document.getElementById("editLogsHoursSelect").value;`,
+                `\t\tconst editHoursAmount = parseFloat(document.getElementById("editLogsHoursSelect").value);`,
                 `\t\tconst cardHoursMetric = logCard.getElementsByClassName("cardMetricText")[1];`,
+                `\t\tlet cardHoursAveragePercent = logCard.getElementsByClassName("cardMetricText")[2];`,
+                `\t\tconst cardAverageHoursMetric = parseFloat(logCard.getElementsByClassName("cardMetricText")[3].innerHTML.split(" ")[1]);`,
                 `\t\tcardHoursMetric.innerHTML = editHoursAmount;`,
+                `\t\tlet cardHoursBar = logCard.getElementsByClassName("cardMetricBarMiddle")[1];`,
+                `\t\tlet percentHours = (editHoursAmount / cardAverageHoursMetric) * 100;`,
+                `\t\tpercentHours = Math.round(percentHours * 100) / 100;`,
+                `\t\tif (!cardAverageHoursMetric || cardAverageHoursMetric === 0) {`,
+                `\t\t\tpercentHours = 100;`,
+                `\t\t\tcardAverageHoursMetric = 0;`,
+                `\t\t}`,
+                `\t\tlet barPxHours = Math.round(percentHours);`,
+                `\t\tlet barColorHours = "#00b4ee";`,
+                `\t\tif (barPxHours >= 100) {`,
+                `\t\t\tbarPxHours = 100;`,
+                `\t\t\tbarColorHours = "#FD9808";`,
+                `\t\t}`,
+                `\t\tcardHoursAveragePercent.innerHTML = percentHours + "% of Average";`,
+                `\t\tcardHoursBar.style.width = barPxHours + "px"`,
+                `\t\tcardHoursBar.style.backgroundColor = barColorHours`,
                 `\t\tcardDescription.innerHTML = description; `,
                 `\t\tcardContent.style.maxHeight = cardContent.scrollHeight + "px";`,
                 `\t\tconst dayUpdate = {`,
@@ -1560,7 +1585,7 @@ export function getUpdatedLogsHtmlString(): string {
                 `\tlet shareButtons = document.getElementsByClassName("cardHeaderShareButton"); `,
                 `\tfor(let i = 0; i < shareButtons.length; i++) {`,
                 `\t\tshareButtons[i].addEventListener("click", function () {`,
-                `\t\t\tlet dayNumber = this.parentNode.parentNode.parentNode.parentNode.previousElementSibling.innerHTML.split(" ")[1]; `,
+                `\t\t\tconst dayNumber = this.parentNode.parentNode.parentNode.parentNode.previousElementSibling.innerHTML.split(" ")[1]; `,
                 `\t\t\tvscode.postMessage({ command: "incrementShare", value: dayNumber }); `,
                 `\t\t}); `,
                 `\t} `,
@@ -1576,7 +1601,7 @@ export function getUpdatedLogsHtmlString(): string {
 export function updateLogsHtml() {
     //updates logs.html
 
-    let filepath = getLogsHtml();
+    const filepath = getLogsHtml();
     try {
         fs.writeFileSync(filepath, getUpdatedLogsHtmlString());
     } catch (err) {
