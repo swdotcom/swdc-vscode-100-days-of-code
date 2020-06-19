@@ -1,7 +1,7 @@
 import { Disposable, commands, window, TreeView, ViewColumn, WebviewPanel } from "vscode";
 import { TreeNode } from "../models/TreeNode";
 import { Tree100DoCProvider, connectDoCTreeView } from "../tree/Tree100DoCProvider";
-import { getLogsHtml, updateLogsHtml, addLogToJson, editLogEntry, updateLogShare, editLogHours } from "./LogsUtil";
+import { getLogsHtml, updateLogsHtml, addLogToJson, editLogEntry, updateLogShare } from "./LogsUtil";
 import {
     updateMilestonesHtml,
     getMilestonesHtml,
@@ -81,13 +81,14 @@ export function createCommands(): { dispose: () => void } {
                     switch (message.command) {
                         case "editLog":
                             const dayUpdate = message.value;
+
                             editLogEntry(
                                 parseInt(dayUpdate.day_number),
                                 dayUpdate.title,
                                 dayUpdate.description,
-                                dayUpdate.links
+                                dayUpdate.links,
+                                dayUpdate.hours
                             );
-                            editLogHours(parseInt(dayUpdate.day_number), parseFloat(dayUpdate.hours));
                             break;
                         case "addLog":
                             if (currentPanel) {
@@ -311,6 +312,7 @@ export function createCommands(): { dispose: () => void } {
                             if (currentPanel) {
                                 currentPanel.dispose();
                             }
+                            commands.executeCommand("DoC.viewLogs");
                             break;
 
                         case "log":

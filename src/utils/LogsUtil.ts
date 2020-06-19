@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows, compareDates } from "./Util";
+import { getSoftwareDir, isWindows, compareDates, getSoftwareSessionAsJson } from "./Util";
 import fs = require("fs");
 import { CodetimeMetrics } from "../models/CodetimeMetrics";
 import { Log } from "../models/Log";
@@ -13,8 +13,15 @@ import {
     setUserCurrentHours,
     setUserTotalHours
 } from "./UserUtil";
+import { softwareGet, serverIsAvailable, softwarePost, isResponseOk, softwarePut } from "../managers/HttpManager";
 
-export function getLogsJson() {
+export let updatedLogsDb = true;
+export let sentLogsDb = true;
+
+let toCreateLogs: Array<any> = [];
+let toUpdateLogs: Array<any> = [];
+
+export function getLogsJson(): string {
     let file = getSoftwareDir();
     if (isWindows()) {
         file += "\\logs.json";
@@ -24,7 +31,7 @@ export function getLogsJson() {
     return file;
 }
 
-export function checkLogsJson() {
+export function checkLogsJson(): boolean {
     const filepath = getLogsJson();
     try {
         if (fs.existsSync(filepath)) {
@@ -38,7 +45,325 @@ export function checkLogsJson() {
     }
 }
 
-function checkIfDateExists() {
+export async function fetchLogs() {
+    const jwt = getSoftwareSessionAsJson()["jwt"];
+    const dateNow = new Date();
+    const endDate = dateNow.getDate();
+    let retry = 5;
+    let available = false;
+    while (retry > 0) {
+        try {
+            available = await serverIsAvailable();
+        } catch (err) {
+            available = false;
+        }
+        retry--;
+        if (available) {
+            softwareGet("/100doc/logs", jwt, { start_date: 0, end_date: endDate }).then(resp => {
+                if (isResponseOk(resp)) {
+                    const rawLogs = resp.data;
+                    let logs: Array<Log> = [];
+                    rawLogs.forEach((element: any) => {
+                        let log = new Log();
+                        log.title = element.title;
+                        log.description = element.description;
+                        log.day_number = element.day_number;
+                        log.codetime_metrics.hours = parseFloat((element.minutes / 60).toFixed(2));
+                        log.codetime_metrics.keystrokes = element.keystrokes;
+                        log.codetime_metrics.lines_added = element.lines_added;
+                        log.date = element.local_date;
+                        log.links = element.ref_links;
+                        logs.push(log);
+                    });
+                    // sorts log in ascending order
+                    logs.sort((a: Log, b: Log) => {
+                        return a.day_number - b.day_number;
+                    });
+                    compareWithLocalLogs(logs);
+                    // exits out in the next iteration
+                    retry = 0;
+                } else {
+                    // Wait 10 seconds before next try
+                    setTimeout(() => {}, 10000);
+                }
+            });
+        } else {
+            // Wait 10 seconds before next try
+            setTimeout(() => {}, 10000);
+        }
+    }
+}
+
+function compareWithLocalLogs(logs: Array<Log>) {
+    const exists = checkLogsJson();
+    if (exists) {
+        const logFilepath = getLogsJson();
+        let rawLogs = fs.readFileSync(logFilepath).toString();
+        let localLogs: Array<Log> = JSON.parse(rawLogs).logs;
+        let changed = false;
+
+        if (localLogs.length > logs.length) {
+            return mergeLocalLogs(localLogs, logs);
+        }
+
+        for (let i = 0; i < localLogs.length; i++) {
+            if (
+                logs[i].day_number !== localLogs[i].day_number ||
+                !compareDates(new Date(logs[i].date), new Date(localLogs[i].date))
+            ) {
+                return mergeLocalLogs(localLogs, logs);
+            }
+            if (logs[i].title !== localLogs[i].title) {
+                localLogs[i].title = logs[i].title;
+                changed = true;
+            }
+            if (logs[i].description !== localLogs[i].description) {
+                localLogs[i].description = logs[i].description;
+                changed = true;
+            }
+            if (JSON.stringify(logs[i].links) !== JSON.stringify(localLogs[i].links)) {
+                localLogs[i].links = logs[i].links;
+                changed = true;
+            }
+            if (logs[i].codetime_metrics.hours > localLogs[i].codetime_metrics.hours) {
+                localLogs[i].codetime_metrics.hours = logs[i].codetime_metrics.hours;
+                changed = true;
+            }
+            if (logs[i].codetime_metrics.keystrokes > localLogs[i].codetime_metrics.keystrokes) {
+                localLogs[i].codetime_metrics.keystrokes = logs[i].codetime_metrics.keystrokes;
+                changed = true;
+            }
+            if (logs[i].codetime_metrics.lines_added > localLogs[i].codetime_metrics.lines_added) {
+                localLogs[i].codetime_metrics.lines_added = logs[i].codetime_metrics.lines_added;
+                changed = true;
+            }
+            // TODO: Add milestone clause
+        }
+
+        if (localLogs.length < logs.length) {
+            for (let i = localLogs.length; i < logs.length; i++) {
+                localLogs.push(logs[i]);
+            }
+            changed = true;
+            // TODO: Add milestone clause
+        }
+
+        if (changed) {
+            console.log("Logs updated from db");
+            const sendLogs = { logs: localLogs };
+            try {
+                fs.writeFileSync(logFilepath, JSON.stringify(sendLogs, null, 4));
+            } catch (err) {
+                console.log(err);
+            }
+        }
+    }
+}
+
+async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
+    const logs = localLogs.concat(dbLogs);
+    logs.sort((a: Log, b: Log) => {
+        return a.date - b.date;
+    });
+
+    let i = 0;
+
+    while (i < logs.length - 1) {
+        if (compareDates(new Date(logs[i].date), new Date(logs[i + 1].date))) {
+            if (logs[i].title !== logs[i + 1].title) {
+                logs[i].title += " OR ";
+                logs[i].title += logs[i + 1].title;
+            }
+            if (logs[i].description !== logs[i + 1].description) {
+                logs[i].description += "\nOR\n";
+                logs[i].description += logs[i + 1].title;
+            }
+            const newLinks = logs[i].links.concat(logs[i + 1].links);
+            logs[i].links = Array.from(new Set(newLinks));
+            if (logs[i].codetime_metrics.hours < logs[i + 1].codetime_metrics.hours) {
+                logs[i].codetime_metrics.hours = logs[i + 1].codetime_metrics.hours;
+            }
+            if (logs[i].codetime_metrics.keystrokes < logs[i + 1].codetime_metrics.keystrokes) {
+                logs[i].codetime_metrics.keystrokes = logs[i + 1].codetime_metrics.keystrokes;
+            }
+            if (logs[i].codetime_metrics.lines_added < logs[i + 1].codetime_metrics.lines_added) {
+                logs[i].codetime_metrics.lines_added = logs[i + 1].codetime_metrics.lines_added;
+            }
+            // remove logs[i+1] as it is now merged with logs[i]
+            logs.splice(i + 1, 1);
+            // no increment as i still needs to check with the new i+1
+        } else {
+            i++;
+        }
+    }
+
+    for (let i = 0; i < logs.length; i++) {
+        logs[i].day_number = i + 1;
+    }
+
+    console.log("Logs updated from db");
+    const sendLogs = { logs };
+    try {
+        fs.writeFileSync(getLogsJson(), JSON.stringify(sendLogs, null, 4));
+    } catch (err) {
+        console.log(err);
+    }
+
+    const date = new Date();
+    const offset_minutes = date.getTimezoneOffset();
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    let rawToUpdateLogs = logs;
+
+    if (logs.length > dbLogs.length) {
+        rawToUpdateLogs = logs.slice(0, dbLogs.length);
+
+        const rawToCreateLogs = logs.slice(dbLogs.length);
+        toCreateLogs = [];
+        rawToCreateLogs.forEach(log => {
+            const sendLog = {
+                day_number: log.day_number,
+                title: log.title,
+                description: log.description,
+                ref_links: log.links,
+                minutes: log.codetime_metrics.hours * 60,
+                keystrokes: log.codetime_metrics.keystrokes,
+                lines_added: log.codetime_metrics.lines_added,
+                lines_removed: 0,
+                local_date: log.date,
+                offset_minutes,
+                timezone
+            };
+            toCreateLogs.push(sendLog);
+        });
+    }
+
+    toUpdateLogs = [];
+    rawToUpdateLogs.forEach(log => {
+        const sendLog = {
+            day_number: log.day_number,
+            title: log.title,
+            description: log.description,
+            ref_links: log.links,
+            minutes: log.codetime_metrics.hours * 60,
+            keystrokes: log.codetime_metrics.keystrokes,
+            lines_added: log.codetime_metrics.lines_added,
+            lines_removed: 0,
+            local_date: log.date,
+            offset_minutes,
+            timezone
+        };
+        toUpdateLogs.push(sendLog);
+    });
+
+    await pushNewLogs(false);
+    await pushEditedLogs(false, 0);
+}
+
+export async function pushNewLogs(addNew: boolean) {
+    if (addNew) {
+        const log: Log = getMostRecentLogObject();
+        const date = new Date();
+        const offset_minutes = date.getTimezoneOffset();
+        const links = log.links === [] ? [""] : log.links;
+        const sendLog = {
+            day_number: log.day_number,
+            title: log.title,
+            description: log.description,
+            ref_links: links,
+            minutes: log.codetime_metrics.hours * 60,
+            keystrokes: log.codetime_metrics.keystrokes,
+            lines_added: log.codetime_metrics.lines_added,
+            lines_removed: 0,
+            local_date: log.date,
+            offset_minutes,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        };
+        toCreateLogs.push(sendLog);
+    }
+    let retry = 5;
+    let available = false;
+    while (retry > 0) {
+        try {
+            available = await serverIsAvailable();
+        } catch (err) {
+            available = false;
+        }
+        retry--;
+        if (available) {
+            const jwt = getSoftwareSessionAsJson()["jwt"];
+            const resp = await softwarePost("100doc/logs", toCreateLogs, jwt);
+            const added: boolean = isResponseOk(resp);
+            if (!added) {
+                sentLogsDb = false;
+            } else {
+                sentLogsDb = true;
+                toCreateLogs = [];
+                break;
+            }
+        } else {
+            sentLogsDb = false;
+        }
+        // Wait 10 seconds before next try
+        setTimeout(() => {}, 10000);
+    }
+}
+
+export async function pushEditedLogs(addNew: boolean, dayNumber: number) {
+    if (addNew) {
+        const logsExists = checkLogsJson();
+        if (logsExists) {
+            const filepath = getLogsJson();
+            let rawLogs = fs.readFileSync(filepath).toString();
+            let logs = JSON.parse(rawLogs).logs;
+            let log = logs[dayNumber - 1];
+            const date = new Date();
+            const offset_minutes = date.getTimezoneOffset();
+            const sendLog = {
+                day_number: log.day_number,
+                title: log.title,
+                description: log.description,
+                ref_links: log.links,
+                minutes: log.codetime_metrics.hours * 60,
+                keystrokes: log.codetime_metrics.keystrokes,
+                lines_added: log.codetime_metrics.lines_added,
+                lines_removed: 0,
+                local_date: log.date,
+                offset_minutes,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            };
+            toUpdateLogs.push(sendLog);
+        } else {
+            updatedLogsDb = false;
+        }
+    }
+    let retry = 5;
+    let available = false;
+    while (retry > 0) {
+        try {
+            available = await serverIsAvailable();
+        } catch (err) {
+            available = false;
+        }
+        retry--;
+        if (available) {
+            const jwt = getSoftwareSessionAsJson()["jwt"];
+            const added: boolean = isResponseOk(await softwarePut("100doc/logs", toUpdateLogs, jwt));
+            if (!added) {
+                updatedLogsDb = false;
+            } else {
+                updatedLogsDb = true;
+                toUpdateLogs = [];
+                break;
+            }
+        } else {
+            updatedLogsDb = false;
+        }
+        // Wait 10 seconds before next try
+        setTimeout(() => {}, 10000);
+    }
+}
+
+function checkIfDateExists(): boolean {
     const exists = checkLogsJson();
     if (exists) {
         const dateNow = new Date();
@@ -58,13 +383,11 @@ function checkIfDateExists() {
                 return true;
             }
         }
-
-        // If no logs exist
-        return false;
     }
+    return false;
 }
 
-export function addLogToJson(
+export async function addLogToJson(
     title: string,
     description: string,
     hours: string,
@@ -75,7 +398,7 @@ export function addLogToJson(
     const exists = checkLogsJson();
     if (!exists) {
         console.log("error accessing json");
-        return false;
+        return;
     }
     const dayNum = getLatestLogEntryNumber() + 1;
 
@@ -116,10 +439,10 @@ export function addLogToJson(
         return false;
     }
     updateUserJson();
-    return true;
+    await pushNewLogs(true);
 }
 
-export function getLatestLogEntryNumber() {
+export function getLatestLogEntryNumber(): number {
     const exists = checkLogsJson();
     if (exists) {
         const dateNow = new Date();
@@ -142,9 +465,10 @@ export function getMostRecentLogObject() {
         if (logs.length > 0) {
             return logs[logs.length - 1];
         } else {
-            return new Log();
+            return;
         }
     }
+    return;
 }
 
 export function getLogDateRange(): Array<number> {
@@ -212,18 +536,14 @@ export function checkIfOnStreak(): boolean {
         if (logs.length < 2) {
             return true;
         }
-        const currDay = logs[logs.length - 1];
-        const prevDay = logs[logs.length - 2];
-        if (currDay.day_number && prevDay.day_number) {
-            return true;
-        } else {
-            return false;
-        }
+        const currDate = new Date(logs[logs.length - 1].date);
+        const prevDatePlusDay = new Date(logs[logs.length - 2].date + 86400000);
+        return compareDates(currDate, prevDatePlusDay);
     }
     return false;
 }
 
-export function updateLogByDate(log: Log) {
+export async function updateLogByDate(log: Log) {
     const exists = checkLogsJson();
     if (exists) {
         const logDate = new Date(log.date);
@@ -263,47 +583,11 @@ export function updateLogByDate(log: Log) {
                     fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
                 } catch (err) {
                     console.log(err);
-                    return false;
+                    return;
                 }
-                return true;
+                await pushEditedLogs(true, logs[i].day_number);
+                return;
             }
-        }
-    }
-}
-
-export function editLogHours(dayNumber: number, editedHours: number) {
-    const logsExists = checkLogsJson();
-    const userExists = checkUserJson();
-    if (logsExists && userExists) {
-        const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
-        let log = logs[dayNumber - 1];
-        const currentLoggedHours = log.codetime_metrics.hours;
-        if (editedHours >= 0 && editedHours <= 12) {
-            log.codetime_metrics.hours = editedHours;
-        } else if (editedHours < 0) {
-            log.codetime_metrics.hours = 0;
-        } else {
-            log.codetime_metrics.hours = 12;
-        }
-
-        const sendLogs = { logs };
-        try {
-            fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
-        } catch (err) {
-            console.log(err);
-        }
-
-        let userTotalHours = getUserTotalHours();
-        console.log(userTotalHours);
-        if (dayNumber === logs.length) {
-            setUserCurrentHours(editedHours);
-        } else {
-            userTotalHours -= currentLoggedHours;
-            userTotalHours += editedHours;
-            console.log(userTotalHours);
-            setUserTotalHours(userTotalHours);
         }
     }
 }
@@ -329,33 +613,50 @@ export function updateLogShare(day: number) {
     }
 }
 
-export function editLogEntry(dayNumber: number, title: string, description: string, links: Array<string>) {
+export async function editLogEntry(
+    dayNumber: number,
+    title: string,
+    description: string,
+    links: Array<string>,
+    editedHours: number
+) {
     const exists = checkLogsJson();
     if (exists) {
         const filepath = getLogsJson();
         const rawLogs = fs.readFileSync(filepath).toString();
         let logs = JSON.parse(rawLogs).logs;
-        for (let i = 0; i < logs.length; i++) {
-            let log = logs[i];
-            if (log.day_number !== dayNumber) {
-                continue;
-            }
-            log.title = title;
-            log.description = description;
-            log.links = links;
-            break;
+        let log = logs[dayNumber - 1];
+        log.title = title;
+        log.description = description;
+        log.links = links;
+        const currentLoggedHours = log.codetime_metrics.hours;
+        if (editedHours >= 0 && editedHours <= 12) {
+            log.codetime_metrics.hours = editedHours;
+        } else if (editedHours < 0) {
+            log.codetime_metrics.hours = 0;
+        } else {
+            log.codetime_metrics.hours = 12;
+        }
+        let userTotalHours = getUserTotalHours();
+        if (dayNumber === logs.length) {
+            setUserCurrentHours(editedHours);
+        } else {
+            userTotalHours -= currentLoggedHours;
+            userTotalHours += editedHours;
+            setUserTotalHours(userTotalHours);
         }
         const sendLogs = { logs };
         try {
             fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
         } catch (err) {
             console.log(err);
-            return false;
+            return;
         }
+        await pushEditedLogs(true, dayNumber);
     }
 }
 
-export function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
+export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
     const exists = checkLogsJson();
     if (exists) {
         const metrics: Array<number> = getSessionCodetimeMetrics();
@@ -382,6 +683,7 @@ export function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
             log.day_number = dayNum;
             log.title = "No Title";
             log.description = "No Description";
+            log.links = [""];
             logs.push(log);
 
             const sendLogs = { logs };
@@ -390,11 +692,11 @@ export function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
                 fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
             } catch (err) {
                 console.log(err);
-                return false;
+                return;
             }
-
             updateUserJson();
-            return true;
+            await pushNewLogs(true);
+            return;
         }
 
         // date exists
@@ -417,16 +719,17 @@ export function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
                     fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
                 } catch (err) {
                     console.log(err);
-                    return false;
+                    return;
                 }
                 updateUserJson();
-                return true;
+                await pushEditedLogs(true, logs[i].day_number);
+                return;
             }
         }
     }
 }
 
-export function getLogsHtml() {
+export function getLogsHtml(): string {
     let file = getSoftwareDir();
     if (isWindows()) {
         file += "\\logs.html";
@@ -436,7 +739,7 @@ export function getLogsHtml() {
     return file;
 }
 
-export function getUpdatedLogsHtmlString() {
+export function getUpdatedLogsHtmlString(): string {
     const logsExists = checkLogsJson();
     const milestonesExists = checkMilestonesJson();
     const userExists = checkUserJson();
@@ -1267,6 +1570,7 @@ export function getUpdatedLogsHtmlString() {
         }
         return htmlString;
     }
+    return "Couldn't access logs file";
 }
 
 export function updateLogsHtml() {

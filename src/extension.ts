@@ -8,10 +8,19 @@ import {
     checkLanguageMilestonesAchieved,
     checkDaysMilestones
 } from "./utils/MilestonesUtil";
-import { checkLogsJson, updateLogsMilestonesAndMetrics } from "./utils/LogsUtil";
+import {
+    checkLogsJson,
+    updateLogsMilestonesAndMetrics,
+    fetchLogs,
+    updatedLogsDb,
+    pushNewLogs,
+    sentLogsDb,
+    pushEditedLogs
+} from "./utils/LogsUtil";
 import { checkUserJson } from "./utils/UserUtil";
 
 let one_minute_interval: NodeJS.Timeout;
+let five_minute_interval: NodeJS.Timeout;
 
 const one_min_millis = 1000 * 60;
 
@@ -32,6 +41,7 @@ export function initializePlugin() {
     checkLogsJson();
     checkMilestonesJson();
     checkUserJson();
+    fetchLogs();
     updateLogsMilestonesAndMetrics([]);
     checkCodeTimeMetricsMilestonesAchieved();
     checkLanguageMilestonesAchieved();
@@ -50,9 +60,20 @@ export function initializeIntervalJobs() {
         checkLanguageMilestonesAchieved();
         checkDaysMilestones();
     }, one_min_millis);
+
+    five_minute_interval = setInterval(async () => {
+        if (updatedLogsDb && sentLogsDb) {
+            fetchLogs();
+        } else if (!sentLogsDb) {
+            pushNewLogs(false);
+        } else {
+            pushEditedLogs(false, 0);
+        }
+    }, one_min_millis * 5);
 }
 
 // this method is called when your extension is deactivated
 export function deactivate(ctx: vscode.ExtensionContext) {
     clearInterval(one_minute_interval);
+    clearInterval(five_minute_interval);
 }

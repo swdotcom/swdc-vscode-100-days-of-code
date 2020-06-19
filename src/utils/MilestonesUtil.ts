@@ -1,13 +1,12 @@
 import { getSoftwareDir, isWindows, compareDates } from "./Util";
 import fs = require("fs");
-import { window } from "vscode";
+import { window, commands } from "vscode";
 import path = require("path");
 import { updateLogsMilestonesAndMetrics } from "./LogsUtil";
 import { User } from "../models/User";
 import { getUserObject, updateUserMilestones, incrementUserShare, updateUserLanguages } from "./UserUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import { getLanguages } from "./LanguageUtil";
-import { Milestone } from "../models/Milestone";
 
 export function getMilestonesJson(): string {
     let file = getSoftwareDir();
@@ -245,13 +244,15 @@ export function checkLanguageMilestonesAchieved(): void {
 export function checkDaysMilestones(): void {
     const user: User = getUserObject();
 
-    // days are completed only after a certain threshold hours are met
-    if (user.currentHours < 0.5) {
-        return;
-    }
+    let days = user.days;
+    let streaks = user.longest_streak;
 
-    const days = user.days;
-    const streaks = user.longest_streak;
+    // curr day is completed only after a certain threshold hours are met
+    // no checks for prev day
+    if (user.currentHours < 0.5) {
+        days--;
+        streaks--;
+    }
     let achievedMilestones = [];
 
     // checking for days
@@ -371,12 +372,19 @@ function achievedMilestonesJson(ids: Array<number>): void {
             milestones[id - 1].date_achieved = dateNow.valueOf();
             // For certificate
             if (id === 11) {
-                window.showInformationMessage(
-                    "Whoa! You just unlocked the #100DaysOfCode Certificate. Please view it on the 100 Days of Code Dashboard.",
-                    {
-                        modal: true
-                    }
-                );
+                window
+                    .showInformationMessage(
+                        "Whoa! You just unlocked the #100DaysOfCode Certificate. Please view it on the 100 Days of Code Dashboard.",
+                        {
+                            modal: true
+                        },
+                        "View Dashboard"
+                    )
+                    .then(selection => {
+                        if (selection === "View Dashboard") {
+                            commands.executeCommand("DoC.viewDashboard");
+                        }
+                    });
             }
             updatedIds.push(id);
         }
@@ -404,9 +412,13 @@ function achievedMilestonesJson(ids: Array<number>): void {
             console.log(err);
         }
 
-        window.showInformationMessage(
-            "Hurray! You just achieved another milestone. Please check 100 Days of Code Milestones to view it"
-        );
+        window
+            .showInformationMessage("Hurray! You just achieved another milestone.", "View Milestones")
+            .then(selection => {
+                if (selection === "View Milestones") {
+                    commands.executeCommand("DoC.viewMilestones");
+                }
+            });
     }
 }
 

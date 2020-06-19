@@ -26,7 +26,7 @@ export function getUpdatedDashboardHtmlString() {
     const user: User = getUserObject();
 
     // Metrics
-    const hours = parseFloat((user.hours + user.currentHours).toFixed(2));
+    const hours = user.hours + user.currentHours;
     let days = user.days;
     let streaks = user.longest_streak;
     let avgHours = parseFloat((hours / days).toFixed(2));
@@ -204,7 +204,7 @@ export function getUpdatedDashboardHtmlString() {
             let transform = 250 - size;
             barsHtml += `\t\t\t\t<div class="chartBar" style="height: ${size}px; transform: translateY(${transform}px);"></div>\n`;
         }
-        if (codeTimeHours.length < 4) {
+        if (codeTimeHours.length < 3) {
             dateJustifyContent = "space-around";
         }
         let datesFromLogs = getLogDateRange();
