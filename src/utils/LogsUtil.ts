@@ -31,6 +31,16 @@ export function getLogsJson(): string {
     return file;
 }
 
+function getLogsPayloadJson(): string {
+    let file = getSoftwareDir();
+    if (isWindows()) {
+        file += "\\_logsPayload.json";
+    } else {
+        file += "/_logsPayload.json";
+    }
+    return file;
+}
+
 export function checkLogsJson(): boolean {
     const filepath = getLogsJson();
     try {
@@ -59,7 +69,7 @@ export async function fetchLogs() {
         }
         retry--;
         if (available) {
-            softwareGet("/100doc/logs", jwt, { start_date: 0, end_date: endDate }).then(resp => {
+            const logs = await softwareGet("/100doc/logs", jwt, { start_date: 0, end_date: endDate }).then(resp => {
                 if (isResponseOk(resp)) {
                     const rawLogs = resp.data;
                     let logs: Array<Log> = [];
@@ -79,18 +89,52 @@ export async function fetchLogs() {
                     logs.sort((a: Log, b: Log) => {
                         return a.day_number - b.day_number;
                     });
-                    compareWithLocalLogs(logs);
-                    // exits out in the next iteration
-                    retry = 0;
+                    return logs;
                 } else {
                     // Wait 10 seconds before next try
                     setTimeout(() => {}, 10000);
                 }
             });
+            if (logs) {
+                compareWithLocalLogs(logs);
+                retry = 0;
+                // exits out in the next iteration
+            }
         } else {
             // Wait 10 seconds before next try
             setTimeout(() => {}, 10000);
         }
+    }
+}
+
+export function createLogsPayloadJson() {
+    const filepath = getLogsPayloadJson();
+    const fileData = {
+        updatedLogsDb,
+        sentLogsDb,
+        toCreateLogs,
+        toUpdateLogs
+    };
+    try {
+        fs.writeFileSync(filepath, JSON.stringify(fileData, null, 4));
+        console.log("Created file");
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+export function checkLogsPayload() {
+    const filepath = getLogsPayloadJson();
+    try {
+        if (fs.existsSync(filepath)) {
+            const payloadData = JSON.parse(fs.readFileSync(filepath).toString());
+            updatedLogsDb = payloadData["updatedLogsDb"];
+            sentLogsDb = payloadData["sentLogsDb"];
+            toCreateLogs = payloadData["toCreateLogs"];
+            toUpdateLogs = payloadData["toUpdateLogs"];
+        }
+    } catch (err) {
+        console.log(err);
     }
 }
 
@@ -176,7 +220,7 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
             }
             if (logs[i].description !== logs[i + 1].description) {
                 logs[i].description += "\nOR\n";
-                logs[i].description += logs[i + 1].title;
+                logs[i].description += logs[i + 1].description;
             }
             const newLinks = logs[i].links.concat(logs[i + 1].links);
             logs[i].links = Array.from(new Set(newLinks));
@@ -1548,9 +1592,9 @@ export function getUpdatedLogsHtmlString(): string {
                 `\t\t\tlinksRoot.append(a); `,
                 `\t\t}`,
                 `\t\tconst editHoursAmount = parseFloat(document.getElementById("editLogsHoursSelect").value);`,
-                `\t\tconst cardHoursMetric = logCard.getElementsByClassName("cardMetricText")[1];`,
+                `\t\tlet cardHoursMetric = logCard.getElementsByClassName("cardMetricText")[1];`,
                 `\t\tlet cardHoursAveragePercent = logCard.getElementsByClassName("cardMetricText")[2];`,
-                `\t\tconst cardAverageHoursMetric = parseFloat(logCard.getElementsByClassName("cardMetricText")[3].innerHTML.split(" ")[1]);`,
+                `\t\tlet cardAverageHoursMetric = parseFloat(logCard.getElementsByClassName("cardMetricText")[3].innerHTML.split(" ")[1]);`,
                 `\t\tcardHoursMetric.innerHTML = editHoursAmount;`,
                 `\t\tlet cardHoursBar = logCard.getElementsByClassName("cardMetricBarMiddle")[1];`,
                 `\t\tlet percentHours = (editHoursAmount / cardAverageHoursMetric) * 100;`,

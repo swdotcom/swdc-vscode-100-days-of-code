@@ -15,7 +15,9 @@ import {
     updatedLogsDb,
     pushNewLogs,
     sentLogsDb,
-    pushEditedLogs
+    pushEditedLogs,
+    createLogsPayloadJson,
+    checkLogsPayload
 } from "./utils/LogsUtil";
 import { checkUserJson } from "./utils/UserUtil";
 
@@ -41,13 +43,24 @@ export function initializePlugin() {
     checkLogsJson();
     checkMilestonesJson();
     checkUserJson();
-    fetchLogs();
+
+    // checks if any payloads remained
+    checkLogsPayload();
+    if (updatedLogsDb && sentLogsDb) {
+        fetchLogs();
+    } else if (!sentLogsDb) {
+        pushNewLogs(false);
+    } else {
+        pushEditedLogs(false, 0);
+    }
+
+    // Updates logs and milestones
     updateLogsMilestonesAndMetrics([]);
     checkCodeTimeMetricsMilestonesAchieved();
     checkLanguageMilestonesAchieved();
     checkDaysMilestones();
 
-    // Setup interval jobs
+    // Sets interval jobs
     initializeIntervalJobs();
 }
 
@@ -74,6 +87,7 @@ export function initializeIntervalJobs() {
 
 // this method is called when your extension is deactivated
 export function deactivate(ctx: vscode.ExtensionContext) {
+    createLogsPayloadJson();
     clearInterval(one_minute_interval);
     clearInterval(five_minute_interval);
 }
