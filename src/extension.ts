@@ -13,7 +13,8 @@ import {
     fetchAllMilestones,
     pushNewMilestones,
     pushUpdatedMilestones,
-    fetchMilestonesForYesterdayAndToday
+    fetchMilestonesForYesterdayAndToday,
+    createMilestonesPayloadJson
 } from "./utils/MilestonesUtil";
 import {
     checkLogsJson,
@@ -91,6 +92,7 @@ export function initializeIntervalJobs() {
     }, one_min_millis);
 
     five_minute_interval = setInterval(async () => {
+        // logs
         if (updatedLogsDb && sentLogsDb) {
             fetchLogs();
         } else if (!sentLogsDb) {
@@ -98,6 +100,7 @@ export function initializeIntervalJobs() {
         } else {
             pushUpdatedLogs(false, 0);
         }
+        // milestones
         if (updatedMilestonesDb && sentMilestonesDb) {
             fetchMilestonesForYesterdayAndToday();
         } else if (!sentMilestonesDb) {
@@ -105,12 +108,13 @@ export function initializeIntervalJobs() {
         } else {
             pushUpdatedMilestones();
         }
-    }, one_min_millis * 5);
+    }, one_min_millis * 1);
 }
 
 // this method is called when your extension is deactivated
 export function deactivate(ctx: vscode.ExtensionContext) {
     createLogsPayloadJson();
+    createMilestonesPayloadJson();
     clearInterval(one_minute_interval);
     clearInterval(five_minute_interval);
 }

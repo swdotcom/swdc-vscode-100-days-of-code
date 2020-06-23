@@ -2,7 +2,12 @@ import { getSoftwareDir, isWindows, compareDates, getSoftwareSessionAsJson } fro
 import fs = require("fs");
 import { window, commands } from "vscode";
 import path = require("path");
-import { updateLogsMilestonesAndMetrics, getDayNumberFromDate, setDailyMilestonesByDayNumber } from "./LogsUtil";
+import {
+    updateLogsMilestonesAndMetrics,
+    getDayNumberFromDate,
+    setDailyMilestonesByDayNumber,
+    updateLogMilestonesByDates
+} from "./LogsUtil";
 import { User } from "../models/User";
 import { getUserObject, updateUserMilestones, incrementUserShare, updateUserLanguages } from "./UserUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
@@ -193,9 +198,6 @@ export async function fetchAllMilestones() {
 }
 
 export function pushMilestonesToDb(date: number, milestones: Array<number>) {
-    fetchAllMilestones();
-    fetchMilestonesForYesterdayAndToday();
-    fetchMilestonesByDate(Date.now());
     const dateData = new Date(date);
     const update: boolean = checkIfMilestonesAchievedOnDate(date);
     if (update) {
@@ -220,7 +222,7 @@ export function pushMilestonesToDb(date: number, milestones: Array<number>) {
     }
 }
 
-function getMilestonesByDate(date: number): Array<number> {
+export function getMilestonesByDate(date: number): Array<number> {
     const exists = checkMilestonesJson();
     if (!exists) {
         window.showErrorMessage("Cannot access Milestones file!");
@@ -300,7 +302,7 @@ export async function pushUpdatedMilestones() {
                 break;
             }
         } else {
-            sentMilestonesDb = false;
+            updatedMilestonesDb = false;
         }
         // Wait 10 seconds before next try
         setTimeout(() => {}, 10000);
@@ -337,6 +339,7 @@ function compareWithLocalMilestones(dbMilestones: any) {
                 } else if (dbMilestonesLocalDate < currMilestone.date_achieved) {
                     dates.push(dbMilestonesLocalDate, currMilestone.date_achieved);
                     milestones[currMilestone.id - 1].date_achieved = dbMilestonesLocalDate;
+                } else if (dbMilestonesLocalDate > currMilestone.date_achieved) {
                 }
             } else if (!currMilestone.achieved) {
                 dates.push(dbMilestonesLocalDate);
@@ -350,13 +353,15 @@ function compareWithLocalMilestones(dbMilestones: any) {
     }
 
     if (dates.length > 0) {
-        // updateMilestonesByDate(dates);
         const sendMilestones = { milestones };
         try {
             fs.writeFileSync(filepath, JSON.stringify(sendMilestones, null, 4));
         } catch (err) {
             console.log(err);
         }
+
+        // updates logs milestones
+        updateLogMilestonesByDates(dates);
     }
 }
 
@@ -597,7 +602,7 @@ export function checkSharesMilestones(): void {
     }
 }
 
-export function checkIfRepeating(id: number): boolean {
+export function checkIfDaily(id: number): boolean {
     if ((id > 18 && id < 25) || (id > 48 && id < 57)) {
         return true;
     }
@@ -769,8 +774,6 @@ export function milestoneShareUrlGenerator(id: number, title: string, descriptio
 }
 
 function getUpdatedMilestonesHtmlString(): string {
-    fetchMilestonesByDate(Date.now());
-    fetchAllMilestones();
     // Checks if the file exists and if not, creates a new file
     const exists = checkMilestonesJson();
     if (exists) {
@@ -977,7 +980,9 @@ function getUpdatedMilestonesHtmlString(): string {
             const description: string = milestone.description;
             const level: number = milestone.level;
             const achieved: boolean = milestone.achieved;
-            const shareIcon: string = milestone.shared ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg" : "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+            const shareIcon: string = milestone.shared
+                ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg"
+                : "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
 
             let icon: string;
             let dateAchieved: number = 0;
