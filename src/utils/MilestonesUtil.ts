@@ -317,7 +317,8 @@ function compareWithLocalMilestones(dbMilestones: any) {
     let milestones = JSON.parse(rawMilestones).milestones;
     let dates = [];
     for (let i = 0; i < dbMilestones.length; i++) {
-        const dbDateOb = new Date(dbMilestones[i].local_date);
+        const dbMilestonesLocalDate = dbMilestones[i].local_date * 1000;
+        const dbDateOb = new Date(dbMilestonesLocalDate);
         const dbMilestonesArray: Array<number> = dbMilestones[i].milestones;
         let toAddDailyMilestones = [];
         for (let j = 0; j < dbMilestonesArray.length; j++) {
@@ -329,18 +330,18 @@ function compareWithLocalMilestones(dbMilestones: any) {
                     (currMilestone.id > 48 && currMilestone.id < 57)
                 ) {
                     toAddDailyMilestones.push(currMilestone.id);
-                    if (dbMilestones.local_date > currMilestone.date_achieved) {
-                        dates.push(dbMilestones.local_date, currMilestone.date_achieved);
-                        milestones[currMilestone.id - 1].date_achieved = dbMilestones.local_date;
+                    if (dbMilestonesLocalDate > currMilestone.date_achieved) {
+                        dates.push(dbMilestonesLocalDate, currMilestone.date_achieved);
+                        milestones[currMilestone.id - 1].date_achieved = dbMilestonesLocalDate;
                     }
-                } else if (dbMilestones.local_date < currMilestone.date_achieved) {
-                    dates.push(dbMilestones.local_date, currMilestone.date_achieved);
-                    milestones[currMilestone.id - 1].date_achieved = dbMilestones.local_date;
+                } else if (dbMilestonesLocalDate < currMilestone.date_achieved) {
+                    dates.push(dbMilestonesLocalDate, currMilestone.date_achieved);
+                    milestones[currMilestone.id - 1].date_achieved = dbMilestonesLocalDate;
                 }
             } else if (!currMilestone.achieved) {
-                dates.push(dbMilestones.local_date);
+                dates.push(dbMilestonesLocalDate);
                 milestones[currMilestone.id - 1].achieved = true;
-                milestones[currMilestone.id - 1].date_achieved = dbMilestones.local_date;
+                milestones[currMilestone.id - 1].date_achieved = dbMilestonesLocalDate;
             }
         }
         if (toAddDailyMilestones.length > 0) {
