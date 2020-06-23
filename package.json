@@ -29,7 +29,10 @@
     },
     "license": "SEE LICENSE IN LICENSE",
     "keywords": [
-        "productivity"
+        "productivity",
+        "100 days of code",
+        "code time",
+        "challenge"
     ],
     "activationEvents": [
         "*"
