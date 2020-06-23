@@ -47,30 +47,15 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
     // check for aggregate codetime
     const aggHours = user.hours + codeTimeMetrics[0] / 60;
     if (aggHours >= 200) {
-        achievedMilestones.push(6);
-        if (onboarding) {
-            achievedMilestones.push(5, 4, 3, 2, 1);
-        }
+        achievedMilestones.push(6, 5, 4, 3, 2, 1);
     } else if (aggHours >= 120) {
-        achievedMilestones.push(5);
-        if (onboarding) {
-            achievedMilestones.push(4, 3, 2, 1);
-        }
+        achievedMilestones.push(5, 4, 3, 2, 1);
     } else if (aggHours >= 90) {
-        achievedMilestones.push(4);
-        if (onboarding) {
-            achievedMilestones.push(3, 2, 1);
-        }
+        achievedMilestones.push(4, 3, 2, 1);
     } else if (aggHours >= 60) {
-        achievedMilestones.push(3);
-        if (onboarding) {
-            achievedMilestones.push(2, 1);
-        }
+        achievedMilestones.push(3, 2, 1);
     } else if (aggHours >= 30) {
-        achievedMilestones.push(2);
-        if (onboarding) {
-            achievedMilestones.push(1);
-        }
+        achievedMilestones.push(2, 1);
     } else if (aggHours >= 1) {
         achievedMilestones.push(1);
     }
@@ -78,30 +63,15 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
     // check for daily codetime. These will be given out daily
     const dayHours = codeTimeMetrics[0] / 60;
     if (dayHours >= 10) {
-        achievedMilestones.push(24);
-        if (onboarding) {
-            achievedMilestones.push(23, 22, 21, 20, 19);
-        }
+        achievedMilestones.push(24, 23, 22, 21, 20, 19);
     } else if (dayHours >= 8) {
-        achievedMilestones.push(23);
-        if (onboarding) {
-            achievedMilestones.push(22, 21, 20, 19);
-        }
+        achievedMilestones.push(23, 22, 21, 20, 19);
     } else if (dayHours >= 5) {
-        achievedMilestones.push(22);
-        if (onboarding) {
-            achievedMilestones.push(21, 20, 19);
-        }
+        achievedMilestones.push(22, 21, 20, 19);
     } else if (dayHours >= 3) {
-        achievedMilestones.push(21);
-        if (onboarding) {
-            achievedMilestones.push(20, 19);
-        }
+        achievedMilestones.push(21, 20, 19);
     } else if (dayHours >= 2) {
-        achievedMilestones.push(20);
-        if (onboarding) {
-            achievedMilestones.push(19);
-        }
+        achievedMilestones.push(20, 19);
     } else if (dayHours >= 1) {
         achievedMilestones.push(19);
     }
@@ -109,30 +79,15 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
     // check for lines added
     const lines = user.lines_added + codeTimeMetrics[2];
     if (lines >= 10000) {
-        achievedMilestones.push(30);
-        if (onboarding) {
-            achievedMilestones.push(29, 28, 27, 26, 25);
-        }
+        achievedMilestones.push(30, 29, 28, 27, 26, 25);
     } else if (lines >= 1000) {
-        achievedMilestones.push(29);
-        if (onboarding) {
-            achievedMilestones.push(28, 27, 26, 25);
-        }
+        achievedMilestones.push(29, 28, 27, 26, 25);
     } else if (lines >= 100) {
-        achievedMilestones.push(28);
-        if (onboarding) {
-            achievedMilestones.push(27, 26, 25);
-        }
+        achievedMilestones.push(28, 27, 26, 25);
     } else if (lines >= 50) {
-        achievedMilestones.push(27);
-        if (onboarding) {
-            achievedMilestones.push(26, 25);
-        }
+        achievedMilestones.push(27, 26, 25);
     } else if (lines >= 16) {
-        achievedMilestones.push(26);
-        if (onboarding) {
-            achievedMilestones.push(25);
-        }
+        achievedMilestones.push(26, 25);
     } else if (lines >= 1) {
         achievedMilestones.push(25);
     }
@@ -140,31 +95,15 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
     // check for keystrokes
     const keystrokes = user.keystrokes + codeTimeMetrics[1];
     if (keystrokes >= 42195) {
-        achievedMilestones.push(42);
-        if (onboarding) {
-            achievedMilestones.push(41, 40, 39, 38, 37);
-        }
+        achievedMilestones.push(42, 41, 40, 39, 38, 37);
     } else if (keystrokes >= 21097) {
-        achievedMilestones.push(41);
-        if (onboarding) {
-            achievedMilestones.push(40, 39, 38, 37);
-        }
+        achievedMilestones.push(41, 40, 39, 38, 37);
     } else if (keystrokes >= 10000) {
-        achievedMilestones.push(40);
-        if (onboarding) {
-            achievedMilestones.push(39, 38, 37);
-        }
+        achievedMilestones.push(40, 39, 38, 37);
     } else if (keystrokes >= 5000) {
-        achievedMilestones.push(39);
-        if (onboarding) {
-            achievedMilestones.push(38, 37);
-        }
+        achievedMilestones.push(39, 38, 37);
     } else if (keystrokes >= 1000) {
-        achievedMilestones.push(38);
-
-        // 100 keystrokes happen really fast. So need to update them with a 1000
-        // for edge cases where both are achieved in 15 minutes.
-        achievedMilestones.push(37);
+        achievedMilestones.push(38, 37);
     } else if (keystrokes >= 100) {
         achievedMilestones.push(37);
     }
@@ -670,8 +609,6 @@ function getUpdatedMilestonesHtmlString(): string {
         let allMilestones: string = "\n\t\t<hr>\n\t\t<h2>All Milestones</h2>\n";
 
         // share icon
-        const shareIcon = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
-
         for (let i = 0; i < milestones.length; i++) {
             const milestone = milestones[i];
             const id: number = milestone.id;
@@ -679,6 +616,8 @@ function getUpdatedMilestonesHtmlString(): string {
             const description: string = milestone.description;
             const level: number = milestone.level;
             const achieved: boolean = milestone.achieved;
+            const shareIcon: string = milestone.shared ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg" : "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+
             let icon: string;
             let dateAchieved: number = 0;
             const shareLink = milestoneShareUrlGenerator(i + 1, title, description);
@@ -769,6 +708,7 @@ function getUpdatedMilestonesHtmlString(): string {
             `\t\t\t\tvar hiddenId = this.parentNode.parentNode.getElementsByClassName(`,
             `\t\t\t\t\t"hiddenId"`,
             `\t\t\t\t)[0].textContent;`,
+            `\t\t\t\tthis.src = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg";`,
             `\t\t\t\tvscode.postMessage({command: "incrementShare", value: hiddenId});`,
             `\t\t\t});`,
             `\t\t}`,

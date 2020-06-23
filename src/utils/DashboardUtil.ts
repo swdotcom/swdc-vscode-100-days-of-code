@@ -26,7 +26,8 @@ export function getUpdatedDashboardHtmlString() {
     const user: User = getUserObject();
 
     // Metrics
-    const hours = user.hours + user.currentHours;
+    let hours = user.hours + user.currentHours;
+    hours = parseFloat((hours).toFixed(2));
     let days = user.days;
     let streaks = user.longest_streak;
     let avgHours = parseFloat((hours / days).toFixed(2));
@@ -217,14 +218,14 @@ export function getUpdatedDashboardHtmlString() {
                 const dayTwo = dateObTwo.getDate();
                 const monthTwo = dateObTwo.getMonth() + 1;
                 xAxisDates = [
-                    `\t\t\t\t<div class="chartDateText">${dayOne}/${monthOne}</div>`,
-                    `\t\t\t\t<div class="chartDateText">${dayTwo}/${monthTwo}</div>`
+                    `\t\t\t\t<div class="chartDateText">${monthOne}/${dayOne}</div>`,
+                    `\t\t\t\t<div class="chartDateText">${monthTwo}/${dayTwo}</div>`
                 ].join("\n");
             } else {
                 const dateObOne = new Date(datesFromLogs[0]);
                 const dayOne = dateObOne.getDate();
                 const monthOne = dateObOne.getMonth() + 1;
-                xAxisDates = `\t\t\t\t<div class="chartDateText">${dayOne}/${monthOne}</div>`;
+                xAxisDates = `\t\t\t\t<div class="chartDateText">${monthOne}/${dayOne}</div>`;
             }
         } else {
             const midDate = Math.ceil((datesFromLogs[0] + datesFromLogs[1]) / 2);
@@ -238,9 +239,9 @@ export function getUpdatedDashboardHtmlString() {
             const dayThree = dateObThree.getDate();
             const monthThree = dateObThree.getMonth() + 1;
             xAxisDates = [
-                `\t\t\t\t<div class="chartDateText">${dayOne}/${monthOne}</div>`,
-                `\t\t\t\t<div class="chartDateText">${dayTwo}/${monthTwo}</div>`,
-                `\t\t\t\t<div class="chartDateText">${dayThree}/${monthThree}</div>`
+                `\t\t\t\t<div class="chartDateText">${monthOne}/${dayOne}</div>`,
+                `\t\t\t\t<div class="chartDateText">${monthTwo}/${dayTwo}</div>`,
+                `\t\t\t\t<div class="chartDateText">${monthThree}/${dayThree}</div>`
             ].join("\n");
         }
     }

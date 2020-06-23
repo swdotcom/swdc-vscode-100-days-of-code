@@ -41,6 +41,23 @@ function getLogsPayloadJson(): string {
     return file;
 }
 
+export function getDayNumberFromDate(dateUnix: number): number {
+    const exists = checkLogsJson();
+    if (exists) {
+        const filepath = getLogsJson();
+        const rawLogs = fs.readFileSync(filepath).toString();
+        const logs = JSON.parse(rawLogs).logs;
+
+        let date = new Date(dateUnix);
+        for (let log of logs) {
+            if (compareDates(new Date(log.date), date)) {
+                return log.day_number;
+            }
+        }
+    }
+    return -1;
+}
+
 export function checkLogsJson(): boolean {
     const filepath = getLogsJson();
     try {
@@ -92,7 +109,7 @@ export async function fetchLogs() {
                     return logs;
                 } else {
                     // Wait 10 seconds before next try
-                    setTimeout(() => {}, 10000);
+                    setTimeout(() => { }, 10000);
                 }
             });
             if (logs) {
@@ -102,7 +119,7 @@ export async function fetchLogs() {
             }
         } else {
             // Wait 10 seconds before next try
-            setTimeout(() => {}, 10000);
+            setTimeout(() => { }, 10000);
         }
     }
 }
@@ -348,7 +365,7 @@ export async function pushNewLogs(addNew: boolean) {
             sentLogsDb = false;
         }
         // Wait 10 seconds before next try
-        setTimeout(() => {}, 10000);
+        setTimeout(() => { }, 10000);
     }
 }
 
@@ -403,7 +420,7 @@ export async function pushEditedLogs(addNew: boolean, dayNumber: number) {
             updatedLogsDb = false;
         }
         // Wait 10 seconds before next try
-        setTimeout(() => {}, 10000);
+        setTimeout(() => { }, 10000);
     }
 }
 
@@ -1250,6 +1267,8 @@ export function getUpdatedLogsHtmlString(): string {
 
                 let descriptionRows = day.description === "" ? 2 : 3;
 
+                const shareIconLink = day.shared ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg" : "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+
                 // Header and description
                 htmlString += [
                     `\t<div class="logCard">`,
@@ -1261,7 +1280,7 @@ export function getUpdatedLogsHtmlString(): string {
                     `\t\t\t\t</div>`,
                     `\t\t\t</div>`,
                     `\t\t\t<div class="cardHeaderButtonSection">`,
-                    `\t\t\t\t<a href="${twitterShareUrl}" title="Share this on Twitter"><button class="cardHeaderShareButton"><img class="cardHeaderShareButtonIcon" src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg"></button></a>`,
+                    `\t\t\t\t<a href="${twitterShareUrl}" title="Share this on Twitter"><button class="cardHeaderShareButton"><img class="cardHeaderShareButtonIcon" src=${shareIconLink}></button></a>`,
                     `\t\t\t\t<button class="cardHeaderEditLogButton">Edit Log</button>`,
                     `\t\t\t\t<button class="cardHeaderDropDownButton"><img class="cardHeaderShareButtonIcon" src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Logs/dropDown.svg"></button>`,
                     `\t\t\t</div>`,
@@ -1629,8 +1648,10 @@ export function getUpdatedLogsHtmlString(): string {
                 `\tlet shareButtons = document.getElementsByClassName("cardHeaderShareButton"); `,
                 `\tfor(let i = 0; i < shareButtons.length; i++) {`,
                 `\t\tshareButtons[i].addEventListener("click", function () {`,
-                `\t\t\tconst dayNumber = this.parentNode.parentNode.parentNode.parentNode.previousElementSibling.innerHTML.split(" ")[1]; `,
-                `\t\t\tvscode.postMessage({ command: "incrementShare", value: dayNumber }); `,
+                `\t\t\tconst dayNumberValue = this.parentNode.parentNode.parentNode.firstChild.nextSibling.firstChild.nextSibling.innerHTML.split(" ")[1].slice(0, -1);`,
+                `\t\t\tthis.firstChild.src = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg";`,
+                `\t\t\tconsole.log(this.firstChild);`,
+                `\t\t\tvscode.postMessage({ command: "incrementShare", value: dayNumberValue }); `,
                 `\t\t}); `,
                 `\t} `,
                 `</script>`,
