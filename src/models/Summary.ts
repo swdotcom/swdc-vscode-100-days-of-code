@@ -1,6 +1,4 @@
-export class User {
-    public name: string = "";
-    public email: string = "";
+export class Summary {
     public days: number = 0;
     public currentDate: number = 0;
     public currentHours: number = 0;

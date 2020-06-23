@@ -8,8 +8,8 @@ import {
     setDailyMilestonesByDayNumber,
     updateLogMilestonesByDates
 } from "./LogsUtil";
-import { User } from "../models/User";
-import { getUserObject, updateUserMilestones, incrementUserShare, updateUserLanguages } from "./UserUtil";
+import { Summary } from "../models/Summary";
+import { getSummaryObject, updateSummaryMilestones, incrementSummaryShare, updateSummaryLanguages } from "./SummaryUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import { getLanguages } from "./LanguageUtil";
 import { softwarePost, isResponseOk, serverIsAvailable, softwarePut, softwareGet } from "../managers/HttpManager";
@@ -122,7 +122,7 @@ export async function fetchMilestonesByDate(date: number) {
             }
         } else {
             // Wait 10 seconds before next try
-            setTimeout(() => {}, 10000);
+            setTimeout(() => { }, 10000);
         }
     }
 }
@@ -163,7 +163,7 @@ export async function fetchMilestonesForYesterdayAndToday() {
             }
         } else {
             // Wait 10 seconds before next try
-            setTimeout(() => {}, 10000);
+            setTimeout(() => { }, 10000);
         }
     }
 }
@@ -192,7 +192,7 @@ export async function fetchAllMilestones() {
             }
         } else {
             // Wait 10 seconds before next try
-            setTimeout(() => {}, 10000);
+            setTimeout(() => { }, 10000);
         }
     }
 }
@@ -271,7 +271,7 @@ export async function pushNewMilestones() {
             sentMilestonesDb = false;
         }
         // Wait 10 seconds before next try
-        setTimeout(() => {}, 10000);
+        setTimeout(() => { }, 10000);
     }
 }
 
@@ -305,7 +305,7 @@ export async function pushUpdatedMilestones() {
             updatedMilestonesDb = false;
         }
         // Wait 10 seconds before next try
-        setTimeout(() => {}, 10000);
+        setTimeout(() => { }, 10000);
     }
 }
 
@@ -389,17 +389,17 @@ function checkIfMilestonesAchievedOnDate(date: number): boolean {
 
 export function checkCodeTimeMetricsMilestonesAchieved(): void {
     let achievedMilestones = [];
-    const user: User = getUserObject();
+    const summary: Summary = getSummaryObject();
 
     // metrics of form [minutes, keystrokes, lines]
     const codeTimeMetrics = getSessionCodetimeMetrics();
 
     // prev code time users already have some metrics that
     // need to be taken into account for the day
-    const onboarding = user.days <= 1;
+    const onboarding = summary.days <= 1;
 
     // check for aggregate codetime
-    const aggHours = user.hours + codeTimeMetrics[0] / 60;
+    const aggHours = summary.hours + codeTimeMetrics[0] / 60;
     if (aggHours >= 200) {
         achievedMilestones.push(6, 5, 4, 3, 2, 1);
     } else if (aggHours >= 120) {
@@ -431,7 +431,7 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
     }
 
     // check for lines added
-    const lines = user.lines_added + codeTimeMetrics[2];
+    const lines = summary.lines_added + codeTimeMetrics[2];
     if (lines >= 10000) {
         achievedMilestones.push(30, 29, 28, 27, 26, 25);
     } else if (lines >= 1000) {
@@ -447,7 +447,7 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
     }
 
     // check for keystrokes
-    const keystrokes = user.keystrokes + codeTimeMetrics[1];
+    const keystrokes = summary.keystrokes + codeTimeMetrics[1];
     if (keystrokes >= 42195) {
         achievedMilestones.push(42, 41, 40, 39, 38, 37);
     } else if (keystrokes >= 21097) {
@@ -468,8 +468,8 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
 }
 
 export function checkLanguageMilestonesAchieved(): void {
-    updateUserLanguages();
-    const user: User = getUserObject();
+    updateSummaryLanguages();
+    const summary: Summary = getSummaryObject();
     const languages = getLanguages();
     let milestones: Set<number> = new Set<number>();
 
@@ -510,7 +510,7 @@ export function checkLanguageMilestonesAchieved(): void {
     }
 
     // multi language check
-    switch (user.languages.length) {
+    switch (summary.languages.length) {
         default:
         case 6:
             milestones.add(48);
@@ -535,14 +535,14 @@ export function checkLanguageMilestonesAchieved(): void {
 }
 
 export function checkDaysMilestones(): void {
-    const user: User = getUserObject();
+    const summary: Summary = getSummaryObject();
 
-    let days = user.days;
-    let streaks = user.longest_streak;
+    let days = summary.days;
+    let streaks = summary.longest_streak;
 
     // curr day is completed only after a certain threshold hours are met
     // no checks for prev day
-    if (user.currentHours < 0.5) {
+    if (summary.currentHours < 0.5) {
         days--;
         streaks--;
     }
@@ -584,8 +584,8 @@ export function checkDaysMilestones(): void {
 }
 
 export function checkSharesMilestones(): void {
-    const user: User = getUserObject();
-    const shares = user.shares;
+    const summary: Summary = getSummaryObject();
+    const shares = summary.shares;
 
     if (shares >= 100) {
         achievedMilestonesJson([36]);
@@ -696,14 +696,14 @@ function achievedMilestonesJson(ids: Array<number>): void {
         // updates logs
         updateLogsMilestonesAndMetrics(updatedIds);
 
-        // updates user
+        // updates summary
         let totalMilestonesAchieved = 0;
         for (let i = 0; i < milestones.length; i++) {
             if (milestones[i].achieved) {
                 totalMilestonesAchieved++;
             }
         }
-        updateUserMilestones(updatedIds, totalMilestonesAchieved);
+        updateSummaryMilestones(updatedIds, totalMilestonesAchieved);
 
         // update milestones file
         try {
@@ -725,7 +725,7 @@ function achievedMilestonesJson(ids: Array<number>): void {
     }
 }
 
-// checks if milestone was shared. if not makes it shared and updates user json
+// checks if milestone was shared. if not makes it shared and updates summary json
 export function updateMilestoneShare(id: number) {
     const exists = checkMilestonesJson();
     if (!exists) {
@@ -748,7 +748,7 @@ export function updateMilestoneShare(id: number) {
         } catch (err) {
             console.log(err);
         }
-        incrementUserShare();
+        incrementSummaryShare();
         checkSharesMilestones();
     }
 }

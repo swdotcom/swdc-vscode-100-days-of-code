@@ -14,14 +14,14 @@ import {
 } from "./MilestonesUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import {
-    getUserObject,
-    checkUserJson,
-    incrementUserShare,
-    updateUserJson,
-    getUserTotalHours,
-    setUserCurrentHours,
-    setUserTotalHours
-} from "./UserUtil";
+    getSummaryObject,
+    checkSummaryJson,
+    incrementSummaryShare,
+    updateSummaryJson,
+    getSummaryTotalHours,
+    setSummaryCurrentHours,
+    setSummaryTotalHours
+} from "./SummaryUtil";
 import { softwareGet, serverIsAvailable, softwarePost, isResponseOk, softwarePut } from "../managers/HttpManager";
 
 export let updatedLogsDb = true;
@@ -580,7 +580,7 @@ export async function addLogToJson(
         console.log(err);
         return false;
     }
-    updateUserJson();
+    updateSummaryJson();
     await pushNewLogs(true);
 }
 
@@ -743,7 +743,7 @@ export function updateLogShare(day: number) {
 
         if (!logs[day - 1].shared) {
             logs[day - 1].shared = true;
-            incrementUserShare();
+            incrementSummaryShare();
             checkSharesMilestones();
             const sendLogs = { logs };
             try {
@@ -779,13 +779,13 @@ export async function editLogEntry(
         } else {
             log.codetime_metrics.hours = 12;
         }
-        let userTotalHours = getUserTotalHours();
+        let summaryTotalHours = getSummaryTotalHours();
         if (dayNumber === logs.length) {
-            setUserCurrentHours(editedHours);
+            setSummaryCurrentHours(editedHours);
         } else {
-            userTotalHours -= currentLoggedHours;
-            userTotalHours += editedHours;
-            setUserTotalHours(userTotalHours);
+            summaryTotalHours -= currentLoggedHours;
+            summaryTotalHours += editedHours;
+            setSummaryTotalHours(summaryTotalHours);
         }
         const sendLogs = { logs };
         try {
@@ -836,7 +836,7 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
                 console.log(err);
                 return;
             }
-            updateUserJson();
+            updateSummaryJson();
             await pushNewLogs(true);
             return;
         }
@@ -863,7 +863,7 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
                     console.log(err);
                     return;
                 }
-                updateUserJson();
+                updateSummaryJson();
                 await pushUpdatedLogs(true, logs[i].day_number);
                 return;
             }
@@ -884,8 +884,9 @@ export function getLogsHtml(): string {
 export function getUpdatedLogsHtmlString(): string {
     const logsExists = checkLogsJson();
     const milestonesExists = checkMilestonesJson();
-    const userExists = checkUserJson();
-    if (logsExists && milestonesExists && userExists) {
+    const summaryExists = checkSummaryJson();
+    console.log("Summary Exists:" + summaryExists);
+    if (logsExists && milestonesExists && summaryExists) {
         const logFilepath = getLogsJson();
         const rawLogs = fs.readFileSync(logFilepath).toString();
         let logs = JSON.parse(rawLogs).logs;
@@ -1389,11 +1390,11 @@ export function getUpdatedLogsHtmlString(): string {
                     linksText += day.links[_j] + ", ";
                 }
 
-                const user = getUserObject();
-                const hours = user.hours + user.currentHours;
-                const keystrokes = user.keystrokes + user.currentKeystrokes;
-                const lines = user.lines_added + user.currentLines;
-                const days = user.days;
+                const summary = getSummaryObject();
+                const hours = summary.hours + summary.currentHours;
+                const keystrokes = summary.keystrokes + summary.currentKeystrokes;
+                const lines = summary.lines_added + summary.currentLines;
+                const days = summary.days;
                 let avgHours = parseFloat((hours / days).toFixed(2));
                 let avgKeystrokes = parseFloat((keystrokes / days).toFixed(2));
                 let avgLines = parseFloat((lines / days).toFixed(2));

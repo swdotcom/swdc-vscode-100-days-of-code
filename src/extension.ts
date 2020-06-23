@@ -27,7 +27,7 @@ import {
     createLogsPayloadJson,
     checkLogsPayload
 } from "./utils/LogsUtil";
-import { checkUserJson } from "./utils/UserUtil";
+import { checkSummaryJson } from "./utils/SummaryUtil";
 
 let one_minute_interval: NodeJS.Timeout;
 let five_minute_interval: NodeJS.Timeout;
@@ -50,7 +50,7 @@ export function initializePlugin() {
     // Checks if all the files exist
     checkLogsJson();
     checkMilestonesJson();
-    checkUserJson();
+    checkSummaryJson();
 
     // checks if any payloads remained
     checkLogsPayload();

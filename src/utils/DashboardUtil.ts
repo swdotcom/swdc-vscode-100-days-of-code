@@ -1,14 +1,14 @@
 import { getSoftwareDir, isWindows } from "./Util";
 import fs = require("fs");
 import {
-    getUserObject,
+    getSummaryObject,
     getDaysLevel,
     getHoursLevel,
     getLongStreakLevel,
     getMilestonesEarnedLevel,
     getAverageHoursLevel
-} from "./UserUtil";
-import { User } from "../models/User";
+} from "./SummaryUtil";
+import { Summary } from "../models/Summary";
 import { getLastSevenLoggedDays, getAllCodetimeHours, getLogDateRange } from "./LogsUtil";
 import { getMilestoneById, milestoneShareUrlGenerator } from "./MilestonesUtil";
 
@@ -23,15 +23,15 @@ export function getDashboardHtml() {
 }
 
 export function getUpdatedDashboardHtmlString() {
-    const user: User = getUserObject();
+    const summary: Summary = getSummaryObject();
 
     // Metrics
-    let hours = user.hours + user.currentHours;
+    let hours = summary.hours + summary.currentHours;
     hours = parseFloat((hours).toFixed(2));
-    let days = user.days;
-    let streaks = user.longest_streak;
+    let days = summary.days;
+    let streaks = summary.longest_streak;
     let avgHours = parseFloat((hours / days).toFixed(2));
-    if (user.currentHours < 0.5) {
+    if (summary.currentHours < 0.5) {
         days--;
         streaks--;
         if (days === 0) {
@@ -45,7 +45,7 @@ export function getUpdatedDashboardHtmlString() {
     const daysLevel = getDaysLevel(days);
     const hoursLevel = getHoursLevel(hours);
     const longStreakLevel = getLongStreakLevel(streaks);
-    const milestoneLevel = getMilestonesEarnedLevel(user.milestones);
+    const milestoneLevel = getMilestonesEarnedLevel(summary.milestones);
     const avgHoursLevel = getAverageHoursLevel(avgHours);
 
     let daysLevelHtml;
@@ -182,7 +182,7 @@ export function getUpdatedDashboardHtmlString() {
         `Days: ${days}`,
         `Total Hours: ${hours} hrs`,
         `Longest Streak: ${streaks} days`,
-        `Milestones Earned: ${user.milestones}`,
+        `Milestones Earned: ${summary.milestones}`,
         `Avg Hours/Day: ${avgHours} hrs\n`,
         `Data supplied from @software_hq’s 100 Days Of Code VScode plugin`
     ].join("\n");
@@ -285,10 +285,10 @@ export function getUpdatedDashboardHtmlString() {
 
     // Milestones
     let milestoneHtml = "";
-    if (user.recent_milestones.length > 0) {
+    if (summary.recent_milestones.length > 0) {
         let count = 3;
-        for (let i = 0; i < user.recent_milestones.length; i++) {
-            const milestoneId = user.recent_milestones[i];
+        for (let i = 0; i < summary.recent_milestones.length; i++) {
+            const milestoneId = summary.recent_milestones[i];
             const milestone = getMilestoneById(milestoneId);
             milestoneHtml += [
                 `\t\t\t\t<div class="milestoneCard">`,
@@ -661,7 +661,7 @@ export function getUpdatedDashboardHtmlString() {
         `${streakLevelHtml}`,
         `\t\t</div>\n`,
         `\t\t<div class="metricsCard level${milestoneLevel}">`,
-        `\t\t<div class="metricsHead">${user.milestones}</div>`,
+        `\t\t<div class="metricsHead">${summary.milestones}</div>`,
         `\t\t<div class="metricsBody">milestones earned</div>`,
         `${milestoneLevelHtml}`,
         `\t\t</div>\n`,

@@ -3,21 +3,21 @@ import fs = require("fs");
 import { window } from "vscode";
 import { getMostRecentLogObject, checkLogsJson, checkIfOnStreak } from "./LogsUtil";
 import { getLanguages } from "./LanguageUtil";
-import { User } from "../models/User";
+import { Summary } from "../models/Summary";
 import { Log } from "../models/Log";
 
-export function getUserJson() {
+export function getSummaryJson() {
     let file = getSoftwareDir();
     if (isWindows()) {
-        file += "\\user.json";
+        file += "\\userSummary.json";
     } else {
-        file += "/user.json";
+        file += "/userSummary.json";
     }
     return file;
 }
 
-export function checkUserJson() {
-    const filepath = getUserJson();
+export function checkSummaryJson() {
+    const filepath = getSummaryJson();
     try {
         if (fs.existsSync(filepath)) {
             return true;
@@ -25,9 +25,7 @@ export function checkUserJson() {
             fs.writeFileSync(
                 filepath,
                 [
-                    `{\n\t"name": "",`,
-                    `\t"email": "",`,
-                    `\t"days": 0,`,
+                    `{\n\t"days": 0,`,
                     `\t"currentDate": 0,`,
                     `\t"currentHours": 0,`,
                     `\t"currentKeystrokes": 0,`,
@@ -51,160 +49,159 @@ export function checkUserJson() {
     }
 }
 
-export function updateUserJson() {
-    const userExists = checkUserJson();
+export function updateSummaryJson() {
+    const summaryExists = checkSummaryJson();
     const logsExists = checkLogsJson();
-    if (!userExists || !logsExists) {
+    if (!summaryExists || !logsExists) {
         return;
     }
-    let user: User = getUserObject();
+    let summary: Summary = getSummaryObject();
     const log: Log = getMostRecentLogObject();
     const onStreak = checkIfOnStreak();
-    const currentDate = new Date(user.currentDate);
+    const currentDate = new Date(summary.currentDate);
     const dateOb = new Date();
 
     if (!compareDates(dateOb, currentDate)) {
-        user.days += 1;
-        user.hours += user.currentHours;
-        user.keystrokes += user.currentKeystrokes;
-        user.lines_added += user.currentLines;
-        user.currentDate = dateOb.valueOf();
+        summary.days += 1;
+        summary.hours += summary.currentHours;
+        summary.keystrokes += summary.currentKeystrokes;
+        summary.lines_added += summary.currentLines;
+        summary.currentDate = dateOb.valueOf();
 
         if (onStreak) {
-            user.curr_streak += 1;
-            if (user.curr_streak > user.longest_streak) {
-                user.longest_streak = user.curr_streak;
+            summary.curr_streak += 1;
+            if (summary.curr_streak > summary.longest_streak) {
+                summary.longest_streak = summary.curr_streak;
             }
         } else {
-            user.curr_streak = 1;
+            summary.curr_streak = 1;
         }
     }
-    user.currentHours = log.codetime_metrics.hours;
-    user.currentKeystrokes = log.codetime_metrics.keystrokes;
-    user.currentLines = log.codetime_metrics.lines_added;
+    summary.currentHours = log.codetime_metrics.hours;
+    summary.currentKeystrokes = log.codetime_metrics.keystrokes;
+    summary.currentLines = log.codetime_metrics.lines_added;
 
     const newLanguages = getLanguages();
-    const currLanguages = user.languages;
+    const currLanguages = summary.languages;
     const totalLanguages = currLanguages.concat(newLanguages);
     const reducedLanguages = Array.from(new Set(totalLanguages));
-    user.languages = reducedLanguages;
+    summary.languages = reducedLanguages;
 
-    user.lastUpdated = new Date().getTime();
-    const filepath = getUserJson();
+    summary.lastUpdated = new Date().getTime();
+    const filepath = getSummaryJson();
     try {
-        fs.writeFileSync(filepath, JSON.stringify(user, null, 4));
+        fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
     } catch (err) {
         console.log(err);
         return;
     }
 }
 
-export function updateUserMilestones(newMilestones: Array<number>, totalMilestones: number) {
-    const userExists = checkUserJson();
-    if (!userExists) {
+export function updateSummaryMilestones(newMilestones: Array<number>, totalMilestones: number) {
+    const summaryExists = checkSummaryJson();
+    if (!summaryExists) {
         return;
     }
-    let user = getUserObject();
-    user.milestones = totalMilestones;
-    user.recent_milestones = newMilestones.reverse().concat(user.recent_milestones);
-    while (user.recent_milestones.length > 5) {
-        user.recent_milestones.pop();
+    let summary = getSummaryObject();
+    summary.milestones = totalMilestones;
+    summary.recent_milestones = newMilestones.reverse().concat(summary.recent_milestones);
+    while (summary.recent_milestones.length > 5) {
+        summary.recent_milestones.pop();
     }
-    user.lastUpdated = new Date().getTime();
-    const filepath = getUserJson();
+    summary.lastUpdated = new Date().getTime();
+    const filepath = getSummaryJson();
     try {
-        fs.writeFileSync(filepath, JSON.stringify(user, null, 4));
+        fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
     } catch (err) {
         console.log(err);
         return;
     }
 }
 
-export function getUserTotalHours() {
-    const userExists = checkUserJson();
-    if (!userExists) {
+export function getSummaryTotalHours() {
+    const summaryExists = checkSummaryJson();
+    if (!summaryExists) {
         return;
     }
-    let user = getUserObject();
-    return user.hours;
+    let summary = getSummaryObject();
+    return summary.hours;
 }
 
-export function setUserTotalHours(newHours: number) {
-    const userExists = checkUserJson();
-    if (!userExists) {
+export function setSummaryTotalHours(newHours: number) {
+    const summaryExists = checkSummaryJson();
+    if (!summaryExists) {
         return;
     }
-    let user = getUserObject();
-    user.hours = newHours;
-    const filepath = getUserJson();
+    let summary = getSummaryObject();
+    summary.hours = newHours;
+    const filepath = getSummaryJson();
     try {
-        fs.writeFileSync(filepath, JSON.stringify(user, null, 4));
+        fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
     } catch (err) {
         console.log(err);
         return;
     }
 }
 
-export function setUserCurrentHours(newCurrentHours: number) {
-    const userExists = checkUserJson();
-    if (!userExists) {
+export function setSummaryCurrentHours(newCurrentHours: number) {
+    const summaryExists = checkSummaryJson();
+    if (!summaryExists) {
         return;
     }
-    let user = getUserObject();
-    user.currentHours = newCurrentHours;
-    const filepath = getUserJson();
+    let summary = getSummaryObject();
+    summary.currentHours = newCurrentHours;
+    const filepath = getSummaryJson();
     try {
-        fs.writeFileSync(filepath, JSON.stringify(user, null, 4));
+        fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
     } catch (err) {
         console.log(err);
         return;
     }
 }
 
-export function updateUserLanguages() {
-    const userExists = checkUserJson();
-    if (!userExists) {
+export function updateSummaryLanguages() {
+    const summaryExists = checkSummaryJson();
+    if (!summaryExists) {
         return;
     }
 
     const newLanguages = getLanguages();
-    let user = getUserObject();
-    const currLanguages = user.languages;
+    let summary = getSummaryObject();
+    const currLanguages = summary.languages;
     const totalLanguages = currLanguages.concat(newLanguages);
     const reducedLanguages = Array.from(new Set(totalLanguages));
-    user.languages = reducedLanguages;
-    user.lastUpdated = new Date().getTime();
-    const filepath = getUserJson();
+    summary.languages = reducedLanguages;
+    summary.lastUpdated = new Date().getTime();
+    const filepath = getSummaryJson();
     try {
-        fs.writeFileSync(filepath, JSON.stringify(user, null, 4));
+        fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
     } catch (err) {
         console.log(err);
         return;
     }
 }
 
-export function incrementUserShare() {
-    const user: User = getUserObject();
-    user.shares++;
+export function incrementSummaryShare() {
+    const summary: Summary = getSummaryObject();
+    summary.shares++;
 
-    const filepath = getUserJson();
+    const filepath = getSummaryJson();
     try {
-        fs.writeFileSync(filepath, JSON.stringify(user, null, 4));
+        fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
     } catch (err) {
         console.log(err);
         return;
     }
 }
 
-export function getUserObject() {
-    const exists = checkUserJson();
+export function getSummaryObject() {
+    const exists = checkSummaryJson();
     if (!exists) {
-        window.showErrorMessage("Cannot access User file!");
+        window.showErrorMessage("Cannot access Summary file!");
     }
-    const filepath = getUserJson();
-    let rawUser = fs.readFileSync(filepath).toString();
-    let User = JSON.parse(rawUser);
-    return User;
+    const filepath = getSummaryJson();
+    let rawSummary = fs.readFileSync(filepath).toString();
+    return JSON.parse(rawSummary);
 }
 
 export function getDaysLevel(daysComplete: number): number {
