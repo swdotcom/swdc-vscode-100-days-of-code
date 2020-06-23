@@ -8,7 +8,9 @@ import {
     checkSharesMilestones,
     fetchMilestonesByDate,
     pushMilestonesToDb,
-    fetchAllMilestones
+    fetchAllMilestones,
+    getMilestonesByDate,
+    checkIfDaily
 } from "./MilestonesUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import {
@@ -46,6 +48,37 @@ function getLogsPayloadJson(): string {
         file += "/logsPayload.json";
     }
     return file;
+}
+
+export function createLogsPayloadJson() {
+    const filepath = getLogsPayloadJson();
+    const fileData = {
+        updatedLogsDb,
+        sentLogsDb,
+        toCreateLogs,
+        toUpdateLogs
+    };
+    try {
+        fs.writeFileSync(filepath, JSON.stringify(fileData, null, 4));
+        console.log("Created file");
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+export function checkLogsPayload() {
+    const filepath = getLogsPayloadJson();
+    try {
+        if (fs.existsSync(filepath)) {
+            const payloadData = JSON.parse(fs.readFileSync(filepath).toString());
+            updatedLogsDb = payloadData["updatedLogsDb"];
+            sentLogsDb = payloadData["sentLogsDb"];
+            toCreateLogs = payloadData["toCreateLogs"];
+            toUpdateLogs = payloadData["toUpdateLogs"];
+        }
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 export function getDayNumberFromDate(dateUnix: number): number {
@@ -116,7 +149,7 @@ export async function fetchLogs() {
                     return logs;
                 } else {
                     // Wait 10 seconds before next try
-                    setTimeout(() => { }, 10000);
+                    setTimeout(() => {}, 10000);
                 }
             });
             if (logs) {
@@ -126,39 +159,8 @@ export async function fetchLogs() {
             }
         } else {
             // Wait 10 seconds before next try
-            setTimeout(() => { }, 10000);
+            setTimeout(() => {}, 10000);
         }
-    }
-}
-
-export function createLogsPayloadJson() {
-    const filepath = getLogsPayloadJson();
-    const fileData = {
-        updatedLogsDb,
-        sentLogsDb,
-        toCreateLogs,
-        toUpdateLogs
-    };
-    try {
-        fs.writeFileSync(filepath, JSON.stringify(fileData, null, 4));
-        console.log("Created file");
-    } catch (err) {
-        console.log(err);
-    }
-}
-
-export function checkLogsPayload() {
-    const filepath = getLogsPayloadJson();
-    try {
-        if (fs.existsSync(filepath)) {
-            const payloadData = JSON.parse(fs.readFileSync(filepath).toString());
-            updatedLogsDb = payloadData["updatedLogsDb"];
-            sentLogsDb = payloadData["sentLogsDb"];
-            toCreateLogs = payloadData["toCreateLogs"];
-            toUpdateLogs = payloadData["toUpdateLogs"];
-        }
-    } catch (err) {
-        console.log(err);
     }
 }
 
@@ -382,7 +384,7 @@ export async function pushNewLogs(addNew: boolean) {
             sentLogsDb = false;
         }
         // Wait 10 seconds before next try
-        setTimeout(() => { }, 10000);
+        setTimeout(() => {}, 10000);
     }
 }
 
@@ -442,7 +444,7 @@ export async function pushUpdatedLogs(addNew: boolean, dayNumber: number) {
             updatedLogsDb = false;
         }
         // Wait 10 seconds before next try
-        setTimeout(() => { }, 10000);
+        setTimeout(() => {}, 10000);
     }
 }
 
@@ -480,7 +482,7 @@ export function setDailyMilestonesByDayNumber(dayNumber: number, newMilestones: 
         newMilestones = newMilestones.concat(log.milestones);
         newMilestones = Array.from(new Set(newMilestones));
         log.milestones = newMilestones;
-        let sendLogs = { logs };
+        const sendLogs = { logs };
         try {
             fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
         } catch (err) {
@@ -489,20 +491,42 @@ export function setDailyMilestonesByDayNumber(dayNumber: number, newMilestones: 
     }
 }
 
-export function getDayNumberFromDate(dateUnix: number): number {
+export function updateLogMilestonesByDates(dates: Array<number>) {
     const exists = checkLogsJson();
-    if (exists) {
-        const filepath = getLogsJson();
-        const rawLogs = fs.readFileSync(filepath).toString();
-        const logs = JSON.parse(rawLogs).logs;
-        let date = new Date(dateUnix);
-        for (let log of logs) {
-            if (compareDates(new Date(log.date), date)) {
-                return log.day_number;
+    if (!exists) {
+        console.log("Cannot open logs json");
+        return;
+    }
+    const filepath = getLogsJson();
+    const rawLogs = fs.readFileSync(filepath).toString();
+    let logs = JSON.parse(rawLogs).logs;
+    for (let date of dates) {
+        const dayNumber = getDayNumberFromDate(date);
+        let allMilestonesFromDay = getMilestonesByDate(date);
+        let milestones: Array<number> = [];
+
+        // Only keep daily milestones from logs
+        for (let milestone of logs[dayNumber - 1].milestones) {
+            if (checkIfDaily(milestone)) {
+                milestones.push(milestone);
             }
         }
+
+        // Add all other milestones earned that day to the daily ones
+        milestones = milestones.concat(allMilestonesFromDay);
+        milestones = Array.from(new Set(milestones));
+        logs[dayNumber - 1].milestones = milestones;
+
+        // updating the db as it goes on.
+        pushMilestonesToDb(date, milestones);
     }
-    return -1;
+
+    const sendLogs = { logs };
+    try {
+        fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 export async function addLogToJson(
@@ -721,7 +745,7 @@ export function updateLogShare(day: number) {
             logs[day - 1].shared = true;
             incrementUserShare();
             checkSharesMilestones();
-            let sendLogs = { logs };
+            const sendLogs = { logs };
             try {
                 fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
             } catch (err) {
@@ -1324,7 +1348,9 @@ export function getUpdatedLogsHtmlString(): string {
 
                 let descriptionRows = day.description === "" ? 2 : 3;
 
-                const shareIconLink = day.shared ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg" : "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+                const shareIconLink = day.shared
+                    ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg"
+                    : "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
 
                 // Header and description
                 htmlString += [
