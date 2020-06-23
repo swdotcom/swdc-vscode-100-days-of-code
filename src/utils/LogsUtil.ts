@@ -2,7 +2,14 @@ import { getSoftwareDir, isWindows, compareDates, getSoftwareSessionAsJson } fro
 import fs = require("fs");
 import { CodetimeMetrics } from "../models/CodetimeMetrics";
 import { Log } from "../models/Log";
-import { checkMilestonesJson, getMilestoneById, checkSharesMilestones } from "./MilestonesUtil";
+import {
+    checkMilestonesJson,
+    getMilestoneById,
+    checkSharesMilestones,
+    fetchMilestonesByDate,
+    pushMilestonesToDb,
+    fetchAllMilestones
+} from "./MilestonesUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import {
     getUserObject,
@@ -34,9 +41,9 @@ export function getLogsJson(): string {
 function getLogsPayloadJson(): string {
     let file = getSoftwareDir();
     if (isWindows()) {
-        file += "\\_logsPayload.json";
+        file += "\\logsPayload.json";
     } else {
-        file += "/_logsPayload.json";
+        file += "/logsPayload.json";
     }
     return file;
 }
@@ -98,7 +105,7 @@ export async function fetchLogs() {
                         log.codetime_metrics.hours = parseFloat((element.minutes / 60).toFixed(2));
                         log.codetime_metrics.keystrokes = element.keystrokes;
                         log.codetime_metrics.lines_added = element.lines_added;
-                        log.date = element.local_date;
+                        log.date = element.local_date * 1000; // seconds --> milliseconds
                         log.links = element.ref_links;
                         logs.push(log);
                     });
@@ -155,7 +162,7 @@ export function checkLogsPayload() {
     }
 }
 
-function compareWithLocalLogs(logs: Array<Log>) {
+async function compareWithLocalLogs(logs: Array<Log>) {
     const exists = checkLogsJson();
     if (exists) {
         const logFilepath = getLogsJson();
@@ -198,15 +205,14 @@ function compareWithLocalLogs(logs: Array<Log>) {
                 localLogs[i].codetime_metrics.lines_added = logs[i].codetime_metrics.lines_added;
                 changed = true;
             }
-            // TODO: Add milestone clause
         }
 
         if (localLogs.length < logs.length) {
             for (let i = localLogs.length; i < logs.length; i++) {
+                logs[i].milestones = await fetchMilestonesByDate(logs[i].date);
                 localLogs.push(logs[i]);
             }
             changed = true;
-            // TODO: Add milestone clause
         }
 
         if (changed) {
@@ -250,6 +256,14 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
             if (logs[i].codetime_metrics.lines_added < logs[i + 1].codetime_metrics.lines_added) {
                 logs[i].codetime_metrics.lines_added = logs[i + 1].codetime_metrics.lines_added;
             }
+
+            // fetch and update milestones in db
+            let newMilestones = await fetchMilestonesByDate(logs[i].date);
+            newMilestones = newMilestones.concat(logs[i].milestones);
+            newMilestones = Array.from(new Set(newMilestones));
+            logs[i].milestones = newMilestones;
+            pushMilestonesToDb(logs[i].date, newMilestones);
+
             // remove logs[i+1] as it is now merged with logs[i]
             logs.splice(i + 1, 1);
             // no increment as i still needs to check with the new i+1
@@ -290,7 +304,7 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
                 keystrokes: log.codetime_metrics.keystrokes,
                 lines_added: log.codetime_metrics.lines_added,
                 lines_removed: 0,
-                local_date: log.date,
+                local_date: Math.round(log.date / 1000), // milliseconds --> seconds
                 offset_minutes,
                 timezone
             };
@@ -309,7 +323,7 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
             keystrokes: log.codetime_metrics.keystrokes,
             lines_added: log.codetime_metrics.lines_added,
             lines_removed: 0,
-            local_date: log.date,
+            local_date: Math.round(log.date / 1000), // milliseconds --> seconds
             offset_minutes,
             timezone
         };
@@ -317,7 +331,10 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
     });
 
     await pushNewLogs(false);
-    await pushEditedLogs(false, 0);
+    await pushUpdatedLogs(false, 0);
+
+    // updates all local milestones and logs
+    await fetchAllMilestones();
 }
 
 export async function pushNewLogs(addNew: boolean) {
@@ -335,7 +352,7 @@ export async function pushNewLogs(addNew: boolean) {
             keystrokes: log.codetime_metrics.keystrokes,
             lines_added: log.codetime_metrics.lines_added,
             lines_removed: 0,
-            local_date: log.date,
+            local_date: Math.round(log.date / 1000), // milliseconds --> seconds
             offset_minutes,
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
         };
@@ -369,7 +386,12 @@ export async function pushNewLogs(addNew: boolean) {
     }
 }
 
-export async function pushEditedLogs(addNew: boolean, dayNumber: number) {
+export async function pushUpdatedLogs(addNew: boolean, dayNumber: number) {
+    // try to post new logs before sending edited
+    // logs as the edits might be on the newer logs
+    if (!sentLogsDb) {
+        await pushNewLogs(false);
+    }
     if (addNew) {
         const logsExists = checkLogsJson();
         if (logsExists) {
@@ -388,7 +410,7 @@ export async function pushEditedLogs(addNew: boolean, dayNumber: number) {
                 keystrokes: log.codetime_metrics.keystrokes,
                 lines_added: log.codetime_metrics.lines_added,
                 lines_removed: 0,
-                local_date: log.date,
+                local_date: Math.round(log.date / 1000), // milliseconds --> seconds
                 offset_minutes,
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
             };
@@ -446,6 +468,41 @@ function checkIfDateExists(): boolean {
         }
     }
     return false;
+}
+
+export function setDailyMilestonesByDayNumber(dayNumber: number, newMilestones: Array<number>) {
+    const exists = checkLogsJson();
+    if (exists) {
+        const filepath = getLogsJson();
+        const rawLogs = fs.readFileSync(filepath).toString();
+        let logs = JSON.parse(rawLogs).logs;
+        let log = logs[dayNumber - 1];
+        newMilestones = newMilestones.concat(log.milestones);
+        newMilestones = Array.from(new Set(newMilestones));
+        log.milestones = newMilestones;
+        let sendLogs = { logs };
+        try {
+            fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
+        } catch (err) {
+            console.log(err);
+        }
+    }
+}
+
+export function getDayNumberFromDate(dateUnix: number): number {
+    const exists = checkLogsJson();
+    if (exists) {
+        const filepath = getLogsJson();
+        const rawLogs = fs.readFileSync(filepath).toString();
+        const logs = JSON.parse(rawLogs).logs;
+        let date = new Date(dateUnix);
+        for (let log of logs) {
+            if (compareDates(new Date(log.date), date)) {
+                return log.day_number;
+            }
+        }
+    }
+    return -1;
 }
 
 export async function addLogToJson(
@@ -646,7 +703,7 @@ export async function updateLogByDate(log: Log) {
                     console.log(err);
                     return;
                 }
-                await pushEditedLogs(true, logs[i].day_number);
+                await pushUpdatedLogs(true, logs[i].day_number);
                 return;
             }
         }
@@ -713,7 +770,7 @@ export async function editLogEntry(
             console.log(err);
             return;
         }
-        await pushEditedLogs(true, dayNumber);
+        await pushUpdatedLogs(true, dayNumber);
     }
 }
 
@@ -783,7 +840,7 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
                     return;
                 }
                 updateUserJson();
-                await pushEditedLogs(true, logs[i].day_number);
+                await pushUpdatedLogs(true, logs[i].day_number);
                 return;
             }
         }

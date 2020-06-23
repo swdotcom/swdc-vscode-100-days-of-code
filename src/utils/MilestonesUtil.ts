@@ -1,12 +1,19 @@
-import { getSoftwareDir, isWindows, compareDates } from "./Util";
+import { getSoftwareDir, isWindows, compareDates, getSoftwareSessionAsJson } from "./Util";
 import fs = require("fs");
 import { window, commands } from "vscode";
 import path = require("path");
-import { updateLogsMilestonesAndMetrics } from "./LogsUtil";
+import { updateLogsMilestonesAndMetrics, getDayNumberFromDate, setDailyMilestonesByDayNumber } from "./LogsUtil";
 import { User } from "../models/User";
 import { getUserObject, updateUserMilestones, incrementUserShare, updateUserLanguages } from "./UserUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import { getLanguages } from "./LanguageUtil";
+import { softwarePost, isResponseOk, serverIsAvailable, softwarePut, softwareGet } from "../managers/HttpManager";
+
+export let updatedMilestonesDb = true;
+export let sentMilestonesDb = true;
+
+let toCreateMilestones: Array<any> = [];
+let toUpdateMilestones: Array<any> = [];
 
 export function getMilestonesJson(): string {
     let file = getSoftwareDir();
@@ -16,6 +23,47 @@ export function getMilestonesJson(): string {
         file += "/milestones.json";
     }
     return file;
+}
+
+function getMilestonesPayloadJson(): string {
+    let file = getSoftwareDir();
+    if (isWindows()) {
+        file += "\\milestonesPayload.json";
+    } else {
+        file += "/milestonesPayload.json";
+    }
+    return file;
+}
+
+export function createMilestonesPayloadJson() {
+    const filepath = getMilestonesPayloadJson();
+    const fileData = {
+        updatedMilestonesDb,
+        sentMilestonesDb,
+        toCreateMilestones,
+        toUpdateMilestones
+    };
+    try {
+        fs.writeFileSync(filepath, JSON.stringify(fileData, null, 4));
+        console.log("Created file");
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+export function checkMilestonesPayload() {
+    const filepath = getMilestonesPayloadJson();
+    try {
+        if (fs.existsSync(filepath)) {
+            const payloadData = JSON.parse(fs.readFileSync(filepath).toString());
+            updatedMilestonesDb = payloadData["updatedMilestonesDb"];
+            sentMilestonesDb = payloadData["sentMilestonesDb"];
+            toCreateMilestones = payloadData["toCreateMilestones"];
+            toUpdateMilestones = payloadData["toUpdateMilestones"];
+        }
+    } catch (err) {
+        console.log(err);
+    }
 }
 
 export function checkMilestonesJson(): boolean {
@@ -31,6 +79,307 @@ export function checkMilestonesJson(): boolean {
     } catch (err) {
         return false;
     }
+}
+
+export async function fetchMilestonesByDate(date: number) {
+    // End Date is 11:59 pm
+    let endDate = new Date(date);
+    endDate.setHours(23, 59, 59, 0);
+
+    // Start Date is 12:01 am
+    let startDate = new Date(endDate.valueOf() - 68400000);
+    startDate.setHours(0, 0, 1, 0);
+
+    let retry = 5;
+    let available = false;
+    while (retry > 0) {
+        try {
+            available = await serverIsAvailable();
+        } catch (err) {
+            available = false;
+        }
+        retry--;
+        if (available) {
+            const jwt = getSoftwareSessionAsJson()["jwt"];
+            const milestones = await softwareGet(
+                `100doc/milestones?start_date=${Math.round(startDate.valueOf() / 1000)}&end_date=${Math.round(
+                    endDate.valueOf() / 1000
+                )}`,
+                jwt
+            ).then(resp => {
+                if (isResponseOk(resp)) {
+                    return resp.data;
+                }
+            });
+            if (milestones) {
+                retry = 0;
+                return milestones;
+            }
+        } else {
+            // Wait 10 seconds before next try
+            setTimeout(() => {}, 10000);
+        }
+    }
+}
+
+export async function fetchMilestonesForYesterdayAndToday() {
+    // End Date is 11:59 pm today
+    let endDate = new Date();
+    endDate.setHours(23, 59, 59, 0);
+
+    // Start Date is 12:01 am yesterday
+    let startDate = new Date(endDate.valueOf() - 68400000 * 2);
+    startDate.setHours(0, 0, 1, 0);
+
+    let retry = 5;
+    let available = false;
+    while (retry > 0) {
+        try {
+            available = await serverIsAvailable();
+        } catch (err) {
+            available = false;
+        }
+        retry--;
+        if (available) {
+            const jwt = getSoftwareSessionAsJson()["jwt"];
+            const milestones = await softwareGet(
+                `100doc/milestones?start_date=${Math.round(startDate.valueOf() / 1000)}&end_date=${Math.round(
+                    endDate.valueOf() / 1000
+                )}`,
+                jwt
+            ).then(resp => {
+                if (isResponseOk(resp)) {
+                    return resp.data;
+                }
+            });
+            if (milestones) {
+                retry = 0;
+                compareWithLocalMilestones(milestones);
+            }
+        } else {
+            // Wait 10 seconds before next try
+            setTimeout(() => {}, 10000);
+        }
+    }
+}
+
+export async function fetchAllMilestones() {
+    let retry = 5;
+
+    let available = false;
+    while (retry > 0) {
+        try {
+            available = await serverIsAvailable();
+        } catch (err) {
+            available = false;
+        }
+        retry--;
+        if (available) {
+            const jwt = getSoftwareSessionAsJson()["jwt"];
+            const milestones = await softwareGet("100doc/milestones", jwt).then(resp => {
+                if (isResponseOk(resp)) {
+                    return resp.data;
+                }
+            });
+            if (milestones) {
+                retry = 0;
+                compareWithLocalMilestones(milestones);
+            }
+        } else {
+            // Wait 10 seconds before next try
+            setTimeout(() => {}, 10000);
+        }
+    }
+}
+
+export function pushMilestonesToDb(date: number, milestones: Array<number>) {
+    fetchAllMilestones();
+    fetchMilestonesForYesterdayAndToday();
+    fetchMilestonesByDate(Date.now());
+    const dateData = new Date(date);
+    const update: boolean = checkIfMilestonesAchievedOnDate(date);
+    if (update) {
+        // Takes into check new milestones and old ones
+        milestones = getMilestonesByDate(date);
+    }
+    const offset_minutes = dateData.getTimezoneOffset();
+    const day_number = getDayNumberFromDate(date);
+    const sendMilestones = {
+        day_number,
+        local_date: Math.round(date / 1000), // milliseconds --> seconds
+        offset_minutes,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        milestones
+    };
+    if (update) {
+        toUpdateMilestones.push(sendMilestones);
+        pushUpdatedMilestones();
+    } else {
+        toCreateMilestones.push(sendMilestones);
+        pushNewMilestones();
+    }
+}
+
+function getMilestonesByDate(date: number): Array<number> {
+    const exists = checkMilestonesJson();
+    if (!exists) {
+        window.showErrorMessage("Cannot access Milestones file!");
+        return [];
+    }
+    const dateOb = new Date(date);
+    const dateNowOb = new Date();
+    const dateNow = dateNowOb.valueOf();
+    if (dateNow < date) {
+        return [];
+    }
+    const sendMilestones: Array<number> = [];
+    const filepath = getMilestonesJson();
+    let rawMilestones = fs.readFileSync(filepath).toString();
+    let milestones = JSON.parse(rawMilestones).milestones;
+    for (let i = 0; i < milestones.length; i++) {
+        if (milestones[i].achieved && compareDates(new Date(milestones[i].date_achieved), dateOb)) {
+            sendMilestones.push(milestones[i].id);
+        }
+    }
+    return sendMilestones;
+}
+
+export async function pushNewMilestones() {
+    let retry = 5;
+    let available = false;
+    while (retry > 0) {
+        try {
+            available = await serverIsAvailable();
+        } catch (err) {
+            available = false;
+        }
+        retry--;
+        if (available) {
+            const jwt = getSoftwareSessionAsJson()["jwt"];
+            const resp = await softwarePost("100doc/milestones", toCreateMilestones, jwt);
+            const added: boolean = isResponseOk(resp);
+            if (!added) {
+                sentMilestonesDb = false;
+            } else {
+                sentMilestonesDb = true;
+                toCreateMilestones = [];
+                break;
+            }
+        } else {
+            sentMilestonesDb = false;
+        }
+        // Wait 10 seconds before next try
+        setTimeout(() => {}, 10000);
+    }
+}
+
+export async function pushUpdatedMilestones() {
+    // try to post new milestones before sending updated
+    // milestones as the edits might be on the non posted milestones
+    if (!sentMilestonesDb) {
+        await pushNewMilestones();
+    }
+    let retry = 5;
+    let available = false;
+    while (retry > 0) {
+        try {
+            available = await serverIsAvailable();
+        } catch (err) {
+            available = false;
+        }
+        retry--;
+        if (available) {
+            const jwt = getSoftwareSessionAsJson()["jwt"];
+            const resp = await softwarePut("100doc/milestones", toUpdateMilestones, jwt);
+            const added: boolean = isResponseOk(resp);
+            if (!added) {
+                updatedMilestonesDb = false;
+            } else {
+                updatedMilestonesDb = true;
+                toUpdateMilestones = [];
+                break;
+            }
+        } else {
+            sentMilestonesDb = false;
+        }
+        // Wait 10 seconds before next try
+        setTimeout(() => {}, 10000);
+    }
+}
+
+function compareWithLocalMilestones(dbMilestones: any) {
+    const exists = checkMilestonesJson();
+    if (!exists) {
+        return;
+    }
+    const filepath = getMilestonesJson();
+    let rawMilestones = fs.readFileSync(filepath).toString();
+    let milestones = JSON.parse(rawMilestones).milestones;
+    let dates = [];
+    for (let i = 0; i < dbMilestones.length; i++) {
+        const dbMilestonesLocalDate = dbMilestones[i].local_date * 1000;
+        const dbDateOb = new Date(dbMilestonesLocalDate);
+        const dbMilestonesArray: Array<number> = dbMilestones[i].milestones;
+        let toAddDailyMilestones = [];
+        for (let j = 0; j < dbMilestonesArray.length; j++) {
+            const currMilestone = milestones[dbMilestonesArray[j] - 1];
+            if (currMilestone.achieved && !compareDates(dbDateOb, new Date(currMilestone.date_achieved))) {
+                // Daily Milestones
+                if (
+                    (currMilestone.id > 18 && currMilestone.id < 25) ||
+                    (currMilestone.id > 48 && currMilestone.id < 57)
+                ) {
+                    toAddDailyMilestones.push(currMilestone.id);
+                    if (dbMilestonesLocalDate > currMilestone.date_achieved) {
+                        dates.push(dbMilestonesLocalDate, currMilestone.date_achieved);
+                        milestones[currMilestone.id - 1].date_achieved = dbMilestonesLocalDate;
+                    }
+                } else if (dbMilestonesLocalDate < currMilestone.date_achieved) {
+                    dates.push(dbMilestonesLocalDate, currMilestone.date_achieved);
+                    milestones[currMilestone.id - 1].date_achieved = dbMilestonesLocalDate;
+                }
+            } else if (!currMilestone.achieved) {
+                dates.push(dbMilestonesLocalDate);
+                milestones[currMilestone.id - 1].achieved = true;
+                milestones[currMilestone.id - 1].date_achieved = dbMilestonesLocalDate;
+            }
+        }
+        if (toAddDailyMilestones.length > 0) {
+            setDailyMilestonesByDayNumber(dbMilestones[i].day_number, toAddDailyMilestones);
+        }
+    }
+
+    if (dates.length > 0) {
+        // updateMilestonesByDate(dates);
+        const sendMilestones = { milestones };
+        try {
+            fs.writeFileSync(filepath, JSON.stringify(sendMilestones, null, 4));
+        } catch (err) {
+            console.log(err);
+        }
+    }
+}
+
+function checkIfMilestonesAchievedOnDate(date: number): boolean {
+    const exists = checkMilestonesJson();
+    if (!exists) {
+        return false;
+    }
+    const dateData = new Date(date);
+    const filepath = getMilestonesJson();
+    let rawMilestones = fs.readFileSync(filepath).toString();
+    let milestones = JSON.parse(rawMilestones).milestones;
+    let count = 0;
+    for (let i = 0; i < milestones.length; i++) {
+        if (milestones[i].achieved && compareDates(new Date(milestones[i].date_achieved), dateData)) {
+            count++;
+            // ensures that more than one milestone was achieved that day
+            if (count > 1) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 export function checkCodeTimeMetricsMilestonesAchieved(): void {
@@ -248,6 +597,13 @@ export function checkSharesMilestones(): void {
     }
 }
 
+export function checkIfRepeating(id: number): boolean {
+    if ((id > 18 && id < 25) || (id > 48 && id < 57)) {
+        return true;
+    }
+    return false;
+}
+
 function checkIdRange(id: number): boolean {
     const MIN_ID = 1;
     const MAX_ID = 56;
@@ -351,6 +707,9 @@ function achievedMilestonesJson(ids: Array<number>): void {
             console.log(err);
         }
 
+        // updates db
+        pushMilestonesToDb(dateNow.valueOf(), updatedIds);
+
         window
             .showInformationMessage("Hurray! You just achieved another milestone.", "View Milestones")
             .then(selection => {
@@ -410,6 +769,8 @@ export function milestoneShareUrlGenerator(id: number, title: string, descriptio
 }
 
 function getUpdatedMilestonesHtmlString(): string {
+    fetchMilestonesByDate(Date.now());
+    fetchAllMilestones();
     // Checks if the file exists and if not, creates a new file
     const exists = checkMilestonesJson();
     if (exists) {

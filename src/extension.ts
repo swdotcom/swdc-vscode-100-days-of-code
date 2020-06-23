@@ -6,7 +6,14 @@ import {
     checkCodeTimeMetricsMilestonesAchieved,
     checkMilestonesJson,
     checkLanguageMilestonesAchieved,
-    checkDaysMilestones
+    checkDaysMilestones,
+    sentMilestonesDb,
+    checkMilestonesPayload,
+    updatedMilestonesDb,
+    fetchAllMilestones,
+    pushNewMilestones,
+    pushUpdatedMilestones,
+    fetchMilestonesForYesterdayAndToday
 } from "./utils/MilestonesUtil";
 import {
     checkLogsJson,
@@ -15,7 +22,7 @@ import {
     updatedLogsDb,
     pushNewLogs,
     sentLogsDb,
-    pushEditedLogs,
+    pushUpdatedLogs,
     createLogsPayloadJson,
     checkLogsPayload
 } from "./utils/LogsUtil";
@@ -51,7 +58,16 @@ export function initializePlugin() {
     } else if (!sentLogsDb) {
         pushNewLogs(false);
     } else {
-        pushEditedLogs(false, 0);
+        pushUpdatedLogs(false, 0);
+    }
+
+    checkMilestonesPayload();
+    if (updatedMilestonesDb && sentMilestonesDb) {
+        fetchAllMilestones();
+    } else if (!sentMilestonesDb) {
+        pushNewMilestones();
+    } else {
+        pushUpdatedMilestones();
     }
 
     // Updates logs and milestones
@@ -80,7 +96,14 @@ export function initializeIntervalJobs() {
         } else if (!sentLogsDb) {
             pushNewLogs(false);
         } else {
-            pushEditedLogs(false, 0);
+            pushUpdatedLogs(false, 0);
+        }
+        if (updatedMilestonesDb && sentMilestonesDb) {
+            fetchMilestonesForYesterdayAndToday();
+        } else if (!sentMilestonesDb) {
+            pushNewMilestones();
+        } else {
+            pushUpdatedMilestones();
         }
     }, one_min_millis * 5);
 }
