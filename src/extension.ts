@@ -27,7 +27,7 @@ import {
     createLogsPayloadJson,
     checkLogsPayload
 } from "./utils/LogsUtil";
-import { checkSummaryJson } from "./utils/SummaryUtil";
+import { checkSummaryJson, pushSummaryToDb } from "./utils/SummaryUtil";
 
 let one_minute_interval: NodeJS.Timeout;
 let five_minute_interval: NodeJS.Timeout;
@@ -71,6 +71,9 @@ export function initializePlugin() {
         pushUpdatedMilestones();
     }
 
+    // Fetches and updates the user summary in the db
+    pushSummaryToDb();
+
     // Updates logs and milestones
     updateLogsMilestonesAndMetrics([]);
     checkCodeTimeMetricsMilestonesAchieved();
@@ -100,6 +103,7 @@ export function initializeIntervalJobs() {
         } else {
             pushUpdatedLogs(false, 0);
         }
+
         // milestones
         if (updatedMilestonesDb && sentMilestonesDb) {
             fetchMilestonesForYesterdayAndToday();
@@ -108,6 +112,9 @@ export function initializeIntervalJobs() {
         } else {
             pushUpdatedMilestones();
         }
+
+        // summary
+        pushSummaryToDb();
     }, one_min_millis * 1);
 }
 

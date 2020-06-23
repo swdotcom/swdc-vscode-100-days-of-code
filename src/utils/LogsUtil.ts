@@ -20,7 +20,9 @@ import {
     updateSummaryJson,
     getSummaryTotalHours,
     setSummaryCurrentHours,
-    setSummaryTotalHours
+    setSummaryTotalHours,
+    reevaluateSummary,
+    pushSummaryToDb
 } from "./SummaryUtil";
 import { softwareGet, serverIsAvailable, softwarePost, isResponseOk, softwarePut } from "../managers/HttpManager";
 
@@ -38,6 +40,53 @@ export function getLogsJson(): string {
         file += "/logs.json";
     }
     return file;
+}
+
+export function getAllLogObjects(): Array<Log> {
+    const exists = checkLogsJson();
+    if (exists) {
+        const filepath = getLogsJson();
+        const rawLogs = fs.readFileSync(filepath).toString();
+        return JSON.parse(rawLogs).logs;
+    }
+    return [];
+}
+
+export function getLogsSummary(): any {
+    const logs: Array<Log> = getAllLogObjects();
+    let totalHours = 0;
+    let totalLinesAdded = 0;
+    let totalKeystrokes = 0;
+    let totalDays = 0;
+    let longest_streak = 0;
+    let current_streak = 0;
+
+    const hours24 = 86400000;
+    let previousDate = logs[0].date - hours24;
+    for (let log of logs) {
+        totalHours += log.codetime_metrics.hours;
+        totalLinesAdded += log.codetime_metrics.lines_added;
+        totalKeystrokes += log.codetime_metrics.keystrokes;
+        totalDays++;
+        if (compareDates(new Date(previousDate + hours24), new Date(log.date))) {
+            current_streak++;
+            if (current_streak > longest_streak) {
+                longest_streak = current_streak;
+            }
+        } else {
+            current_streak = 0;
+        }
+        previousDate = log.date;
+    }
+
+    return {
+        totalHours,
+        totalLinesAdded,
+        totalKeystrokes,
+        totalDays,
+        longest_streak,
+        current_streak,
+    };
 }
 
 function getLogsPayloadJson(): string {
@@ -286,6 +335,9 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
         console.log(err);
     }
 
+    // Updates the userSummary.json with the merged logs data
+    reevaluateSummary();
+
     const date = new Date();
     const offset_minutes = date.getTimezoneOffset();
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -334,6 +386,7 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
 
     await pushNewLogs(false);
     await pushUpdatedLogs(false, 0);
+    await pushSummaryToDb();
 
     // updates all local milestones and logs
     await fetchAllMilestones();

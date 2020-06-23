@@ -30,6 +30,25 @@ export function getMilestonesJson(): string {
     return file;
 }
 
+export function getTotalMilestonesAchieved(): number {
+
+    const exists = checkMilestonesJson();
+    if (!exists) {
+        return -1;
+    }
+    const filepath = getMilestonesJson();
+    const rawMilestones = fs.readFileSync(filepath).toString();
+    const milestones = JSON.parse(rawMilestones).milestones;
+
+    let totalMilestonesAchieved = 0;
+    for (let milestone of milestones) {
+        if (milestone.achieved) {
+            totalMilestonesAchieved++;
+        }
+    }
+    return totalMilestonesAchieved;
+}
+
 function getMilestonesPayloadJson(): string {
     let file = getSoftwareDir();
     if (isWindows()) {
