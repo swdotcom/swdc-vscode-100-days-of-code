@@ -48,23 +48,6 @@ function getLogsPayloadJson(): string {
     return file;
 }
 
-export function getDayNumberFromDate(dateUnix: number): number {
-    const exists = checkLogsJson();
-    if (exists) {
-        const filepath = getLogsJson();
-        const rawLogs = fs.readFileSync(filepath).toString();
-        const logs = JSON.parse(rawLogs).logs;
-
-        let date = new Date(dateUnix);
-        for (let log of logs) {
-            if (compareDates(new Date(log.date), date)) {
-                return log.day_number;
-            }
-        }
-    }
-    return -1;
-}
-
 export function checkLogsJson(): boolean {
     const filepath = getLogsJson();
     try {
@@ -1502,13 +1485,12 @@ export function getUpdatedLogsHtmlString(): string {
                 `\t\t\t<div id="head1">Edit Log</div>`,
                 `\t\t\t<div id="editLogsDayAndDate" class="head2"></div>`,
                 `\t\t\t<div class="head2">Title</div>`,
-                `\t\t\t<input`,
-                `\t\t\t\ttype="text"`,
-                `\t\t\t\tclass="text"`,
+                `\t\t\t<textarea`,
                 `\t\t\t\tid="editLogsTitle"`,
+                `\t\t\t\tclass="text"`,
                 `\t\t\t\tplaceholder="Title for today's work log"`,
-                `\t\t\t\tvalue=""`,
-                `\t\t\t/>`,
+                `\t\t\t\trows="1"`,
+                `\t\t\t></textarea>`,
                 `\t\t\t<div class="head2">Description</div>`,
                 `\t\t\t<textarea`,
                 `\t\t\t\tid="editLogsDescription"`,
