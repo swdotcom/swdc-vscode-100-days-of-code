@@ -25,12 +25,14 @@ import {
     pushSummaryToDb
 } from "./SummaryUtil";
 import { softwareGet, serverIsAvailable, softwarePost, isResponseOk, softwarePut } from "../managers/HttpManager";
+import { window, commands } from "vscode";
 
 export let updatedLogsDb = true;
 export let sentLogsDb = true;
 
 let toCreateLogs: Array<any> = [];
 let toUpdateLogs: Array<any> = [];
+let dateLogMessage: Date;
 
 export function getLogsJson(): string {
     let file = getSoftwareDir();
@@ -555,7 +557,7 @@ export function updateLogMilestonesByDates(dates: Array<number>) {
     let logs = JSON.parse(rawLogs).logs;
     for (let date of dates) {
         const dayNumber = getDayNumberFromDate(date);
-        let allMilestonesFromDay = getMilestonesByDate(date);
+        let allMilestonesFromDay: Array<number> = getMilestonesByDate(date);
         let milestones: Array<number> = [];
 
         // Only keep daily milestones from logs
@@ -708,7 +710,10 @@ export function getLastSevenLoggedDays(): Array<Log> {
         const logs = JSON.parse(rawLogs).logs;
 
         let sendLogs = [];
-        for (let i = logs.length - 1; i >= 0; i--) {
+        if (logs[logs.length - 1].title !== "No Title") {
+            sendLogs.push(logs[logs.length - 1]);
+        }
+        for (let i = logs.length - 2; i >= 0; i--) {
             if (logs[i].day_number) {
                 sendLogs.push(logs[i]);
                 if (sendLogs.length === 7) {
@@ -918,6 +923,14 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
                 }
                 updateSummaryJson();
                 await pushUpdatedLogs(true, logs[i].day_number);
+
+                if ((!dateLogMessage || compareDates(dateLogMessage, new Date())) && (logs[i].codetime_metrics.hours > 0.3 && logs[i].title === "No Title")) {
+                    window.showInformationMessage("Don't forget to add and share today's log.", "Add Log").then(selection => {
+                        if (selection === "Add Log") {
+                            commands.executeCommand("DoC.addLog");
+                        }
+                    });
+                }
                 return;
             }
         }
@@ -938,7 +951,6 @@ export function getUpdatedLogsHtmlString(): string {
     const logsExists = checkLogsJson();
     const milestonesExists = checkMilestonesJson();
     const summaryExists = checkSummaryJson();
-    console.log("Summary Exists:" + summaryExists);
     if (logsExists && milestonesExists && summaryExists) {
         const logFilepath = getLogsJson();
         const rawLogs = fs.readFileSync(logFilepath).toString();
@@ -1385,11 +1397,14 @@ export function getUpdatedLogsHtmlString(): string {
                 let shareText = [
                     `Day ${day.day_number}/100 of 100DaysOfCode`,
                     `What I worked on: ${day.title}`,
-                    `Metrics: Hours: ${day.codetime_metrics.hours}, Lines of Code: ${day.codetime_metrics.lines_added}, Keystrokes: ${day.codetime_metrics.keystrokes}`,
-                    `Data supplied from @software_hq’s 100 Days Of Code VScode plugin`
+                    ``,
+                    `Metrics: Hours: ${day.codetime_metrics.hours}`,
+                    `Lines of Code: ${day.codetime_metrics.lines_added}`,
+                    `Keystrokes: ${day.codetime_metrics.keystrokes}`,
+                    `Data supplied from @software_hq’s 100 Days Of Code plugin`
                 ].join("\n");
                 const shareURI = encodeURI(shareText);
-                const twitterShareUrl = `https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.software.com%2F100-days-of-code&text=${shareURI}&hashtags=100DaysOfCode%2CSoftware%2CDeveloper`;
+                const twitterShareUrl = `https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.software.com%2F100-days-of-code&text=${shareURI}&hashtags=100DaysOfCode`;
 
                 const unix_timestamp = day.date;
 

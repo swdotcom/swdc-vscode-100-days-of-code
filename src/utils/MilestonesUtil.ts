@@ -137,7 +137,7 @@ export async function fetchMilestonesByDate(date: number) {
             });
             if (milestones) {
                 retry = 0;
-                return milestones;
+                return milestones.milestones;
             }
         } else {
             // Wait 10 seconds before next try

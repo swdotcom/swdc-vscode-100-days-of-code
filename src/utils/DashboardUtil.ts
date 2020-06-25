@@ -30,10 +30,13 @@ export function getUpdatedDashboardHtmlString() {
     hours = parseFloat((hours).toFixed(2));
     let days = summary.days;
     let streaks = summary.longest_streak;
+    const currStreak = summary.curr_streak;
     let avgHours = parseFloat((hours / days).toFixed(2));
     if (summary.currentHours < 0.5) {
         days--;
-        streaks--;
+        if (streaks === currStreak) {
+            streaks--;
+        }
         if (days === 0) {
             avgHours = 0;
         }

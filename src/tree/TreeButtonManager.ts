@@ -41,13 +41,13 @@ export function getDoCLearnMoreButton() {
 // }
 
 export function getDashboardButton() {
-    return getActionButton("Dashboard", "View Dashboard", "DoC.viewDashboard", "dashboard.svg");
+    return getActionButton("View Dashboard", "View Dashboard", "DoC.viewDashboard", "dashboard.svg");
 }
 
 export function getDoCLogsButon() {
-    return getActionButton("Logs", "View your log entries", "DoC.viewLogs", "logs.svg");
+    return getActionButton("View Logs", "View your log entries", "DoC.viewLogs", "logs.svg");
 }
 
 export function getDocMilestonesButton() {
-    return getActionButton("Milestones", "View your milestones", "DoC.viewMilestones", "milestones.svg");
+    return getActionButton("View Milestones", "View your milestones", "DoC.viewMilestones", "milestones.svg");
 }

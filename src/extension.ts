@@ -31,6 +31,7 @@ import { checkSummaryJson, pushSummaryToDb } from "./utils/SummaryUtil";
 
 let one_minute_interval: NodeJS.Timeout;
 let five_minute_interval: NodeJS.Timeout;
+let one_hour_interval: NodeJS.Timeout;
 
 const one_min_millis = 1000 * 60;
 
@@ -38,7 +39,7 @@ const one_min_millis = 1000 * 60;
 export function activate(ctx: vscode.ExtensionContext) {
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
-    console.log('"100 days of code time" is now active');
+    console.log('swdc-100-days-of-code: activted');
 
     initializePlugin();
 
@@ -47,7 +48,7 @@ export function activate(ctx: vscode.ExtensionContext) {
 }
 
 export function initializePlugin() {
-    // Checks if all the files exist
+    // checks if all the files exist
     checkLogsJson();
     checkMilestonesJson();
     checkSummaryJson();
@@ -71,21 +72,21 @@ export function initializePlugin() {
         pushUpdatedMilestones();
     }
 
-    // Fetches and updates the user summary in the db
+    // fetches and updates the user summary in the db
     pushSummaryToDb();
 
-    // Updates logs and milestones
+    // updates logs and milestones
     updateLogsMilestonesAndMetrics([]);
     checkCodeTimeMetricsMilestonesAchieved();
     checkLanguageMilestonesAchieved();
     checkDaysMilestones();
 
-    // Sets interval jobs
+    // sets interval jobs
     initializeIntervalJobs();
 }
 
 export function initializeIntervalJobs() {
-    // every 1 minute tasks
+
     one_minute_interval = setInterval(async () => {
         // updates logs with latest metrics
         updateLogsMilestonesAndMetrics([]);
@@ -116,7 +117,20 @@ export function initializeIntervalJobs() {
         // summary
         pushSummaryToDb();
     }, one_min_millis * 1);
+
+    one_hour_interval = setInterval(async () => {
+        // fetch all milestones for keeping them updated
+        if (updatedMilestonesDb && sentMilestonesDb) {
+            fetchAllMilestones();
+        } else if (!sentMilestonesDb) {
+            pushNewMilestones();
+        } else {
+            pushUpdatedMilestones();
+        }
+    }, one_min_millis * 60)
 }
+
+
 
 // this method is called when your extension is deactivated
 export function deactivate(ctx: vscode.ExtensionContext) {
@@ -124,4 +138,5 @@ export function deactivate(ctx: vscode.ExtensionContext) {
     createMilestonesPayloadJson();
     clearInterval(one_minute_interval);
     clearInterval(five_minute_interval);
+    clearInterval(one_hour_interval);
 }
