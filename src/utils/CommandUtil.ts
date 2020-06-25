@@ -1,4 +1,4 @@
-import { Disposable, commands, window, TreeView, ViewColumn, WebviewPanel } from "vscode";
+import { Disposable, commands, window, TreeView, ViewColumn, WebviewPanel, Uri } from "vscode";
 import { TreeNode } from "../models/TreeNode";
 import { Tree100DoCProvider, connectDoCTreeView } from "../tree/Tree100DoCProvider";
 import { getLogsHtml, updateLogsHtml, addLogToJson, editLogEntry, updateLogShare } from "./LogsUtil";
@@ -11,7 +11,7 @@ import {
     updateMilestoneShare
 } from "./MilestonesUtil";
 import { updateAddLogHtml, getAddLogHtml } from "./addLogUtil";
-import { getDashboardHtml, updateDashboardHtml } from "./DashboardUtil";
+import { getDashboardHtml, updateDashboardHtml, getCertificateHtml, updateCertificateHtml } from "./DashboardUtil";
 const fs = require("fs");
 
 export function createCommands(): { dispose: () => void } {
@@ -145,6 +145,19 @@ export function createCommands(): { dispose: () => void } {
                     }
                 });
 
+                const dashboardInterval = setInterval(() => {
+                    updateDashboardHtml();
+                    fs.readFile(dashboardHtmlPath, "utf8", (err: Error, data: string) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                        // have to implement this check for worst case scenario
+                        if (currentPanel) {
+                            currentPanel.webview.html = data;
+                        }
+                    });
+                }, 60000);
+
                 currentPanel.webview.onDidReceiveMessage(message => {
                     switch (message.command) {
                         case "Logs":
@@ -162,34 +175,29 @@ export function createCommands(): { dispose: () => void } {
                         case "Certificate":
                             window
                                 .showInputBox({
-                                    placeHolder: "Your name, Your email",
+                                    placeHolder: "Your name",
                                     prompt:
-                                        "Please enter your name and email for getting the certificate. Please make sure that they are in the right order and separated by a comma.",
-                                    validateInput: text => {
-                                        let email = text.split(",")[1].replace(" ", "");
-                                        if (!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
-                                            return "Please enter a valid email";
-                                        } else {
-                                            return "";
-                                        }
-                                    }
+                                        "Please enter your name for getting the certificate. Please make sure that you are connected to the internet."
                                 })
-                                .then(text => { });
+                                .then(text => {
+                                    if (text) {
+                                        const panel = window.createWebviewPanel(
+                                            "Congratulations!",
+                                            "Congratulations!",
+                                            ViewColumn.One
+                                        );
+                                        updateCertificateHtml(text);
+                                        fs.readFile(getCertificateHtml(), "utf8", (err: Error, data: string) => {
+                                            if (err) {
+                                                console.log(err);
+                                            }
+                                            panel.webview.html = data;
+                                        });
+                                        panel.reveal(ViewColumn.One);
+                                    }
+                                });
                     }
                 });
-
-                const dashboardInterval = setInterval(() => {
-                    updateDashboardHtml();
-                    fs.readFile(dashboardHtmlPath, "utf8", (err: Error, data: string) => {
-                        if (err) {
-                            console.log(err);
-                        }
-                        // have to implement this check for worst case scenario
-                        if (currentPanel) {
-                            currentPanel.webview.html = data;
-                        }
-                    });
-                }, 60000);
 
                 currentPanel.onDidDispose(() => {
                     clearInterval(dashboardInterval);
