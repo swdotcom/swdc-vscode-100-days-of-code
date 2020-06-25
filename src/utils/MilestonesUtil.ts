@@ -799,12 +799,27 @@ function getUpdatedMilestonesHtmlString(): string {
         const filepath = getMilestonesJson();
         let rawMilestones = fs.readFileSync(filepath).toString();
         let milestones = JSON.parse(rawMilestones).milestones;
+
+        // if in light mode
+        const tempWindow: any = window;
+
+        let cardTextColor = "#FFFFFF";
+        let cardBackgroundColor = "rgba(255,255,255,0.05)";
+        let cardGrayedLevel = "#474747";
+        let sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+        if (tempWindow.activeColorTheme.kind === 1) {
+            cardTextColor = "#444444";
+            cardBackgroundColor = "rgba(0,0,0,0.10)";
+            cardGrayedLevel = "#B5B5B5";
+            sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shareLight.svg";
+        }
+
         let htmlString = [
             `<html>`,
             `\t<style>`,
             `\tbody {`,
-            `\t\tfont-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,`,
-            `\t\t\tUbuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;`,
+            `\t\tfont-family: sans-serif;`,
+            `\t\tcolor: ${cardTextColor}`,
             `\t}`,
             `\th1 {`,
             `\t\tfont-size: 24px;`,
@@ -818,7 +833,7 @@ function getUpdatedMilestonesHtmlString(): string {
             `\t\theight: 3px;`,
             `\t\tborder: none;`,
             `\t\tcolor: rgba(255, 255, 255, 0.05);`,
-            `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
+            `\t\tbackground-color: ${cardBackgroundColor};`,
             `\t}`,
             `\t`,
             `\t/* levels */`,
@@ -896,7 +911,7 @@ function getUpdatedMilestonesHtmlString(): string {
             `\t`,
             `\t/* Milestone card */`,
             `\t.milestoneCard {`,
-            `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
+            `\t\tbackground-color: ${cardBackgroundColor};`,
             `\t\tdisplay: inline-block;`,
             `\t\tmargin: 10px;`,
             `\t\tposition: relative;`,
@@ -931,6 +946,7 @@ function getUpdatedMilestonesHtmlString(): string {
             `\t\twidth: inherit;`,
             `\t\tfont-size: 18px;`,
             `\t\tfont-weight: 350;`,
+            `\t\tcolor: ${cardTextColor};`,
             `\t}`,
             `\t.logo {`,
             `\t\theight: 100px;`,
@@ -945,6 +961,7 @@ function getUpdatedMilestonesHtmlString(): string {
             `\t\ttext-align: center;`,
             `\t\tfont-size: 14px;`,
             `\t\tbottom: 40px;`,
+            `\t\tcolor: ${cardTextColor};`,
             `\t}`,
             `\t.date {`,
             `\t\tposition: absolute;`,
@@ -962,7 +979,7 @@ function getUpdatedMilestonesHtmlString(): string {
             `\t\tfilter: grayscale(100%);`,
             `\t}`,
             `\t.grayedLevel {`,
-            `\t\tbackground: #474747;`,
+            `\t\tbackground: ${cardGrayedLevel};`,
             `\t}`,
             `\t.noMilestones {`,
             `\t\tfont-size: 18px;`,
@@ -1001,7 +1018,7 @@ function getUpdatedMilestonesHtmlString(): string {
             const achieved: boolean = milestone.achieved;
             const shareIcon: string = milestone.shared
                 ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg"
-                : "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+                : sharePath;
 
             let icon: string;
             let dateAchieved: number = 0;

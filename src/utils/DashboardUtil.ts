@@ -11,6 +11,7 @@ import {
 import { Summary } from "../models/Summary";
 import { getLastSevenLoggedDays, getAllCodetimeHours, getLogDateRange } from "./LogsUtil";
 import { getMilestoneById, milestoneShareUrlGenerator } from "./MilestonesUtil";
+import { window } from "vscode";
 
 export function getDashboardHtml(): string {
     let file = getSoftwareDir();
@@ -358,17 +359,33 @@ function getUpdatedDashboardHtmlString() {
         milestoneHtml = `<h2 style="text-align: center; padding-top: 50px;">Excited for you to achieve your 1st Milestone!<h2>`;
     }
 
+    // if in light mode
+    const tempWindow: any = window;
+
+    let cardTextColor = "#FFFFFF";
+    let cardBackgroundColor = "rgba(255,255,255,0.05)";
+    let datagramXMinColor = "#FFFFFF";
+    let datagramBackground = "rgba(0,0,0,0);";
+    let cardToolTipColor = "rgba(109, 109, 109, .9)";
+    if (tempWindow.activeColorTheme.kind === 1) {
+        cardTextColor = "#444444";
+        cardBackgroundColor = "rgba(0,0,0,0.10)";
+        datagramXMinColor = "#444444";
+        datagramBackground = "rgba(0,0,0,0.10);";
+        cardToolTipColor = "rgba(165, 165, 165, .9)";
+    }
+
     let htmlString = [
         `<html>`,
         `<style>`,
         `\tbody {`,
-        `\t\tfont-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,`,
-        `\t\t\tUbuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;`,
+        `\t\tfont-family: sans-serif;`,
         `\t\twidth: 800px;`,
         `\t\tborder-radius: 3px;`,
         `\t\tborder-width: 2px;`,
-        `\t\tborder-color: rgba(255, 255, 255, 0.05);`,
+        `\t\tborder-color: ${cardBackgroundColor};`,
         `\t\tborder-style: solid;`,
+        `\t\tcolor: ${cardTextColor}`,
         `\t\tmargin: 10px;`,
         `\t}\n`,
         `\th1 {`,
@@ -380,6 +397,7 @@ function getUpdatedDashboardHtmlString() {
         `\t}\n`,
         `\t.inline {`,
         `\t\tdisplay: inline;`,
+        `\t\tcolor: ${cardTextColor}`,
         `\t}\n`,
         `\t#shareProgress {`,
         `\t\tfont-size: 16px;`,
@@ -397,7 +415,7 @@ function getUpdatedDashboardHtmlString() {
         `\t\tline-height: 24px;`,
         `\t\tpadding: 2px;`,
         `\t\twidth: 150px;`,
-        `\t\tcolor: #ffffff;`,
+        `\t\tcolor: ${cardTextColor};`,
         `\t\tfloat: right;`,
         `\t\tmargin-right: 10px;`,
         `\t\tborder-color: rgba(0, 0, 0, 0);`,
@@ -455,6 +473,7 @@ function getUpdatedDashboardHtmlString() {
         `\t.metricsCard {`,
         `\t\tdisplay: inline-block;`,
         `\t\tborder-radius: 3px;`,
+        `\t\tcolor: ${cardTextColor};`,
         `\t\twidth: 150px;`,
         `\t\theight: 90px;`,
         `\t}\n`,
@@ -468,6 +487,7 @@ function getUpdatedDashboardHtmlString() {
         `\t\tpadding-top: 10px;`,
         `\t\tpadding-left: 10px;`,
         `\t\tpadding-right: 10px;`,
+        `\t\theight: 40px;`,
         `\t\tfont-size: 16px;`,
         `\t\tfont-weight: 400;`,
         `\t\tword-wrap: break-word;`,
@@ -483,12 +503,14 @@ function getUpdatedDashboardHtmlString() {
         `\t\tpadding-right: 5px;`,
         `\t\twidth: 430px;`,
         `\t\tmin-height: 285px;`,
-        `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
+        `\t\tbackground-color: ${cardBackgroundColor};`,
+        `\t\tcolor: ${cardTextColor};`,
         `\t\tborder-radius: 3px;`,
         `\t}\n`,
         `\t#logTitle {`,
         `\t\tmargin-top: 5px;`,
         `\t\tdisplay: inline-block;`,
+        `\t\tcolor: ${cardTextColor};`,
         `\t\tfont-size: 20px;`,
         `\t}\n`,
         `\t#viewLogs {`,
@@ -499,8 +521,8 @@ function getUpdatedDashboardHtmlString() {
         `\t\tline-height: 25px;`,
         `\t\tborder-radius: 3px;`,
         `\t\tborder-color: rgba(0, 0, 0, 0);`,
-        `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
-        `\t\tcolor: #ffffff;`,
+        `\t\tbackground-color: ${cardBackgroundColor};`,
+        `\t\tcolor: ${cardTextColor};`,
         `\t\tcursor: pointer;`,
         `\t}\n`,
         `\t#logHeadings {`,
@@ -512,7 +534,8 @@ function getUpdatedDashboardHtmlString() {
         `\t\tfont-size: 16px;`,
         `\t\tline-height: 25px;`,
         `\t\tfont-weight: 400;`,
-        `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
+        `\t\tbackground-color: ${cardBackgroundColor};`,
+        `\t\tcolor: ${cardTextColor};`,
         `\t\tmargin-top: 15px;`,
         `\t\theight: 25px;`,
         `\t\tvertical-align: middle;`,
@@ -524,13 +547,16 @@ function getUpdatedDashboardHtmlString() {
         `\t\twidth: 100%;`,
         `\t\tgrid-template-columns: 50px 160px 220px;`,
         `\t\tfont-size: 16px;`,
+        `\t\tcolor: ${cardTextColor};`,
         `\t\tword-wrap: break-word;`,
         `\t}\n`,
         `\t#chart {`,
         `\t\tposition: relative;`,
         `\t\twidth: 750px;`,
         `\t\theight: 325px;`,
-        `\t\tborder-color: rgba(255, 255, 255, 0.05);`,
+        `\t\tbackground-color: ${datagramBackground};`,
+        `\t\tborder-color: ${cardBackgroundColor};`,
+        `\t\tcolor: ${cardTextColor};`,
         `\t\tborder-width: 1px;`,
         `\t\tborder-style: solid;`,
         `\t\tborder-radius: 3px;`,
@@ -540,7 +566,7 @@ function getUpdatedDashboardHtmlString() {
         `\t}\n`,
         `\t#chartXMin {`,
         `\t\tposition: absolute;`,
-        `\t\tbackground-color: #ffffff;`,
+        `\t\tbackground-color: ${datagramXMinColor};`,
         `\t\twidth: 720px;`,
         `\t\theight: 2px;`,
         `\t\tbottom: 50px;`,
@@ -549,7 +575,7 @@ function getUpdatedDashboardHtmlString() {
         `\t}\n`,
         `\t#chartXMid {`,
         `\t\tposition: absolute;`,
-        `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
+        `\t\tbackground-color: ${cardBackgroundColor};`,
         `\t\twidth: 720px;`,
         `\t\theight: 1px;`,
         `\t\tbottom: 185px;`,
@@ -557,7 +583,7 @@ function getUpdatedDashboardHtmlString() {
         `\t}\n`,
         `\t#chartXMax {`,
         `\t\tposition: absolute;`,
-        `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
+        `\t\tbackground-color: ${cardBackgroundColor};`,
         `\t\twidth: 720px;`,
         `\t\theight: 1px;`,
         `\t\tbottom: 300px;`,
@@ -613,7 +639,7 @@ function getUpdatedDashboardHtmlString() {
         `\t\tpadding-right: 5px;`,
         `\t\twidth: 315px;`,
         `\t\tmin-height: 285px;`,
-        `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
+        `\t\tbackground-color: ${cardBackgroundColor};`,
         `\t\tborder-radius: 3px;`,
         `\t}\n`,
         `\t#milestoneTitle {`,
@@ -621,6 +647,7 @@ function getUpdatedDashboardHtmlString() {
         `\t\tmargin-top: 5px;`,
         `\t\tfont-size: 20px;`,
         `\t\tpadding-bottom: 5px;`,
+        `\t\tcolor: ${cardTextColor};`,
         `\t}\n`,
         `\t#viewMilestones {`,
         `\t\tmargin-top: 5px;`,
@@ -630,8 +657,8 @@ function getUpdatedDashboardHtmlString() {
         `\t\tline-height: 25px;`,
         `\t\tborder-radius: 3px;`,
         `\t\tborder-color: rgba(0, 0, 0, 0);`,
-        `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
-        `\t\tcolor: #ffffff;`,
+        `\t\tbackground-color: ${cardBackgroundColor};`,
+        `\t\tcolor: ${cardTextColor};`,
         `\t\tcursor: pointer;`,
         `\t}\n`,
         `\t.milestoneCard {`,
@@ -639,6 +666,7 @@ function getUpdatedDashboardHtmlString() {
         `\t\tmargin-top: 20px;`,
         `\t\twidth: 270px;`,
         `\t\tdisplay: inline-block;`,
+        `\t\tcolor: ${cardTextColor};`,
         `\t}\n`,
         `\t.logo {`,
         `\t\theight: 50px;`,
@@ -667,12 +695,11 @@ function getUpdatedDashboardHtmlString() {
         `\t\tposition: relative;`,
         `\t\tvisibility: hidden;`,
         `\t\twidth: 130px;`,
-        `\t\tbottom: -20px;`,
         `\t\tleft: 5px;`,
         `\t\tborder-radius: 3px;`,
-        `\t\tbackground-color: rgba(109, 109, 109, .9);`,
+        `\t\tbackground-color: ${cardToolTipColor};`,
         `\t\tbackground-blend-mode: darken;`,
-        `\t\tcolor: #fff;`,
+        `\t\tcolor: ${cardTextColor};`,
         `\t\ttext-align: center;`,
         `\t\tpadding: 5px;`,
         `\t\tz-index: 1;`,

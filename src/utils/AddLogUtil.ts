@@ -3,6 +3,7 @@ import fs = require("fs");
 import { getMostRecentLogObject, getLatestLogEntryNumber } from "./LogsUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import { Log } from "../models/Log";
+import { window } from "vscode";
 
 export function getAddLogHtml() {
     let file = getSoftwareDir();
@@ -54,12 +55,26 @@ export function getUpdatedAddLogHtmlString() {
     const rawKeystrokes = metrics[1];
     const linesAdded = metrics[2];
 
+    // if in light mode
+    const tempWindow: any = window;
+
+    let cardTextColor = "#FFFFFF";
+    let cardBackgroundColor = "rgba(255,255,255,0.05)";
+    let cardGrayedLevel = "#474747";
+    let sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+    if (tempWindow.activeColorTheme.kind === 1) {
+        cardTextColor = "#444444";
+        cardBackgroundColor = "rgba(0,0,0,0.10)";
+        cardGrayedLevel = "#B5B5B5";
+        sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shareLight.svg";
+    }
+
     const htmlString = [
         `<html>`,
         `<style>`,
-        `\tbody {`,
-        `\t\tfont-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,`,
-        `\t\t\tUbuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;`,
+        `\tbody{`,
+        `\t\tfont-family: sans-serif;`,
+        `\t\tcolor: ${cardTextColor}`,
         `\t}`,
         `\t#modal {`,
         `\t\tposition: absolute;`,
@@ -69,7 +84,7 @@ export function getUpdatedAddLogHtmlString() {
         `\t\tmargin-top: -260px;`,
         `\t\tleft: 50%;`,
         `\t\tmargin-left: -225px;`,
-        `\t\tbackground: rgba(255, 255, 255, 0.05);`,
+        `\t\tbackground: ${cardBackgroundColor};`,
         `\t\tborder-radius: 3px;`,
         `\t}\n`,
         `\t/* Headings */`,
@@ -99,8 +114,8 @@ export function getUpdatedAddLogHtmlString() {
         `\t\tpadding-left: 5px;`,
         `\t\tpadding-right: 5px;`,
         `\t\tborder-color: rgba(0, 0, 0, 0);`,
-        `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
-        `\t\tcolor: #ffffff;`,
+        `\t\tbackground-color: ${cardBackgroundColor};`,
+        `\t\tcolor: ${cardTextColor};`,
         `\t\tresize: none;`,
         `\t}\n`,
         `\t/* CodeTime */`,
@@ -111,7 +126,7 @@ export function getUpdatedAddLogHtmlString() {
         `\t\tmargin-left: -10px;`,
         `\t\tfont-size: 16px;`,
         `\t\tline-height: 20px;`,
-        `\t\tcolor: rgba(255, 255, 255, 0.5);`,
+        `\t\tcolor: ${cardTextColor};`,
         `\t}`,
         `\t.metricsText {`,
         `\t\tmargin-top: 5px;`,
@@ -129,7 +144,7 @@ export function getUpdatedAddLogHtmlString() {
         `\t#cancel {`,
         `\t\tfont-size: 16px;`,
         `\t\tline-height: 25px;`,
-        `\t\tcolor: #ffffff;`,
+        `\t\tcolor: ${cardTextColor};`,
         `\t\tbackground-color: rgba(0, 0, 0, 0);`,
         `\t\tborder-color: rgba(0, 0, 0, 0);`,
         `\t\tborder-radius: 3px;`,
@@ -140,7 +155,7 @@ export function getUpdatedAddLogHtmlString() {
         `\t#submit {`,
         `\t\tfont-size: 16px;`,
         `\t\tline-height: 25px;`,
-        `\t\tcolor: #ffffff;`,
+        `\t\tcolor: ${cardTextColor};`,
         `\t\tbackground: #00b4ee;`,
         `\t\tborder: 3px solid #00b4ee;`,
         `\t\tbox-sizing: border-box;`,

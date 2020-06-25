@@ -930,6 +930,7 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
                             commands.executeCommand("DoC.addLog");
                         }
                     });
+                    dateLogMessage = new Date();
                 }
                 return;
             }
@@ -956,6 +957,26 @@ export function getUpdatedLogsHtmlString(): string {
         const rawLogs = fs.readFileSync(logFilepath).toString();
         let logs = JSON.parse(rawLogs).logs;
 
+        // if in light mode
+        const tempWindow: any = window;
+
+        let cardTextColor = "#FFFFFF";
+        let cardBackgroundColor = "rgba(255,255,255,0.05)";
+        let cardMetricBarSidesColor = "rgba(255,255,255,0.20)";
+        let cardToolTipColor = "rgba(109, 109, 109, .9)";
+        let sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+        let dropDownPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Logs/dropDown.svg";
+        let editLogCardColor = "#292929";
+        if (tempWindow.activeColorTheme.kind === 1) {
+            cardTextColor = "#444444";
+            cardBackgroundColor = "rgba(0,0,0,0.10)";
+            cardMetricBarSidesColor = "rgba(0,0,0,0.20)";
+            cardToolTipColor = "rgba(165, 165, 165, .9)";
+            sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shareLight.svg";
+            dropDownPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Logs/dropDownLight.svg";
+            editLogCardColor = "#E5E5E5";
+        }
+
         // CSS
         let htmlString = [
             `<html>`,
@@ -965,10 +986,13 @@ export function getUpdatedLogsHtmlString(): string {
             `\t</title>`,
             `</head>`,
             `<style>`,
+            `\tbody{`,
+            `\t\tfont-family: sans-serif;`,
+            `\t\tcolor: ${cardTextColor}`,
+            `\t}`,
             `\t.logCard {`,
             `\t\tdisplay: inline-block;`,
-            `\t\tfont-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;`,
-            `\t\tbackground: rgba(255,255,255,0.05);`,
+            `\t\tbackground: ${cardBackgroundColor};`,
             `\t\twidth: 830px;`,
             `\t\tbox-sizing: border-box;`,
             `\t\tborder-radius: 1px;`,
@@ -985,7 +1009,7 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tdisplay: flex;`,
             `\t\tpadding-left: 10px;`,
             `\t\talign-items: center;`,
-            `\t\tcolor: #FFFFFF;`,
+            `\t\tcolor: ${cardTextColor};`,
             `\t}`,
             `\t.cardLinkText {`,
             `\t\tfont-style: normal;`,
@@ -1006,8 +1030,8 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tpadding-left: 5px;`,
             `\t\tpadding-right: 5px;`,
             `\t\tborder-color: rgba(0, 0, 0, 0);`,
-            `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
-            `\t\tcolor: #ffffff;`,
+            `\t\tbackground-color: ${cardBackgroundColor};`,
+            `\t\tcolor: ${cardTextColor};`,
             `\t\ttransform: translate(8px, 30px);`,
             `\t\tvisibility: hidden;`,
             `\t\tresize: none;`,
@@ -1020,8 +1044,8 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tpadding-left: 5px;`,
             `\t\tpadding-right: 5px;`,
             `\t\tborder-color: rgba(0, 0, 0, 0);`,
-            `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
-            `\t\tcolor: #ffffff;`,
+            `\t\tbackground-color: ${cardBackgroundColor};`,
+            `\t\tcolor: ${cardTextColor};`,
             `\t\ttransform: translate(50px, -20px);`,
             `\t\tvisibility: hidden;`,
             `\t\tresize: none;`,
@@ -1033,7 +1057,7 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tline-height: 128.91%;`,
             `\t\tpadding-left: 10px;`,
             `\t\tdisplay: flex;`,
-            `\t\tcolor: #FFFFFF;`,
+            `\t\tcolor: ${cardTextColor};`,
             `\t}`,
             `\t.cardDateText {`,
             `\t\tfont-style: normal;`,
@@ -1078,8 +1102,8 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tfont-weight: bold;`,
             `\t\tfont-size: 18px;`,
             `\t\ttext-align: center;`,
-            `\t\tcolor: #FFFFFF;`,
-            `\t\tbackground-color: rgba(255,255,255,0.05);`,
+            `\t\tcolor: ${cardTextColor};`,
+            `\t\tbackground-color: ${cardBackgroundColor};`,
             `\t\tborder-radius: 1px;`,
             `\t\tborder-color: rgba(0,0,0,0);`,
             `\t\tpadding: 5px;`,
@@ -1134,7 +1158,7 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tfont-weight: bold;`,
             `\t\tfont-size: 16px;`,
             `\t\tline-height: 128.91%;`,
-            `\t\tcolor: #FFFFFF;`,
+            `\t\tcolor: ${cardTextColor};`,
             `\t\tpadding-left: 10px;`,
             `\t\tmargin-bottom: 3px;`,
             `\t}`,
@@ -1147,7 +1171,7 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\twidth: 30%;`,
             `\t\tdisplay: inline-flex;`,
             `\t\talign-items: center;`,
-            `\t\tbackground: rgba(255,255,255,0.05);`,
+            `\t\tbackground: ${cardBackgroundColor};`,
             `\t\tborder-radius: 1px;`,
             `\t\tdisplay: flex;`,
             `\t\tflex-direction: column;`,
@@ -1163,7 +1187,7 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tfont-size: 12px;`,
             `\t\tline-height: 128.91%;`,
             `\t\ttext-align: center;`,
-            `\t\tcolor: #FFFFFF;`,
+            `\t\tcolor: ${cardTextColor};`,
             `\t}`,
             `\t.cardMetricBarGroup{`,
             `\t\tposition: relative;`,
@@ -1177,7 +1201,7 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\ttop: 0px;`,
             `\t\tleft: 0px;`,
             `\t\tborder-radius: 1px;`,
-            `\t\tbackground-color: rgba(255,255,255,0.20)`,
+            `\t\tbackground-color: ${cardMetricBarSidesColor}`,
             `\t}`,
             `\t.cardMetricBarRight{`,
             `\t\tposition: absolute;`,
@@ -1186,7 +1210,7 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\ttop: 0px;`,
             `\t\tleft: 110px;`,
             `\t\tborder-radius: 1px;`,
-            `\t\tbackground-color: rgba(255,255,255,0.20)`,
+            `\t\tbackground-color: ${cardMetricBarSidesColor}`,
             `\t}`,
             `\t.cardMetricBarMiddle{`,
             `\t\tposition: absolute;`,
@@ -1194,7 +1218,7 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\theight: 20px;`,
             `\t\ttop: 10px;`,
             `\t\tleft: 10px;`,
-            `\t\tbackground-color: rgba(255,255,255,0.05)`,
+            `\t\tbackground-color: ${cardBackgroundColor}`,
             `\t}`,
             // Milestones
             `\t.cardMilestoneSection {`,
@@ -1212,7 +1236,7 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tline-height: 128.91%;`,
             `\t\ttext-align: left;`,
             `\t\tpadding-left: 8px;`,
-            `\t\tcolor: #FFFFFF;`,
+            `\t\tcolor: ${cardTextColor};`,
             `\t}`,
             `\t.cardMilestoneGrid {`,
             `\t\twidth: 200px;`,
@@ -1230,7 +1254,7 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tposition: relative;`,
             `\t\twidth: 55px;`,
             `\t\theight: 55px;`,
-            `\t\tbackground: rgba(255,255,255,0.05);`,
+            `\t\tbackground: ${cardBackgroundColor};`,
             `\t\tborder-radius: 1px;`,
             `\t\tdisplay: inline-flex;`,
             `\t\talign-items: center;`,
@@ -1247,10 +1271,10 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tvisibility: hidden;`,
             `\t\ttop: 8px;`,
             `\t\tright: 105%;`,
-            `\t\tbackground-color: rgba(109, 109, 109, .9);`,
+            `\t\tbackground-color: ${cardToolTipColor};`,
             `\t\tbackground-blend-mode: darken;`,
             `\t\tborder-radius: 3px;`,
-            `\t\tcolor: #fff;`,
+            `\t\tcolor: ${cardTextColor};`,
             `\t\ttext-align: center;`,
             `\t\twhite-space: nowrap;`,
             `\t\tpadding: 5px;`,
@@ -1269,8 +1293,7 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\twidth: 100%;`,
             `\t\theight: 100%;`,
             `\t\toverflow: auto;`,
-            `\t\tbackground-color: rgb(0,0,0);`,
-            `\t\tbackground-color: rgba(0,0,0,0.4);`,
+            `\t\tbackground-color: rgba(0,0,0,0.2);`,
             `\t\tvisibility: hidden;`,
             `}`,
             `\t#editLogCardContent {`,
@@ -1281,7 +1304,7 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tmargin-top: -260px;`,
             `\t\tleft: 50%;`,
             `\t\tmargin-left: -225px;`,
-            `\t\tbackground: #292929;`,
+            `\t\tbackground: ${editLogCardColor};`,
             `\t\tborder-radius: 3px;`,
             `\t}`,
             `\t/* Headings */`,
@@ -1291,6 +1314,7 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tfont-size: 23px;`,
             `\t\tline-height: 30px;`,
             `\t\tfont-weight: 600;`,
+            `\t\tcolor: ${cardTextColor}`,
             `\t}`,
             `\t.head2 {`,
             `\t\tmargin-top: 10px;`,
@@ -1311,11 +1335,10 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tpadding-left: 5px;`,
             `\t\tpadding-right: 5px;`,
             `\t\tborder-color: rgba(0, 0, 0, 0);`,
-            `\t\tbackground-color: rgba(255, 255, 255, 0.05);`,
-            `\t\tcolor: #ffffff;`,
+            `\t\tbackground-color: ${cardBackgroundColor};`,
+            `\t\tcolor: ${cardTextColor};`,
             `\t\tresize: none;`,
             `\t}`,
-            `\t/* CodeTime */`,
             `\t#editLogsHoursSelect {`,
             `\t\twidth: 40px;`,
             `\t}`,
@@ -1323,7 +1346,7 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tmargin-left: -10px;`,
             `\t\tfont-size: 16px;`,
             `\t\tline-height: 20px;`,
-            `\t\tcolor: rgba(255, 255, 255, 0.5);`,
+            `\t\tcolor: ${cardTextColor};`,
             `\t}`,
             `\t.metricsText {`,
             `\t\tmargin-top: 5px;`,
@@ -1342,7 +1365,7 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tcursor: pointer;`,
             `\t\tfont-size: 16px;`,
             `\t\tline-height: 25px;`,
-            `\t\tcolor: #ffffff;`,
+            `\t\tcolor: ${cardTextColor};`,
             `\t\tbackground-color: rgba(0, 0, 0, 0);`,
             `\t\tborder-color: rgba(0, 0, 0, 0);`,
             `\t\tborder-radius: 3px;`,
@@ -1353,7 +1376,7 @@ export function getUpdatedLogsHtmlString(): string {
             `\t\tcursor: pointer;`,
             `\t\tfont-size: 16px;`,
             `\t\tline-height: 25px;`,
-            `\t\tcolor: #ffffff;`,
+            `\t\tcolor: ${cardTextColor};`,
             `\t\tbackground: #00b4ee;`,
             `\t\tborder: 3px solid #00b4ee;`,
             `\t\tbox-sizing: border-box;`,
@@ -1419,7 +1442,7 @@ export function getUpdatedLogsHtmlString(): string {
 
                 const shareIconLink = day.shared
                     ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg"
-                    : "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+                    : sharePath;
 
                 // Header and description
                 htmlString += [
@@ -1434,7 +1457,7 @@ export function getUpdatedLogsHtmlString(): string {
                     `\t\t\t<div class="cardHeaderButtonSection">`,
                     `\t\t\t\t<a href="${twitterShareUrl}" title="Share this on Twitter"><button class="cardHeaderShareButton"><img class="cardHeaderShareButtonIcon" src=${shareIconLink}></button></a>`,
                     `\t\t\t\t<button class="cardHeaderEditLogButton">Edit Log</button>`,
-                    `\t\t\t\t<button class="cardHeaderDropDownButton"><img class="cardHeaderShareButtonIcon" src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Logs/dropDown.svg"></button>`,
+                    `\t\t\t\t<button class="cardHeaderDropDownButton"><img class="cardHeaderShareButtonIcon" src=${dropDownPath}></button>`,
                     `\t\t\t</div>`,
                     `\t\t</div>`,
                     `\t\t<div class="cardContent">`,
