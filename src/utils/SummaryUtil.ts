@@ -52,18 +52,15 @@ export function checkSummaryJson() {
 }
 
 export async function pushSummaryToDb() {
-
     const summaryExists = await fetchSummary();
     if (summaryExists) {
         pushUpdatedSummary();
     } else {
         pushNewSummary();
     }
-
 }
 
 async function pushNewSummary() {
-
     const summary: Summary = getSummaryObject();
 
     const toCreateSummary = {
@@ -94,12 +91,11 @@ async function pushNewSummary() {
             console.log("New summary not created in db");
         }
         // Wait 10 seconds before next try
-        setTimeout(() => { }, 10000);
+        setTimeout(() => {}, 10000);
     }
 }
 
 async function pushUpdatedSummary() {
-
     const summary: Summary = getSummaryObject();
 
     const toCreateSummary = {
@@ -125,12 +121,14 @@ async function pushUpdatedSummary() {
         if (available) {
             const jwt = getSoftwareSessionAsJson()["jwt"];
             const resp = await softwarePut("100doc/summary", toCreateSummary, jwt);
-            const added: boolean = isResponseOk(resp);
+            if (isResponseOk(resp)) {
+                retry = 0;
+            }
         } else {
             console.log("New summary not created in db");
         }
         // Wait 10 seconds before next try
-        setTimeout(() => { }, 10000);
+        setTimeout(() => {}, 10000);
     }
 }
 
@@ -167,13 +165,12 @@ export async function fetchSummary() {
                 retry = 0;
                 return true;
             }
-
         } else {
             console.log("New summary not created in db");
         }
 
         // Wait 10 seconds before next try
-        setTimeout(() => { }, 10000);
+        setTimeout(() => {}, 10000);
     }
     return false;
 }
@@ -197,7 +194,6 @@ function compareLocalSummary(dbSummary: any) {
             console.log(err);
             return;
         }
-
     }
 }
 
@@ -224,7 +220,6 @@ export function reevaluateSummary() {
         console.log(err);
         return;
     }
-
 }
 
 export function updateSummaryJson() {

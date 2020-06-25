@@ -87,7 +87,7 @@ export function getLogsSummary(): any {
         totalKeystrokes,
         totalDays,
         longest_streak,
-        current_streak,
+        current_streak
     };
 }
 
@@ -166,7 +166,6 @@ export function checkLogsJson(): boolean {
 export async function fetchLogs() {
     const jwt = getSoftwareSessionAsJson()["jwt"];
     const dateNow = new Date();
-    const endDate = dateNow.getDate();
     let retry = 5;
     let available = false;
     while (retry > 0) {
@@ -177,7 +176,7 @@ export async function fetchLogs() {
         }
         retry--;
         if (available) {
-            const logs = await softwareGet("/100doc/logs", jwt, { start_date: 0, end_date: endDate }).then(resp => {
+            const logs = await softwareGet("/100doc/logs", jwt).then(resp => {
                 if (isResponseOk(resp)) {
                     const rawLogs = resp.data;
                     let logs: Array<Log> = [];
@@ -200,7 +199,7 @@ export async function fetchLogs() {
                     return logs;
                 } else {
                     // Wait 10 seconds before next try
-                    setTimeout(() => { }, 10000);
+                    setTimeout(() => {}, 10000);
                 }
             });
             if (logs) {
@@ -210,7 +209,7 @@ export async function fetchLogs() {
             }
         } else {
             // Wait 10 seconds before next try
-            setTimeout(() => { }, 10000);
+            setTimeout(() => {}, 10000);
         }
     }
 }
@@ -312,10 +311,12 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
 
             // fetch and update milestones in db
             let newMilestones = await fetchMilestonesByDate(logs[i].date);
-            newMilestones = newMilestones.concat(logs[i].milestones);
-            newMilestones = Array.from(new Set(newMilestones));
-            logs[i].milestones = newMilestones;
-            pushMilestonesToDb(logs[i].date, newMilestones);
+            if (newMilestones) {
+                newMilestones = newMilestones.concat(logs[i].milestones);
+                newMilestones = Array.from(new Set(newMilestones));
+                logs[i].milestones = newMilestones;
+                pushMilestonesToDb(logs[i].date, newMilestones);
+            }
 
             // remove logs[i+1] as it is now merged with logs[i]
             logs.splice(i + 1, 1);
@@ -439,7 +440,7 @@ export async function pushNewLogs(addNew: boolean) {
             sentLogsDb = false;
         }
         // Wait 10 seconds before next try
-        setTimeout(() => { }, 10000);
+        setTimeout(() => {}, 10000);
     }
 }
 
@@ -499,7 +500,7 @@ export async function pushUpdatedLogs(addNew: boolean, dayNumber: number) {
             updatedLogsDb = false;
         }
         // Wait 10 seconds before next try
-        setTimeout(() => { }, 10000);
+        setTimeout(() => {}, 10000);
     }
 }
 
@@ -924,12 +925,18 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
                 updateSummaryJson();
                 await pushUpdatedLogs(true, logs[i].day_number);
 
-                if ((!dateLogMessage || compareDates(dateLogMessage, new Date())) && (logs[i].codetime_metrics.hours > 0.3 && logs[i].title === "No Title")) {
-                    window.showInformationMessage("Don't forget to add and share today's log.", "Add Log").then(selection => {
-                        if (selection === "Add Log") {
-                            commands.executeCommand("DoC.addLog");
-                        }
-                    });
+                if (
+                    (!dateLogMessage || compareDates(dateLogMessage, new Date())) &&
+                    logs[i].codetime_metrics.hours > 0.3 &&
+                    logs[i].title === "No Title"
+                ) {
+                    window
+                        .showInformationMessage("Don't forget to add and share today's log.", "Add Log")
+                        .then(selection => {
+                            if (selection === "Add Log") {
+                                commands.executeCommand("DoC.addLog");
+                            }
+                        });
                     dateLogMessage = new Date();
                 }
                 return;

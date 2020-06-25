@@ -39,7 +39,7 @@ const one_min_millis = 1000 * 60;
 export function activate(ctx: vscode.ExtensionContext) {
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
-    console.log('swdc-100-days-of-code: activted');
+    console.log("swdc-100-days-of-code: activated");
 
     initializePlugin();
 
@@ -47,30 +47,29 @@ export function activate(ctx: vscode.ExtensionContext) {
     ctx.subscriptions.push(createCommands());
 }
 
-export function initializePlugin() {
+export async function initializePlugin() {
     // checks if all the files exist
     checkLogsJson();
     checkMilestonesJson();
     checkSummaryJson();
 
-    // checks if any payloads remained
     checkLogsPayload();
-    if (updatedLogsDb && sentLogsDb) {
-        fetchLogs();
-    } else if (!sentLogsDb) {
+    if (!sentLogsDb) {
         pushNewLogs(false);
-    } else {
+    }
+    if (!updatedLogsDb) {
         pushUpdatedLogs(false, 0);
     }
+    fetchLogs();
 
     checkMilestonesPayload();
-    if (updatedMilestonesDb && sentMilestonesDb) {
-        fetchAllMilestones();
-    } else if (!sentMilestonesDb) {
+    if (!sentMilestonesDb) {
         pushNewMilestones();
-    } else {
+    }
+    if (!updatedMilestonesDb) {
         pushUpdatedMilestones();
     }
+    fetchAllMilestones();
 
     // fetches and updates the user summary in the db
     pushSummaryToDb();
@@ -86,7 +85,6 @@ export function initializePlugin() {
 }
 
 export function initializeIntervalJobs() {
-
     one_minute_interval = setInterval(async () => {
         // updates logs with latest metrics
         updateLogsMilestonesAndMetrics([]);
@@ -97,22 +95,22 @@ export function initializeIntervalJobs() {
 
     five_minute_interval = setInterval(async () => {
         // logs
-        if (updatedLogsDb && sentLogsDb) {
-            fetchLogs();
-        } else if (!sentLogsDb) {
+        if (!sentLogsDb) {
             pushNewLogs(false);
-        } else {
+        }
+        if (!updatedLogsDb) {
             pushUpdatedLogs(false, 0);
         }
+        fetchLogs();
 
         // milestones
-        if (updatedMilestonesDb && sentMilestonesDb) {
-            fetchMilestonesForYesterdayAndToday();
-        } else if (!sentMilestonesDb) {
+        if (!sentMilestonesDb) {
             pushNewMilestones();
-        } else {
+        }
+        if (!updatedMilestonesDb) {
             pushUpdatedMilestones();
         }
+        fetchMilestonesForYesterdayAndToday();
 
         // summary
         pushSummaryToDb();
@@ -127,10 +125,8 @@ export function initializeIntervalJobs() {
         } else {
             pushUpdatedMilestones();
         }
-    }, one_min_millis * 60)
+    }, one_min_millis * 60);
 }
-
-
 
 // this method is called when your extension is deactivated
 export function deactivate(ctx: vscode.ExtensionContext) {

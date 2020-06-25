@@ -9,7 +9,12 @@ import {
     updateLogMilestonesByDates
 } from "./LogsUtil";
 import { Summary } from "../models/Summary";
-import { getSummaryObject, updateSummaryMilestones, incrementSummaryShare, updateSummaryLanguages } from "./SummaryUtil";
+import {
+    getSummaryObject,
+    updateSummaryMilestones,
+    incrementSummaryShare,
+    updateSummaryLanguages
+} from "./SummaryUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import { getLanguages } from "./LanguageUtil";
 import { softwarePost, isResponseOk, serverIsAvailable, softwarePut, softwareGet } from "../managers/HttpManager";
@@ -31,7 +36,6 @@ export function getMilestonesJson(): string {
 }
 
 export function getTotalMilestonesAchieved(): number {
-
     const exists = checkMilestonesJson();
     if (!exists) {
         return -1;
@@ -136,12 +140,17 @@ export async function fetchMilestonesByDate(date: number) {
                 }
             });
             if (milestones) {
+                console.log(milestones);
                 retry = 0;
-                return milestones.milestones;
+                if (milestones.length > 1) {
+                    return milestones[0].milestones;
+                } else {
+                    return [];
+                }
             }
         } else {
             // Wait 10 seconds before next try
-            setTimeout(() => { }, 10000);
+            setTimeout(() => {}, 10000);
         }
     }
 }
@@ -182,7 +191,7 @@ export async function fetchMilestonesForYesterdayAndToday() {
             }
         } else {
             // Wait 10 seconds before next try
-            setTimeout(() => { }, 10000);
+            setTimeout(() => {}, 10000);
         }
     }
 }
@@ -211,7 +220,7 @@ export async function fetchAllMilestones() {
             }
         } else {
             // Wait 10 seconds before next try
-            setTimeout(() => { }, 10000);
+            setTimeout(() => {}, 10000);
         }
     }
 }
@@ -290,7 +299,7 @@ export async function pushNewMilestones() {
             sentMilestonesDb = false;
         }
         // Wait 10 seconds before next try
-        setTimeout(() => { }, 10000);
+        setTimeout(() => {}, 10000);
     }
 }
 
@@ -324,7 +333,7 @@ export async function pushUpdatedMilestones() {
             updatedMilestonesDb = false;
         }
         // Wait 10 seconds before next try
-        setTimeout(() => { }, 10000);
+        setTimeout(() => {}, 10000);
     }
 }
 
