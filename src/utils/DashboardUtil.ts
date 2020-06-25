@@ -12,7 +12,7 @@ import { Summary } from "../models/Summary";
 import { getLastSevenLoggedDays, getAllCodetimeHours, getLogDateRange } from "./LogsUtil";
 import { getMilestoneById, milestoneShareUrlGenerator } from "./MilestonesUtil";
 
-export function getDashboardHtml() {
+export function getDashboardHtml(): string {
     let file = getSoftwareDir();
     if (isWindows()) {
         file += "\\dashboard.html";
@@ -22,12 +22,54 @@ export function getDashboardHtml() {
     return file;
 }
 
-export function getUpdatedDashboardHtmlString() {
+export function getCertificateHtml(): string {
+    let file = getSoftwareDir();
+    if (isWindows()) {
+        file += "\\certificate.html";
+    } else {
+        file += "/certificate.html";
+    }
+    return file;
+}
+
+function getCertificateHtmlString(name: string): string {
+    return [
+        `<html>`,
+        `\t<body>`,
+        `\t\t<div id="container" style="position: relative; text-align: center; margin-top: 1vh;">`,
+        `\t\t\t<img`,
+        `\t\t\t\tid="Certificate"`,
+        `\t\t\t\tsrc="https://100-days-of-code.s3-us-west-1.amazonaws.com/Certificate.svg"`,
+        `\t\t\t\twidth="100%"`,
+        `\t\t\t\talt="PLEASE CONNECT TO INTERNET"`,
+        `\t\t\t/>`,
+        `\t\t\t<div`,
+        `\t\t\t\tid="text"`,
+        `\t\t\t\tstyle="`,
+        `\tposition: absolute;`,
+        `\ttop: 38%;`,
+        `\tleft: 0;`,
+        `\ttext-align: center;`,
+        `\twidth: 100%;`,
+        `\tfont-family: sans-serif;`,
+        `\tcolor: white;`,
+        `\tfont-size: 5vw;`,
+        `"`,
+        `\t\t\t>`,
+        `\t\t\t\t${name}`,
+        `\t\t\t</div>`,
+        `\t\t</div>`,
+        `\t</body>`,
+        `</html>`
+    ].join("\n");
+}
+
+function getUpdatedDashboardHtmlString() {
     const summary: Summary = getSummaryObject();
 
     // Metrics
     let hours = summary.hours + summary.currentHours;
-    hours = parseFloat((hours).toFixed(2));
+    hours = parseFloat(hours.toFixed(2));
     let days = summary.days;
     let streaks = summary.longest_streak;
     let avgHours = parseFloat((hours / days).toFixed(2));
@@ -38,10 +80,13 @@ export function getUpdatedDashboardHtmlString() {
             avgHours = 0;
         }
     }
+
+    // view certificate if coded over 0.5 hours on 100th day or over 100 days of coding achieved
     let certificateVisibility = "hidden";
-    if (days >= 100) {
+    if (days > 100 || (days === 100 && summary.currentHours >= 0.5)) {
         certificateVisibility = "visible";
     }
+
     const daysLevel = getDaysLevel(days);
     const hoursLevel = getHoursLevel(hours);
     const longStreakLevel = getLongStreakLevel(streaks);
@@ -729,10 +774,19 @@ export function getUpdatedDashboardHtmlString() {
     return htmlString;
 }
 
-export function updateDashboardHtml() {
+export function updateDashboardHtml(): void {
     let filepath = getDashboardHtml();
     try {
         fs.writeFileSync(filepath, getUpdatedDashboardHtmlString());
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+export function updateCertificateHtml(name: string): void {
+    let filepath = getCertificateHtml();
+    try {
+        fs.writeFileSync(filepath, getCertificateHtmlString(name));
     } catch (err) {
         console.log(err);
     }
