@@ -32,7 +32,7 @@ export let sentLogsDb = true;
 
 let toCreateLogs: Array<any> = [];
 let toUpdateLogs: Array<any> = [];
-let dateLogMessage: Date;
+let dateLogMessage: Date | any = undefined;
 
 export function getLogsJson(): string {
     let file = getSoftwareDir();
@@ -926,7 +926,7 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
                 await pushUpdatedLogs(true, logs[i].day_number);
 
                 if (
-                    (!dateLogMessage || compareDates(dateLogMessage, new Date())) &&
+                    (!dateLogMessage || !compareDates(dateLogMessage, new Date())) &&
                     logs[i].codetime_metrics.hours > 0.3 &&
                     logs[i].title === "No Title"
                 ) {
