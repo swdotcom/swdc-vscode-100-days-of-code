@@ -3,12 +3,11 @@ import { TreeNode } from "../models/TreeNode";
 import { Tree100DoCProvider, connectDoCTreeView } from "../tree/Tree100DoCProvider";
 import { getLogsHtml, updateLogsHtml, addLogToJson, editLogEntry, updateLogShare } from "./LogsUtil";
 import {
-    updateMilestonesHtml,
-    getMilestonesHtml,
     checkDaysMilestones,
     checkLanguageMilestonesAchieved,
     checkCodeTimeMetricsMilestonesAchieved,
-    updateMilestoneShare
+    updateMilestoneShare,
+    getUpdatedMilestonesHtmlString
 } from "./MilestonesUtil";
 import { updateAddLogHtml, getAddLogHtml } from "./addLogUtil";
 import { getUpdatedDashboardHtmlString, getCertificateHtmlString } from "./DashboardUtil";
@@ -185,50 +184,33 @@ export function createCommands(): { dispose: () => void } {
             checkCodeTimeMetricsMilestonesAchieved();
             checkLanguageMilestonesAchieved();
             checkDaysMilestones();
-            updateMilestonesHtml();
-            const milestonesHtmlPath = getMilestonesHtml();
 
             if (currentPanel) {
                 if (currentPanel.title !== "Milestones") {
                     currentPanel.dispose();
                     commands.executeCommand("DoC.viewMilestones");
                 } else {
-                    fs.readFile(milestonesHtmlPath, "utf8", (err: Error, data: string) => {
-                        if (err) {
-                            console.log(err);
-                        }
-                        // have to implement this check for worst case scenario
-                        if (currentPanel) {
-                            currentPanel.webview.html = data;
-                        }
-                    });
+                    // have to implement this check for worst case scenario
+                    if (currentPanel) {
+                        currentPanel.webview.html = getUpdatedMilestonesHtmlString();
+                    }
                     currentPanel.reveal(ViewColumn.One);
                 }
             } else {
                 currentPanel = window.createWebviewPanel("Milestones", "Milestones", ViewColumn.One, {
                     enableScripts: true
                 });
-                fs.readFile(milestonesHtmlPath, "utf8", (err: Error, data: string) => {
-                    if (err) {
-                        console.log(err);
-                    }
-                    // have to implement this check for worst case scenario
-                    if (currentPanel) {
-                        currentPanel.webview.html = data;
-                    }
-                });
+
+                // have to implement this check for worst case scenario
+                if (currentPanel) {
+                    currentPanel.webview.html = getUpdatedMilestonesHtmlString();
+                }
 
                 const milestoneInterval = setInterval(() => {
-                    updateMilestonesHtml();
-                    fs.readFile(milestonesHtmlPath, "utf8", (err: Error, data: string) => {
-                        if (err) {
-                            console.log(err);
-                        }
-                        // have to implement this check for worst case scenario
-                        if (currentPanel) {
-                            currentPanel.webview.html = data;
-                        }
-                    });
+                    // have to implement this check for worst case scenario
+                    if (currentPanel) {
+                        currentPanel.webview.html = getUpdatedMilestonesHtmlString();
+                    }
                 }, 60000);
 
                 currentPanel.webview.onDidReceiveMessage(message => {

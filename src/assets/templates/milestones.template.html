@@ -1,0 +1,199 @@
+<html>
+    <style>
+        body {
+            font-family: sans-serif;
+            color: ${this.cardTextColor}
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        h2 {
+            font-size: 21px;
+            font-weight: 600;
+        }
+        hr {
+            height: 3px;
+            border: none;
+            color: rgba(255, 255, 255, 0.05);
+            background-color: ${this.cardBackgroundColor};
+        }
+
+        /* levels */
+        .keys {
+            display: inline-block;
+            vertical-align: middle;
+            font-size: 18px;
+            margin-right: 5px;
+        }
+        .level1 {
+            background: linear-gradient(
+                180deg,
+                rgba(251, 0, 0, 0.5) 0%,
+                rgba(255, 151, 213, 0.5) 100%
+            );
+        }
+        .level2 {
+            background: linear-gradient(
+                180deg,
+                rgba(255, 245, 0, 0.5) 0%,
+                rgba(133, 250, 56, 0.5) 70.3%,
+                rgba(0, 140, 39, 0.5) 100%
+            );
+        }
+        .level3 {
+            background: linear-gradient(
+                180deg,
+                rgba(214, 126, 255, 0.5) 0%,
+                rgba(86, 113, 255, 0.5) 67.71%,
+                rgba(0, 224, 255, 0.5) 100%
+            );
+        }
+        .level4 {
+            background: linear-gradient(
+                180deg,
+                rgba(255, 0, 0, 0.5) 2.05%,
+                rgba(255, 168, 0, 0.5) 73.44%,
+                rgba(255, 245, 0, 0.5) 100%
+            );
+        }
+        .level5 {
+            background: linear-gradient(
+                180deg,
+                rgba(0, 224, 255, 0.5) 0%,
+                rgba(219, 0, 255, 0.5) 49.6%,
+                rgba(253, 106, 0, 0.5) 100%
+            );
+        }
+        .level6 {
+            background: linear-gradient(
+                180deg,
+                rgba(219, 0, 255, 0.5) 3.41%,
+                rgba(103, 115, 255, 0.5) 18.6%,
+                rgba(13, 208, 255, 0.5) 32.96%,
+                rgba(88, 213, 51, 0.5) 51.83%,
+                rgba(255, 237, 1, 0.5) 75.22%,
+                rgba(255, 97, 1, 0.5) 86.71%,
+                rgba(255, 10, 1, 0.5) 100%
+            );
+        }
+        .inf {
+            font-size: larger;
+        }
+        .circle {
+            display: inline-block;
+            vertical-align: middle;
+            height: 30px;
+            width: 30px;
+            border-radius: 50%;
+            font-size: 18px;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 2px;
+        }
+
+        /* Milestone card */
+        .milestoneCard {
+            background-color: ${this.cardBackgroundColor};
+            display: inline-block;
+            margin: 10px;
+            position: relative;
+            height: 235px;
+            width: 200px;
+            border-radius: 3px;
+        }
+        .milestoneShare {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            height: auto;
+            width: 10px;
+        }
+        .milestoneCardLevel {
+            position: absolute;
+            width: 50px;
+            height: 18px;
+            left: 7px;
+            top: 7px;
+            line-height: 18px;
+            font-size: 12px;
+            font-weight: 250;
+            border-radius: 3px;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .milestoneTitle {
+            position: absolute;
+            top: 27px;
+            text-align: center;
+            width: inherit;
+            font-size: 18px;
+            font-weight: 350;
+            color: ${this.cardTextColor};
+        }
+        .logo {
+            height: 100px;
+            width: 100px;
+            position: absolute;
+            top: 60px;
+            left: 50px;
+        }
+        .milestoneDesc {
+            position: absolute;
+            width: inherit;
+            text-align: center;
+            font-size: 14px;
+            bottom: 40px;
+            color: ${this.cardTextColor};
+        }
+        .date {
+            position: absolute;
+            width: inherit;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 350;
+            bottom: 10px;
+            color: #919eab;
+        }
+
+        /* Grayed */
+        .grayed {
+            color: #6d6d6d;
+            filter: grayscale(100%);
+        }
+        .grayedLevel {
+            background: ${this.cardGrayedLevel};
+        }
+        .noMilestones {
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .hiddenId {
+            visibility: hidden;
+        }
+    </style>
+    <body>
+        <h1>Milestones</h1>
+        <div class="keys">Levels:</div>
+        <div class="circle level1">1</div>
+        <div class="circle level2">2</div>
+        <div class="circle level3">3</div>
+        <div class="circle level4">4</div>
+        <div class="circle level5">5</div>
+        <div class="circle level6"><span class="inf">∞</span></div>
+        ${this.recents} ${this.allMilestones}
+    </body>
+    <script>
+        const vscode = acquireVsCodeApi();
+        var shareButtons = document.getElementsByClassName("milestoneShare");
+
+        for (let i = 0; i < shareButtons.length; i++) {
+            shareButtons[i].addEventListener("click", function () {
+                var hiddenId = this.parentNode.parentNode.getElementsByClassName("hiddenId")[0].textContent;
+                this.src = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg";
+                vscode.postMessage({ command: "incrementShare", value: hiddenId });
+            });
+        }
+    </script>
+</html>
