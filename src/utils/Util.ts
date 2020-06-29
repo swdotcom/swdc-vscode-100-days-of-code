@@ -77,11 +77,7 @@ export function displayReadmeIfNotExists(override = false) {
     if (!displayedReadme || override) {
         const readmeUri = Uri.file(getLocalREADMEFile());
 
-        commands.executeCommand(
-            "markdown.showPreview",
-            readmeUri,
-            ViewColumn.One
-        );
+        commands.executeCommand("markdown.showPreview", readmeUri, ViewColumn.One);
         setItem("vscode_CtReadme", true);
     }
 }
