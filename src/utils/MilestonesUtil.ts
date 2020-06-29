@@ -18,6 +18,7 @@ import {
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import { getLanguages } from "./LanguageUtil";
 import { softwarePost, isResponseOk, serverIsAvailable, softwarePut, softwareGet } from "../managers/HttpManager";
+import { rawListeners } from "process";
 
 // variables to keep in check the db update process
 export let updatedMilestonesDb = true;
@@ -381,7 +382,7 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
     const onboarding = summary.days <= 1;
 
     // check for aggregate codetime
-    const aggHours = summary.hours + codeTimeMetrics[0] / 60;
+    const aggHours = summary.hours + codeTimeMetrics.minutes / 60;
     if (aggHours >= 200) {
         achievedMilestones.push(6, 5, 4, 3, 2, 1);
     } else if (aggHours >= 120) {
@@ -397,7 +398,7 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
     }
 
     // check for daily codetime. These will be given out daily
-    const dayHours = codeTimeMetrics[0] / 60;
+    const dayHours = codeTimeMetrics.minutes / 60;
     if (dayHours >= 10) {
         achievedMilestones.push(24, 23, 22, 21, 20, 19);
     } else if (dayHours >= 8) {
@@ -413,7 +414,7 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
     }
 
     // check for lines added
-    const lines = summary.lines_added + codeTimeMetrics[2];
+    const lines = summary.lines_added + codeTimeMetrics.linesAdded;
     if (lines >= 10000) {
         achievedMilestones.push(30, 29, 28, 27, 26, 25);
     } else if (lines >= 1000) {
@@ -429,7 +430,7 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
     }
 
     // check for keystrokes
-    const keystrokes = summary.keystrokes + codeTimeMetrics[1];
+    const keystrokes = summary.keystrokes + codeTimeMetrics.keystrokes;
     if (keystrokes >= 42195) {
         achievedMilestones.push(42, 41, 40, 39, 38, 37);
     } else if (keystrokes >= 21097) {

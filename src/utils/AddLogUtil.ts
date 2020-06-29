@@ -45,15 +45,10 @@ export function getUpdatedAddLogHtmlString() {
     }
 
     // metrics is stored as [minutes, keystrokes, lines]
-    const metrics: Array<number> = getSessionCodetimeMetrics();
-    if (metrics === []) {
-        console.log("error fetching metrics");
-        return;
-    }
-
-    const hour = (metrics[0] / 60).toFixed(1);
-    const rawKeystrokes = metrics[1];
-    const linesAdded = metrics[2];
+    const metrics = getSessionCodetimeMetrics();
+    const hour = (metrics.minutes / 60).toFixed(1);
+    const rawKeystrokes = metrics.keystrokes;
+    const linesAdded = metrics.linesAdded;
 
     // if in light mode
     const tempWindow: any = window;
