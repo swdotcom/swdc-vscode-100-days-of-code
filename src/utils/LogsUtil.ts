@@ -1,9 +1,9 @@
 import { getSoftwareDir, isWindows, compareDates, getSoftwareSessionAsJson } from "./Util";
+import path = require("path");
 import fs = require("fs");
 import { CodetimeMetrics } from "../models/CodetimeMetrics";
 import { Log } from "../models/Log";
 import {
-    checkMilestonesJson,
     getMilestoneById,
     checkSharesMilestones,
     fetchMilestonesByDate,
@@ -15,7 +15,6 @@ import {
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import {
     getSummaryObject,
-    checkSummaryJson,
     incrementSummaryShare,
     updateSummaryJson,
     getSummaryTotalHours,
@@ -44,7 +43,7 @@ export function getLogsJson(): string {
     return file;
 }
 
-export function getAllLogObjects(): Array<Log> {
+function getAllLogObjects(): Array<Log> {
     const exists = checkLogsJson();
     if (exists) {
         const filepath = getLogsJson();
@@ -52,6 +51,10 @@ export function getAllLogObjects(): Array<Log> {
         return JSON.parse(rawLogs).logs;
     }
     return [];
+}
+
+function getLogsTemplate() {
+    return path.join(__dirname, "../assets/templates/logs.template.html");
 }
 
 export function getLogsSummary(): any {
@@ -908,11 +911,11 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
                     window
                         .showInformationMessage("Don't forget to add and share today's log.", "Add Log")
                         .then(selection => {
+                            dateLogMessage = new Date();
                             if (selection === "Add Log") {
                                 commands.executeCommand("DoC.addLog");
                             }
                         });
-                    dateLogMessage = new Date();
                 }
                 return;
             }
@@ -930,902 +933,355 @@ export function getLogsHtml(): string {
     return file;
 }
 
-export function getUpdatedLogsHtmlString(): string {
-    const logsExists = checkLogsJson();
-    const milestonesExists = checkMilestonesJson();
-    const summaryExists = checkSummaryJson();
-    if (logsExists && milestonesExists && summaryExists) {
-        const logFilepath = getLogsJson();
-        const rawLogs = fs.readFileSync(logFilepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
+function getStyleColorsBasedOnMode(): any {
+    const tempWindow: any = window;
 
-        // if in light mode
-        const tempWindow: any = window;
-
-        let cardTextColor = "#FFFFFF";
-        let cardBackgroundColor = "rgba(255,255,255,0.05)";
-        let cardMetricBarSidesColor = "rgba(255,255,255,0.20)";
-        let cardToolTipColor = "rgba(109, 109, 109, .9)";
-        let sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
-        let dropDownPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Logs/dropDown.svg";
-        let editLogCardColor = "#292929";
-        if (tempWindow.activeColorTheme.kind === 1) {
-            cardTextColor = "#444444";
-            cardBackgroundColor = "rgba(0,0,0,0.10)";
-            cardMetricBarSidesColor = "rgba(0,0,0,0.20)";
-            cardToolTipColor = "rgba(165, 165, 165, .9)";
-            sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shareLight.svg";
-            dropDownPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Logs/dropDownLight.svg";
-            editLogCardColor = "#E5E5E5";
-        }
-
-        // CSS
-        let htmlString = [
-            `<html>`,
-            `<head>`,
-            `\t<title>`,
-            `\t\tLogs`,
-            `\t</title>`,
-            `</head>`,
-            `<style>`,
-            `\tbody{`,
-            `\t\tfont-family: sans-serif;`,
-            `\t\tcolor: ${cardTextColor}`,
-            `\t}`,
-            `\t.logCard {`,
-            `\t\tdisplay: inline-block;`,
-            `\t\tbackground: ${cardBackgroundColor};`,
-            `\t\twidth: 830px;`,
-            `\t\tbox-sizing: border-box;`,
-            `\t\tborder-radius: 1px;`,
-            `\t\tpadding: 10px;`,
-            `\t\tmargin-bottom: 20px;`,
-            `\t}`,
-            // Log Text Types
-            `\t.cardText {`,
-            `\t\tmax-width: 100%;`,
-            `\t\tfont-style: normal;`,
-            `\t\tfont-weight: normal;`,
-            `\t\tfont-size: 14px;`,
-            `\t\tline-height: 128.91%;`,
-            `\t\tdisplay: flex;`,
-            `\t\tpadding-left: 10px;`,
-            `\t\talign-items: center;`,
-            `\t\tcolor: ${cardTextColor};`,
-            `\t}`,
-            `\t.cardLinkText {`,
-            `\t\tfont-style: normal;`,
-            `\t\tfont-weight: normal;`,
-            `\t\tfont-size: 14px;`,
-            `\t\tline-height: 128.91%;`,
-            `\t\tdisplay: flex;`,
-            `\t\tpadding-left: 10px;`,
-            `\t\talign-items: center;`,
-            `\t\tmargin-bottom: 8px;`,
-            `\t\tcolor: #999999;`,
-            `\t}`,
-            `\t.cardTextEditInput {`,
-            `\t\tposition: absolute;`,
-            `\t\ttop: 0px;`,
-            `\t\tfont-size: 14px;`,
-            `\t\tborder-radius: 1px;`,
-            `\t\tpadding-left: 5px;`,
-            `\t\tpadding-right: 5px;`,
-            `\t\tborder-color: rgba(0, 0, 0, 0);`,
-            `\t\tbackground-color: ${cardBackgroundColor};`,
-            `\t\tcolor: ${cardTextColor};`,
-            `\t\ttransform: translate(8px, 30px);`,
-            `\t\tvisibility: hidden;`,
-            `\t\tresize: none;`,
-            `\t}`,
-            `\t.cardTextTitleEditInput{`,
-            `\t\tposition: absolute;`,
-            `\t\ttop: 0px;`,
-            `\t\tfont-size: 14px;`,
-            `\t\tborder-radius: 1px;`,
-            `\t\tpadding-left: 5px;`,
-            `\t\tpadding-right: 5px;`,
-            `\t\tborder-color: rgba(0, 0, 0, 0);`,
-            `\t\tbackground-color: ${cardBackgroundColor};`,
-            `\t\tcolor: ${cardTextColor};`,
-            `\t\ttransform: translate(50px, -20px);`,
-            `\t\tvisibility: hidden;`,
-            `\t\tresize: none;`,
-            `\t}`,
-            `\t.cardSubject {`,
-            `\t\tfont-style: normal;`,
-            `\t\tfont-weight: bold;`,
-            `\t\tfont-size: 16px;`,
-            `\t\tline-height: 128.91%;`,
-            `\t\tpadding-left: 10px;`,
-            `\t\tdisplay: flex;`,
-            `\t\tcolor: ${cardTextColor};`,
-            `\t}`,
-            `\t.cardDateText {`,
-            `\t\tfont-style: normal;`,
-            `\t\tfont-weight: normal;`,
-            `\t\tfont-size: 14px;`,
-            `\t\tline-height: 128.91%;`,
-            `\t\tdisplay: flex;`,
-            `\t\talign-items: center;`,
-            `\t\tpadding-left: 10px;`,
-            `\t\tcolor: #888888;`,
-            `\t\tvisibility: visible;`,
-            `\t}`,
-            `\t.cardTextGroup {`,
-            `\t\twidth: 100%;`,
-            `\t\tposition: relative;`,
-            `\t\tvertical-align: top;`,
-            `\t}`,
-            // Card Header
-            `\t.cardHeader {`,
-            `\t\tposition: relative;`,
-            `\t\twidth: 100%;`,
-            `\t\theight: 40px;`,
-            `\t\tdisplay: inline-flex;`,
-            `\t}`,
-            `\t.cardHeaderTextSection {`,
-            `\t\t/* background-color: red; */`,
-            `\t\tposition: absolute;`,
-            `\t\tleft: 0px;`,
-            `\t}`,
-            `\t.cardHeaderButtonSection {`,
-            `\t\t/* background-color: blue; */`,
-            `\t\tposition: absolute;`,
-            `\t\tdisplay: inline-flex;`,
-            `\t\theight: 100%;`,
-            `\t\tright: 3px;`,
-            `\t\tvertical-align: middle;`,
-            `\t\talign-items: center;`,
-            `\t}`,
-            `\t.cardHeaderEditLogButton {`,
-            `\t\tcursor: pointer;`,
-            `\t\tfont-style: normal;`,
-            `\t\tfont-weight: bold;`,
-            `\t\tfont-size: 18px;`,
-            `\t\ttext-align: center;`,
-            `\t\tcolor: ${cardTextColor};`,
-            `\t\tbackground-color: ${cardBackgroundColor};`,
-            `\t\tborder-radius: 1px;`,
-            `\t\tborder-color: rgba(0,0,0,0);`,
-            `\t\tpadding: 5px;`,
-            `\t\tvertical-align: middle;`,
-            `\t\tvisibility: hidden;`,
-            `\t\tmargin: 5px;`,
-            `\t}`,
-            `\t.cardHeaderShareButton {`,
-            `\t\tcursor: pointer;`,
-            `\t\tposition: absolute;`,
-            `\t\tbackground-color: rgba(0,0,0,0);`,
-            `\t\tborder-color: rgba(0,0,0,0);`,
-            `\t\ttransform: translate(50px, -18px);`,
-            `\t\tmargin: 5px;`,
-            `\t}`,
-            `\t.cardHeaderShareButtonIcon {`,
-            `\t\twidth: 22px;`,
-            `\t\theight: 22px;`,
-            `\t}`,
-            `\t.cardHeaderDropDownButton {`,
-            `\t\tcursor: pointer;`,
-            `\t\tbackground-color: rgba(0,0,0,0);`,
-            `\t\tborder-color: rgba(0,0,0,0);`,
-            `\t\ttransform: rotate(180deg);`,
-            `\t\tmargin: 5px;`,
-            `\t}`,
-            `\tbutton:focus {outline:0;}`,
-            `\t.cardContent {`,
-            `\t\tmax-height: 0;`,
-            `\t\toverflow: hidden;`,
-            `\t\ttransition: max-height 0.2s ease-out;`,
-            `\t}`,
-            // Text Section
-            `\t.cardTextSection {`,
-            `\t\twidth: 800px;`,
-            `\t\tdisplay: inline-block;`,
-            `\t\tvertical-align: top;`,
-            `\t\tmargin-bottom: 20px;`,
-            `\t\tmargin-top: 20px;`,
-            `\t}`,
-            // Metrics
-            `\t.cardMetricsSection {`,
-            `\t\t/* background-color: red; */`,
-            `\t\tdisplay: inline-block;`,
-            `\t\tvertical-align: top;`,
-            `\t\tmargin-top: 20px;`,
-            `\t}`,
-            `\t.cardMetricsTitle {`,
-            `\t\twidth: 100%;`,
-            `\t\ttext-align: left;`,
-            `\t\tfont-style: normal;`,
-            `\t\tfont-weight: bold;`,
-            `\t\tfont-size: 16px;`,
-            `\t\tline-height: 128.91%;`,
-            `\t\tcolor: ${cardTextColor};`,
-            `\t\tpadding-left: 10px;`,
-            `\t\tmargin-bottom: 3px;`,
-            `\t}`,
-            `\t.cardMetricGrid {`,
-            `\t\twidth: 600px;`,
-            `\t\tjustify-content: space-around;`,
-            `\t\tdisplay: flex;`,
-            `\t}`,
-            `\t.cardMetric {`,
-            `\t\twidth: 30%;`,
-            `\t\tdisplay: inline-flex;`,
-            `\t\talign-items: center;`,
-            `\t\tbackground: ${cardBackgroundColor};`,
-            `\t\tborder-radius: 1px;`,
-            `\t\tdisplay: flex;`,
-            `\t\tflex-direction: column;`,
-            `\t\tjustify-content: space-around;`,
-            `\t\tpadding-top: 15px;`,
-            `\t\tpadding-bottom: 15px;`,
-            `\t}`,
-            `\t.cardMetricText {`,
-            `\t\t/* background-color: darkgreen; */`,
-            `\t\twidth: 100%;`,
-            `\t\tfont-style: normal;`,
-            `\t\tfont-weight: bold;`,
-            `\t\tfont-size: 12px;`,
-            `\t\tline-height: 128.91%;`,
-            `\t\ttext-align: center;`,
-            `\t\tcolor: ${cardTextColor};`,
-            `\t}`,
-            `\t.cardMetricBarGroup{`,
-            `\t\tposition: relative;`,
-            `\t\twidth: 120px;`,
-            `\t\theight: 40px;`,
-            `\t}`,
-            `\t.cardMetricBarLeft{`,
-            `\t\tposition: absolute;`,
-            `\t\twidth: 10px;`,
-            `\t\theight: 40px;`,
-            `\t\ttop: 0px;`,
-            `\t\tleft: 0px;`,
-            `\t\tborder-radius: 1px;`,
-            `\t\tbackground-color: ${cardMetricBarSidesColor}`,
-            `\t}`,
-            `\t.cardMetricBarRight{`,
-            `\t\tposition: absolute;`,
-            `\t\twidth: 10px;`,
-            `\t\theight: 40px;`,
-            `\t\ttop: 0px;`,
-            `\t\tleft: 110px;`,
-            `\t\tborder-radius: 1px;`,
-            `\t\tbackground-color: ${cardMetricBarSidesColor}`,
-            `\t}`,
-            `\t.cardMetricBarMiddle{`,
-            `\t\tposition: absolute;`,
-            `\t\twidth: 100px;`,
-            `\t\theight: 20px;`,
-            `\t\ttop: 10px;`,
-            `\t\tleft: 10px;`,
-            `\t\tbackground-color: ${cardBackgroundColor}`,
-            `\t}`,
-            // Milestones
-            `\t.cardMilestoneSection {`,
-            `\t\tdisplay: inline-block;`,
-            `\t\tvertical-align: top;`,
-            `\t\twidth: 200px;`,
-            `\t\theight: 230px;`,
-            `\t\tmargin-top: 20px;`,
-            `\t}`,
-            `\t.cardMilestoneTitle {`,
-            `\t\twidth: 200px;`,
-            `\t\tfont-style: normal;`,
-            `\t\tfont-weight: bold;`,
-            `\t\tfont-size: 16px;`,
-            `\t\tline-height: 128.91%;`,
-            `\t\ttext-align: left;`,
-            `\t\tpadding-left: 8px;`,
-            `\t\tcolor: ${cardTextColor};`,
-            `\t}`,
-            `\t.cardMilestoneGrid {`,
-            `\t\twidth: 200px;`,
-            `\t\theight: 200px;`,
-            `\t\tdisplay: flex;`,
-            `\t\tflex-direction: column;`,
-            `\t\tjustify-content: space-around;`,
-            `\t}`,
-            `\t.cardMilestoneRow {`,
-            `\t\twidth: 100%;`,
-            `\t\tjustify-content: space-around;`,
-            `\t\tdisplay: flex;`,
-            `\t}`,
-            `\t.cardMilestone {`,
-            `\t\tposition: relative;`,
-            `\t\twidth: 55px;`,
-            `\t\theight: 55px;`,
-            `\t\tbackground: ${cardBackgroundColor};`,
-            `\t\tborder-radius: 1px;`,
-            `\t\tdisplay: inline-flex;`,
-            `\t\talign-items: center;`,
-            `\t}`,
-            `\t.cardMilestoneIcon{`,
-            `\t\twidth: 35px;`,
-            `\t\theight: 35px;`,
-            `\t\tposition: absolute;`,
-            `\t\ttop: 50%;`,
-            `\t\tleft: 50%;`,
-            `\t\ttransform: translate(-50%, -50%);`,
-            `\t}`,
-            `\t.cardMilestone .tooltiptext {`,
-            `\t\tvisibility: hidden;`,
-            `\t\ttop: 8px;`,
-            `\t\tright: 105%;`,
-            `\t\tbackground-color: ${cardToolTipColor};`,
-            `\t\tbackground-blend-mode: darken;`,
-            `\t\tborder-radius: 3px;`,
-            `\t\tcolor: ${cardTextColor};`,
-            `\t\ttext-align: center;`,
-            `\t\twhite-space: nowrap;`,
-            `\t\tpadding: 5px;`,
-            `\t\tposition: absolute;`,
-            `\t\tz-index: 1;`,
-            `\t}`,
-            `\t.cardMilestone:hover .tooltiptext {`,
-            `\t\tvisibility: visible;`,
-            `\t}`,
-            // Edit Logs Card
-            `\t#editLogCard {`,
-            `\t\tposition: fixed;`,
-            `\t\tz-index: 1;`,
-            `\t\tleft: 0;`,
-            `\t\ttop: 0;`,
-            `\t\twidth: 100%;`,
-            `\t\theight: 100%;`,
-            `\t\toverflow: auto;`,
-            `\t\tbackground-color: rgba(0,0,0,0.2);`,
-            `\t\tvisibility: hidden;`,
-            `}`,
-            `\t#editLogCardContent {`,
-            `\t\tposition: absolute;`,
-            `\t\twidth: 450px;`,
-            `\t\theight: 520px;`,
-            `\t\ttop: 50%;`,
-            `\t\tmargin-top: -260px;`,
-            `\t\tleft: 50%;`,
-            `\t\tmargin-left: -225px;`,
-            `\t\tbackground: ${editLogCardColor};`,
-            `\t\tborder-radius: 3px;`,
-            `\t}`,
-            `\t/* Headings */`,
-            `\t#head1 {`,
-            `\t\tmargin-top: 10px;`,
-            `\t\tmargin-left: 10px;`,
-            `\t\tfont-size: 23px;`,
-            `\t\tline-height: 30px;`,
-            `\t\tfont-weight: 600;`,
-            `\t\tcolor: ${cardTextColor}`,
-            `\t}`,
-            `\t.head2 {`,
-            `\t\tmargin-top: 10px;`,
-            `\t\tmargin-left: 10px;`,
-            `\t\tfont-size: 14px;`,
-            `\t\tcolor: #919eab;`,
-            `\t\tfont-weight: 500;`,
-            `\t}`,
-            `\t/* Textboxes */`,
-            `\t.text {`,
-            `\t\tmargin-left: 10px;`,
-            `\t\tmargin-right: 10px;`,
-            `\t\tmargin-top: 5px;`,
-            `\t\tmargin-bottom: 5px;`,
-            `\t\twidth: 415px;`,
-            `\t\tfont-size: 16px;`,
-            `\t\tborder-radius: 3px;`,
-            `\t\tpadding-left: 5px;`,
-            `\t\tpadding-right: 5px;`,
-            `\t\tborder-color: rgba(0, 0, 0, 0);`,
-            `\t\tbackground-color: ${cardBackgroundColor};`,
-            `\t\tcolor: ${cardTextColor};`,
-            `\t\tresize: none;`,
-            `\t}`,
-            `\t#editLogsHoursSelect {`,
-            `\t\twidth: 40px;`,
-            `\t}`,
-            `\t.hoursText {`,
-            `\t\tmargin-left: -10px;`,
-            `\t\tfont-size: 16px;`,
-            `\t\tline-height: 20px;`,
-            `\t\tcolor: ${cardTextColor};`,
-            `\t}`,
-            `\t.metricsText {`,
-            `\t\tmargin-top: 5px;`,
-            `\t\tmargin-left: 10px;`,
-            `\t\tmargin-right: 15px;`,
-            `\t\tfont-size: 12px;`,
-            `\t\tcolor: #919eab;`,
-            `\t\tfont-weight: 500;`,
-            `\t}`,
-            `\t/* Buttons */`,
-            `\t.buttons {`,
-            `\t\tmargin-top: 30px;`,
-            `\t\tmargin-left: 10px;`,
-            `\t}`,
-            `\t#editLogCancelButton {`,
-            `\t\tcursor: pointer;`,
-            `\t\tfont-size: 16px;`,
-            `\t\tline-height: 25px;`,
-            `\t\tcolor: ${cardTextColor};`,
-            `\t\tbackground-color: rgba(0, 0, 0, 0);`,
-            `\t\tborder-color: rgba(0, 0, 0, 0);`,
-            `\t\tborder-radius: 3px;`,
-            `\t\tmargin-left: 10px;`,
-            `\t\tmargin-bottom: 15px;`,
-            `\t}`,
-            `\t#editLogSubmitButton {`,
-            `\t\tcursor: pointer;`,
-            `\t\tfont-size: 16px;`,
-            `\t\tline-height: 25px;`,
-            `\t\tcolor: ${cardTextColor};`,
-            `\t\tbackground: #00b4ee;`,
-            `\t\tborder: 3px solid #00b4ee;`,
-            `\t\tbox-sizing: border-box;`,
-            `\t\tborder-radius: 3px;`,
-            `\t\tmargin-bottom: 15px;`,
-            `\t}`,
-            `</style>`,
-            `<body>`,
-            `\t<h1>Logs</h1>\n`
-        ].join("\n");
-
-        let submittedLogToday: boolean;
-        if (logs.length < 1 || (logs.length === 1 && !logs[0].day_number)) {
-            htmlString += [
-                `\t\t<h2 id='noLogs'>Log Daily Progress to see it here! --> <a id="addLog" href="Add Log">Add log</a></h2></body>`,
-                `\t<script>\n\tconst vscode = acquireVsCodeApi();`,
-                `\tconst addLog = document.getElementById("addLog");`,
-                `\tif(addLog){`,
-                `\t\taddLog.addEventListener("click", function(){`,
-                `\t\t\tvscode.postMessage({command: "addLog"});`,
-                `\t\t});}\n\t</script>\n</html>`
-            ].join("\n");
-        } else {
-            let mostRecentLog = logs[logs.length - 1];
-            let logDate = new Date(mostRecentLog.date);
-            let dateNow = new Date();
-            submittedLogToday = compareDates(dateNow, logDate) && mostRecentLog.title !== "No Title";
-
-            if (!submittedLogToday) {
-                htmlString += `\t\t<h2>Don't forget to submit your log today! --> <a id="addLog" href="Add Log">Add log</a></h2>\n`;
-            }
-
-            for (let i = logs.length - 1; i >= 0; i--) {
-                if (!submittedLogToday && i === logs.length - 1) {
-                    continue;
-                }
-
-                const day = logs[i];
-
-                // Share link
-                let shareText = [
-                    `Day ${day.day_number}/100 of 100DaysOfCode`,
-                    `What I worked on: ${day.title}`,
-                    ``,
-                    `Metrics: Hours: ${day.codetime_metrics.hours}`,
-                    `Lines of Code: ${day.codetime_metrics.lines_added}`,
-                    `Keystrokes: ${day.codetime_metrics.keystrokes}`,
-                    `Data supplied from @software_hq’s 100 Days Of Code plugin`
-                ].join("\n");
-                const shareURI = encodeURI(shareText);
-                const twitterShareUrl = `https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.software.com%2F100-days-of-code&text=${shareURI}&hashtags=100DaysOfCode`;
-
-                const unix_timestamp = day.date;
-
-                //Getting the date
-                const date = new Date(unix_timestamp);
-                const dayOfMonth = date.getDate();
-                const month = date.getMonth() + 1;
-                const year = date.getFullYear();
-                const formattedTime = month + "/" + dayOfMonth + "/" + year;
-
-                let descriptionRows = day.description === "" ? 2 : 3;
-
-                const shareIconLink = day.shared
-                    ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg"
-                    : sharePath;
-
-                // Header and description
-                htmlString += [
-                    `\t<div class="logCard">`,
-                    `\t\t<div class="cardHeader">`,
-                    `\t\t\t<div class="cardHeaderTextSection">`,
-                    `\t\t\t\t<div class="cardSubject">Day ${day.day_number}: ${day.title}</div>`,
-                    `\t\t\t\t<div class="cardTextGroup">`,
-                    `\t\t\t\t\t<div class="cardDateText">${formattedTime}</div>`,
-                    `\t\t\t\t</div>`,
-                    `\t\t\t</div>`,
-                    `\t\t\t<div class="cardHeaderButtonSection">`,
-                    `\t\t\t\t<a href="${twitterShareUrl}" title="Share this on Twitter"><button class="cardHeaderShareButton"><img class="cardHeaderShareButtonIcon" src=${shareIconLink}></button></a>`,
-                    `\t\t\t\t<button class="cardHeaderEditLogButton">Edit Log</button>`,
-                    `\t\t\t\t<button class="cardHeaderDropDownButton"><img class="cardHeaderShareButtonIcon" src=${dropDownPath}></button>`,
-                    `\t\t\t</div>`,
-                    `\t\t</div>`,
-                    `\t\t<div class="cardContent">`,
-                    `\t\t\t<div class="cardTextSection">`,
-                    `\t\t\t\t<div class="cardTextGroup">`,
-                    `\t\t\t\t\t<div class="cardText">${day.description}</div>`,
-                    `\t\t\t\t\t<br>`,
-                    `\t\t\t\t</div>`,
-                    `\t\t\t\t<div class="cardTextGroup">`,
-                    `\t\t\t\t\t<div>\n`
-                ].join("\n");
-
-                // Links
-                let linksText = "";
-                for (let _j = 0; _j < day.links.length; _j++) {
-                    htmlString += [
-                        `\t\t\t\t\t\t<a class="cardLinkText" href="${day.links[_j]}">`,
-                        `\t\t\t\t\t\t\t${day.links[_j]}`,
-                        `\t\t\t\t\t\t</a>\n`
-                    ].join("\n");
-                    linksText += day.links[_j] + ", ";
-                }
-
-                const summary = getSummaryObject();
-                const hours = summary.hours + summary.currentHours;
-                const keystrokes = summary.keystrokes + summary.currentKeystrokes;
-                const lines = summary.lines_added + summary.currentLines;
-                const days = summary.days;
-                let avgHours = parseFloat((hours / days).toFixed(2));
-                let avgKeystrokes = parseFloat((keystrokes / days).toFixed(2));
-                let avgLines = parseFloat((lines / days).toFixed(2));
-
-                let percentHours = (day.codetime_metrics.hours / avgHours) * 100;
-                percentHours = Math.round(percentHours * 100) / 100;
-                if (!avgHours || avgHours === 0) {
-                    percentHours = 100;
-                    avgHours = 0;
-                }
-                let percentKeystrokes = (day.codetime_metrics.keystrokes / avgKeystrokes) * 100;
-                percentKeystrokes = Math.round(percentKeystrokes * 100) / 100;
-                if (!avgKeystrokes || avgKeystrokes === 0) {
-                    percentKeystrokes = 100;
-                    avgKeystrokes = 0;
-                }
-                let percentLines = (day.codetime_metrics.lines_added / avgLines) * 100;
-                percentLines = Math.round(percentLines * 100) / 100;
-                if (!avgLines || avgLines === 0) {
-                    percentLines = 100;
-                    avgLines = 0;
-                }
-
-                let barPxHours = Math.round(percentHours);
-                let barColorHours = "00b4ee";
-                if (barPxHours >= 100) {
-                    barPxHours = 100;
-                    barColorHours = "FD9808";
-                }
-                let barPxKeystrokes = Math.round(percentKeystrokes);
-                let barColorKeystrokes = "00b4ee";
-                if (barPxKeystrokes >= 100) {
-                    barPxKeystrokes = 100;
-                    barColorKeystrokes = "FD9808";
-                }
-                let barPxLines = Math.round(percentLines);
-                let barColorLines = "00b4ee";
-                if (barPxLines >= 100) {
-                    barPxLines = 100;
-                    barColorLines = "FD9808";
-                }
-
-                // Daily code time metrics
-                htmlString += [
-                    `\t\t\t\t\t</div>`,
-                    `\t\t\t\t</div>`,
-                    `\t\t\t</div>`,
-                    `\t\t\t<div class="cardMetricsSection">`,
-                    `\t\t\t\t<div class="cardMetricsTitle">Coding Metrics</div>`,
-                    `\t\t\t\t<br>`,
-                    `\t\t\t\t<div class='cardMetricGrid'>`,
-                    `\t\t\t\t\t<div class="cardMetric">`,
-                    `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 16px; margin-bottom: 5px;">Active Code Time</div>`,
-                    `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 20px; margin-bottom: 20px;">${day.codetime_metrics.hours}</div>`,
-                    `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; margin-bottom: 5px;">${percentHours}% of Average</div>`,
-                    `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; margin-bottom: 20px;">Average: ${avgHours} Hours</div>`,
-                    `\t\t\t\t\t\t<div class="cardMetricBarGroup">`,
-                    `\t\t\t\t\t\t\t<div class="cardMetricBarRight"></div>`,
-                    `\t\t\t\t\t\t\t<div class="cardMetricBarMiddle"></div>`,
-                    `\t\t\t\t\t\t\t<div class="cardMetricBarMiddle" style="width: ${barPxHours}px; background-color: #${barColorHours};"></div>`,
-                    `\t\t\t\t\t\t\t<div class="cardMetricBarLeft"></div>`,
-                    `\t\t\t\t\t\t</div>`,
-                    `\t\t\t\t\t</div>`,
-                    `\t\t\t\t\t<div class="cardMetric">`,
-                    `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 16px; margin-bottom: 5px;">Keystrokes</div>`,
-                    `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 20px; margin-bottom: 20px;">${day.codetime_metrics.keystrokes}</div>`,
-                    `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; margin-bottom: 5px;">${percentKeystrokes}% of Average</div>`,
-                    `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; margin-bottom: 20px;">Average: ${avgKeystrokes}</div>`,
-                    `\t\t\t\t\t\t<div class="cardMetricBarGroup">`,
-                    `\t\t\t\t\t\t\t<div class="cardMetricBarRight"></div>`,
-                    `\t\t\t\t\t\t\t<div class="cardMetricBarMiddle"></div>`,
-                    `\t\t\t\t\t\t\t<div class="cardMetricBarMiddle" style="width: ${barPxKeystrokes}px; background-color: #${barColorKeystrokes};"></div>`,
-                    `\t\t\t\t\t\t\t<div class="cardMetricBarLeft"></div>`,
-                    `\t\t\t\t\t\t</div>`,
-                    `\t\t\t\t\t</div>`,
-                    `\t\t\t\t\t<div class="cardMetric">`,
-                    `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 16px; margin-bottom: 5px;">Lines Added</div>`,
-                    `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 20px; margin-bottom: 20px;">${day.codetime_metrics.lines_added}</div>`,
-                    `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; margin-bottom: 5px;">${percentLines}% of Average</div>`,
-                    `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; margin-bottom: 20px;">Average: ${avgLines}</div>`,
-                    `\t\t\t\t\t\t<div class="cardMetricBarGroup">`,
-                    `\t\t\t\t\t\t\t<div class="cardMetricBarRight"></div>`,
-                    `\t\t\t\t\t\t\t<div class="cardMetricBarMiddle"></div>`,
-                    `\t\t\t\t\t\t\t<div class="cardMetricBarMiddle" style="width: ${barPxLines}px; background-color: #${barColorLines};"></div>`,
-                    `\t\t\t\t\t\t\t<div class="cardMetricBarLeft"></div>`,
-                    `\t\t\t\t\t\t</div>`,
-                    `\t\t\t\t\t</div>`,
-                    `\t\t\t\t</div>`,
-                    `\t\t\t</div>`,
-                    `\t\t\t<div class="cardMilestoneSection">`,
-                    `\t\t\t\t<div class="cardMilestoneTitle">Milestones</div>`,
-                    `\t\t\t\t<br>`,
-                    `\t\t\t\t<div class="cardMilestoneGrid">\n`
-                ].join("\n");
-
-                // Milestones
-                const milestoneNum = day.milestones.length;
-                for (let milestoneIndex = 0; milestoneIndex < 9; milestoneIndex++) {
-                    if (milestoneIndex % 3 === 0) {
-                        htmlString += `\t\t\t\t\t<div class="cardMilestoneRow">\n`;
-                    }
-
-                    if (milestoneIndex < milestoneNum) {
-                        let milestoneId = day.milestones[milestoneIndex];
-                        let milestone = getMilestoneById(milestoneId);
-                        htmlString += [
-                            `\t\t\t\t\t\t<div class="cardMilestone">`,
-                            `\t\t\t\t\t\t\t<span class="tooltiptext">`,
-                            `\t\t\t\t\t\t\t\t<div style="font-weight: bold;">${milestone.title}</div>`,
-                            `\t\t\t\t\t\t\t\t<div>${milestone.description}</div>`,
-                            `\t\t\t\t\t\t\t</span>`,
-                            `\t\t\t\t\t\t\t<img class="cardMilestoneIcon" src="${milestone.icon}" alt="">`,
-                            `\t\t\t\t\t\t</div>\n`
-                        ].join("\n");
-                    } else {
-                        htmlString += [`\t\t\t\t\t\t<div class="cardMilestone">`, `\t\t\t\t\t\t</div>\n`].join("\n");
-                    }
-
-                    if (milestoneIndex % 3 === 2) {
-                        htmlString += `\t\t\t\t\t</div>\n`;
-                    }
-                }
-
-                htmlString += [`\t\t\t\t\t</div>`, `\t\t\t\t</div>`, `\t\t\t</div>`, `\t\t</div>`, `\t</div>\n`].join(
-                    "\n"
-                );
-            }
-            // Edit logs card
-            htmlString += [
-                `\t<div id="editLogCard">`,
-                `\t\t<div id="editLogCardContent">`,
-                `\t\t\t<div id="head1">Edit Log</div>`,
-                `\t\t\t<div id="editLogsDayAndDate" class="head2"></div>`,
-                `\t\t\t<div class="head2">Title</div>`,
-                `\t\t\t<textarea`,
-                `\t\t\t\tid="editLogsTitle"`,
-                `\t\t\t\tclass="text"`,
-                `\t\t\t\tplaceholder="Title for today's work log"`,
-                `\t\t\t\trows="1"`,
-                `\t\t\t></textarea>`,
-                `\t\t\t<div class="head2">Description</div>`,
-                `\t\t\t<textarea`,
-                `\t\t\t\tid="editLogsDescription"`,
-                `\t\t\t\tclass="text"`,
-                `\t\t\t\tplaceholder="Description for today's work log"`,
-                `\t\t\t\trows="4"`,
-                `\t\t\t></textarea>`,
-                `\t\t\t`,
-                `\t\t\t<div class="head2">`,
-                `\t\t\t\tLink(s) to Today's Work (Separate links with commas)`,
-                `\t\t\t</div>`,
-                `\t\t\t<textarea`,
-                `\t\t\t\tid="editLogsLinks"`,
-                `\t\t\t\tclass="text"`,
-                `\t\t\t\tplaceholder="Links to resources, git commits, working projects, etc.."`,
-                `\t\t\t\trows="3"`,
-                `\t\t\t></textarea>`,
-                `\t\t\t`,
-                `\t\t\t<div class="head2">Hours coded</div>`,
-                `\t\t\t<input type="number" class="text" id="editLogsHoursSelect" value="3.5" />`,
-                `\t\t\t<span class="hoursText">hours</span>`,
-                `\t\t\t`,
-                `\t\t\t<div class="metricsText" id="metricsText">`,
-                `\t\t\t\tYou’ve logged 1.2 hours, 232 keystrokes, and 120 lines of code so far`,
-                `\t\t\t\ttoday based on our Code Time plugin.`,
-                `\t\t\t</div>`,
-                `\t\t\t`,
-                `\t\t\t<div class="buttons">`,
-                `\t\t\t\t<button id="editLogSubmitButton">Submit</button>`,
-                `\t\t\t\t<button id="editLogCancelButton">Cancel</button>`,
-                `\t\t\t</div>`,
-                `\t\t</div>`,
-                `\t</div>`
-            ].join("\n");
-
-            // scripts
-            htmlString += [
-                `</body>`,
-                `<script>`,
-                `\tconst vscode = acquireVsCodeApi();`,
-                // add log
-                `\tconst addLog = document.getElementById("addLog");`,
-                `\tif(addLog){`,
-                `\t\taddLog.addEventListener("click", function(){`,
-                `\t\t\tvscode.postMessage({command: "addLog"});`,
-                `\t\t});}\n`,
-                //drop down button
-                `\tvar dropDownButtons = document.getElementsByClassName("cardHeaderDropDownButton");\n`,
-                `\tfor (let i = 0; i < dropDownButtons.length; i++) {`,
-                `\t\tdropDownButtons[i].addEventListener("click", function () {`,
-                `\t\t\tvar shareButton = this.parentNode.getElementsByClassName("cardHeaderShareButton")[0];`,
-                `\t\t\tvar editButton = this.parentNode.getElementsByClassName("cardHeaderEditLogButton")[0];`,
-                `\t\t\tvar dropDownIcon = this;`,
-                `\t\t\tvar content = this.parentNode.parentNode.nextElementSibling;`,
-                `\t\t\tif (content.style.maxHeight) {`,
-                `\t\t\t\tcontent.style.maxHeight = null;`,
-                `\t\t\t\tdropDownIcon.style.transform = 'rotate(180deg)';`,
-                `\t\t\t\teditButton.style.visibility = 'hidden';`,
-                `\t\t\t\tshareButton.style.transform = 'translate(50px, -18px)'`,
-                `\t\t\t} else {`,
-                `\t\t\t\tcontent.style.maxHeight = content.scrollHeight + "px";`,
-                `\t\t\t\tdropDownIcon.style.transform = 'rotate(0deg)';`,
-                `\t\t\t\teditButton.style.visibility = 'visible';`,
-                `\t\t\t\tshareButton.style.transform = 'translate(-48px, -18px)'`,
-                `\t\t\t}`,
-                `\t\t});`,
-                `\t}`,
-                // Edit Logs Button
-                `\tvar editButtons = document.getElementsByClassName("cardHeaderEditLogButton");`,
-                `\t`,
-                `\tfor (let i = 0; i < editButtons.length; i++) {`,
-                `\t\teditButtons[i].addEventListener("click", function () {`,
-                `\t\t\tconst title = this.parentNode.parentNode.getElementsByClassName("cardSubject")[0].innerHTML;`,
-                `\t\t\tlet titleSplit = title.split(" ");`,
-                `\t\t\ttitleSplit.shift();`,
-                `\t\t\tlet dayNumber = titleSplit[0];`,
-                `\t\t\tdayNumber = dayNumber.substring(0, dayNumber.length-1);`,
-                `\t\t\tconst date = this.parentNode.parentNode.getElementsByClassName("cardDateText")[0].innerHTML;`,
-                `\t\t\tconst dateList = date.split("/");`,
-                `\t\t\tconst monthNames = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ];`,
-                `\t\t\tconst dateString = monthNames[dateList[0]-1] + ' ' + dateList[1] + ', ' + dateList[2];`,
-                `\t\t\ttitleSplit.shift();`,
-                `\t\t\tconst titleString = titleSplit.join(" ");`,
-                `\t\t\tconst descAndLinks = this.parentNode.parentNode.parentNode.getElementsByClassName("cardText");`,
-                `\t\t\tconst descriptionString = descAndLinks[0].innerHTML;`,
-                `\t\t\tconst linksElementArray = this.parentNode.parentNode.parentNode.getElementsByClassName("cardLinkText");`,
-                `\t\t\tlet linksArray = [];`,
-                `\t\t\tfor(let _j = 0; _j < linksElementArray.length; _j++){`,
-                `\t\t\t\tlinksArray.push(linksElementArray[_j].innerHTML.trim());`,
-                `\t\t\t}`,
-                `\t\t\tconst linksString = linksArray.join(", ");`,
-                `\t\t\tconst hours = this.parentNode.parentNode.parentNode.getElementsByClassName("cardMetricText")[1].innerHTML;`,
-                `\t\t\tconst keystrokes = this.parentNode.parentNode.parentNode.getElementsByClassName("cardMetricText")[5].innerHTML;`,
-                `\t\t\tconst linesAdded = this.parentNode.parentNode.parentNode.getElementsByClassName("cardMetricText")[9].innerHTML;`,
-                `\t\t\tlet editLogsForm = document.getElementById("editLogCard");`,
-                `\t\t\teditLogsForm.style.visibility = 'visible';`,
-                `\t\t\tlet dayAndDateTitle = document.getElementById("editLogsDayAndDate");`,
-                `\t\t\tdayAndDateTitle.innerHTML = 'Day ' + dayNumber + ' |  ' + dateString;`,
-                `\t\t\tlet titleField = document.getElementById("editLogsTitle");`,
-                `\t\t\ttitleField.value = titleString;`,
-                `\t\t\tlet descriptionField = document.getElementById("editLogsDescription");`,
-                `\t\t\tdescriptionField.value = descriptionString;`,
-                `\t\t\tlet linksField = document.getElementById("editLogsLinks");`,
-                `\t\t\tlinksField.value = linksString;`,
-                `\t\t\tlet hoursField = document.getElementById("editLogsHoursSelect");`,
-                `\t\t\thoursField.value = hours;`,
-                `\t\t\tlet metricsText = document.getElementById("metricsText");`,
-                `\t\t\tmetricsText.innerHTML = 'You’ve logged ' + hours + ' hours, ' + keystrokes + ' keystrokes, and ' + linesAdded + ' lines of code based on our Code Time plugin.';`,
-                `\t\t});`,
-                `\t}`,
-                // Cancel Button
-                `\tvar cancelButton = document.getElementById("editLogCancelButton");`,
-                `\tcancelButton.addEventListener("click", function () {`,
-                `\t\tlet editLogsForm = document.getElementById("editLogCard");`,
-                `\t\teditLogsForm.style.visibility = 'hidden';`,
-                `\t});`,
-                // Submit Button
-                `\tvar submitButton = document.getElementById("editLogSubmitButton");`,
-                `\tsubmitButton.addEventListener("click", function () {`,
-                `\t\tlet dayAndDateTitle = document.getElementById("editLogsDayAndDate");`,
-                `\t\tconst dayNumber = dayAndDateTitle.innerHTML.split(" ")[1];`,
-                `\t\tlet titleField = document.getElementById("editLogsTitle");`,
-                `\t\tconst title = titleField.value;`,
-                `\t\tlet descriptionField = document.getElementById("editLogsDescription");`,
-                `\t\tconst description = descriptionField.value;`,
-                `\t\tlet linksField = document.getElementById("editLogsLinks");`,
-                `\t\tconst links = linksField.value.replace(" ", "").split(",");`,
-                `\t\tconst logCards = document.getElementsByClassName("logCard");`,
-                `\t\tlet logCard = logCards[logCards.length - dayNumber];`,
-                `\t\tlet cardHeader = logCard.firstChild.nextSibling;`,
-                `\t\tlet dayAndTitle = cardHeader.firstChild.nextSibling.firstChild.nextSibling;`,
-                `\t\tdayAndTitle.innerHTML = 'Day ' + dayNumber + ': ' + title;`,
-                `\t\tlet cardContent = cardHeader.nextSibling.nextSibling;`,
-                `\t\tlet cardDescription = cardContent.firstChild.nextSibling.firstChild.nextSibling.firstChild.nextSibling;`,
-                `\t\tlet linksRoot = cardContent.firstChild.nextSibling.firstChild.nextSibling.nextSibling.nextSibling.firstChild.nextSibling;`,
-                `\t\tlet allOldLinks = linksRoot.childNodes; `,
-                `\t\tfor(let _j = allOldLinks.length - 1; _j >= 0; _j--){`,
-                `\t\t\tallOldLinks[_j].remove(); `,
-                `\t\t} `,
-                `\t\tif(links.length > 0){`,
-                `\t\t\tfor(let _j = 0; _j < links.length; _j++) {`,
-                `\t\t\t\tlet link = links[_j]; `,
-                // `\t\t\t\tlet linkDisplay = link.replace('http://','').replace('https://','').split(/[/?#]/)[0];`,
-                `\t\t\t\tvar a = document.createElement("a"); `,
-                `\t\t\t\ta.className = "cardLinkText"; `,
-                `\t\t\t\ta.href = link; `,
-                `\t\t\t\ta.innerHTML = link; `,
-                `\t\t\t\tlinksRoot.append(a); `,
-                `\t\t\t} `,
-                `\t\t} else {`,
-                `\t\t\tvar a = document.createElement("a"); `,
-                `\t\t\ta.className = "cardText"; `,
-                `\t\t\tvar div = document.createElement("div"); `,
-                `\t\t\tvar text = document.createTextNode("No Links added"); `,
-                `\t\t\ta.append(div); `,
-                `\t\t\tdiv.append(text); `,
-                `\t\t\tlinksRoot.append(a); `,
-                `\t\t}`,
-                `\t\tconst editHoursAmount = parseFloat(document.getElementById("editLogsHoursSelect").value);`,
-                `\t\tlet cardHoursMetric = logCard.getElementsByClassName("cardMetricText")[1];`,
-                `\t\tlet cardHoursAveragePercent = logCard.getElementsByClassName("cardMetricText")[2];`,
-                `\t\tlet cardAverageHoursMetric = parseFloat(logCard.getElementsByClassName("cardMetricText")[3].innerHTML.split(" ")[1]);`,
-                `\t\tcardHoursMetric.innerHTML = editHoursAmount;`,
-                `\t\tlet cardHoursBar = logCard.getElementsByClassName("cardMetricBarMiddle")[1];`,
-                `\t\tlet percentHours = (editHoursAmount / cardAverageHoursMetric) * 100;`,
-                `\t\tpercentHours = Math.round(percentHours * 100) / 100;`,
-                `\t\tif (!cardAverageHoursMetric || cardAverageHoursMetric === 0) {`,
-                `\t\t\tpercentHours = 100;`,
-                `\t\t\tcardAverageHoursMetric = 0;`,
-                `\t\t}`,
-                `\t\tlet barPxHours = Math.round(percentHours);`,
-                `\t\tlet barColorHours = "#00b4ee";`,
-                `\t\tif (barPxHours >= 100) {`,
-                `\t\t\tbarPxHours = 100;`,
-                `\t\t\tbarColorHours = "#FD9808";`,
-                `\t\t}`,
-                `\t\tcardHoursAveragePercent.innerHTML = percentHours + "% of Average";`,
-                `\t\tcardHoursBar.style.width = barPxHours + "px"`,
-                `\t\tcardHoursBar.style.backgroundColor = barColorHours`,
-                `\t\tcardDescription.innerHTML = description; `,
-                `\t\tcardContent.style.maxHeight = cardContent.scrollHeight + "px";`,
-                `\t\tconst dayUpdate = {`,
-                `\t\t\t"day_number": dayNumber, `,
-                `\t\t\t"title": title, `,
-                `\t\t\t"description": description, `,
-                `\t\t\t"links": links,`,
-                `\t\t\t"hours": editHoursAmount`,
-                `\t\t};`,
-                `\t\tvscode.postMessage({ command: "editLog", value: dayUpdate }); `,
-                `\t\tlet editLogsForm = document.getElementById("editLogCard"); `,
-                `\t\teditLogsForm.style.visibility = 'hidden'; `,
-                `\t}); `,
-                //Share buttons
-                `\tlet shareButtons = document.getElementsByClassName("cardHeaderShareButton"); `,
-                `\tfor(let i = 0; i < shareButtons.length; i++) {`,
-                `\t\tshareButtons[i].addEventListener("click", function () {`,
-                `\t\t\tconst dayNumberValue = this.parentNode.parentNode.parentNode.firstChild.nextSibling.firstChild.nextSibling.innerHTML.split(" ")[1].slice(0, -1);`,
-                `\t\t\tthis.firstChild.src = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg";`,
-                `\t\t\tconsole.log(this.firstChild);`,
-                `\t\t\tvscode.postMessage({ command: "incrementShare", value: dayNumberValue }); `,
-                `\t\t}); `,
-                `\t} `,
-                `</script>`,
-                `</html>`
-            ].join("\n");
-        }
-        return htmlString;
+    let cardTextColor = "#FFFFFF";
+    let cardBackgroundColor = "rgba(255,255,255,0.05)";
+    let cardMetricBarSidesColor = "rgba(255,255,255,0.20)";
+    let cardToolTipColor = "rgba(109, 109, 109, .9)";
+    let sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+    let dropDownPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Logs/dropDown.svg";
+    let editLogCardColor = "#292929";
+    if (tempWindow.activeColorTheme.kind === 1) {
+        cardTextColor = "#444444";
+        cardBackgroundColor = "rgba(0,0,0,0.10)";
+        cardMetricBarSidesColor = "rgba(0,0,0,0.20)";
+        cardToolTipColor = "rgba(165, 165, 165, .9)";
+        sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shareLight.svg";
+        dropDownPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Logs/dropDownLight.svg";
+        editLogCardColor = "#E5E5E5";
     }
-    return "Couldn't access logs file";
+    return {
+        cardTextColor,
+        cardBackgroundColor,
+        cardMetricBarSidesColor,
+        cardToolTipColor,
+        sharePath,
+        dropDownPath,
+        editLogCardColor
+    };
 }
 
-export function updateLogsHtml() {
-    //updates logs.html
+function generateShareUrl(
+    day_number: number,
+    title: string,
+    hours: number,
+    keystrokes: number,
+    lines_added: number
+): string {
+    // Share link
+    let shareText = [
+        `Day ${day_number}/100 of 100DaysOfCode`,
+        `${title}`,
+        `Metrics:`,
+        `Hours: ${hours}`,
+        `Lines of Code: ${lines_added}`,
+        `Keystrokes: ${keystrokes}`,
+        `Data supplied from @software_hq’s 100 Days Of Code plugin`
+    ].join("\n");
+    const shareURI = encodeURI(shareText);
+    return `https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.software.com%2F100-days-of-code&text=${shareURI}&hashtags=100DaysOfCode`;
+}
 
-    const filepath = getLogsHtml();
-    try {
-        fs.writeFileSync(filepath, getUpdatedLogsHtmlString());
-    } catch (err) {
-        console.log(err);
+function getFormattedDate(timestamp: number): string {
+    const date = new Date(timestamp);
+    const dayOfMonth = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+    return month + "/" + dayOfMonth + "/" + year;
+}
+
+function getLogsCardSummaryVariables(dayHours: number, dayKeystrokes: number, dayLinesAdded: number) {
+    const summary = getSummaryObject();
+    const hours = summary.hours + summary.currentHours;
+    const keystrokes = summary.keystrokes + summary.currentKeystrokes;
+    const lines = summary.lines_added + summary.currentLines;
+    const days = summary.days;
+    let avgHours = parseFloat((hours / days).toFixed(2));
+    let avgKeystrokes = parseFloat((keystrokes / days).toFixed(2));
+    let avgLines = parseFloat((lines / days).toFixed(2));
+
+    let percentHours = (dayHours / avgHours) * 100;
+    percentHours = Math.round(percentHours * 100) / 100;
+    if (!avgHours || avgHours === 0) {
+        percentHours = 100;
+        avgHours = 0;
     }
+    let percentKeystrokes = (dayKeystrokes / avgKeystrokes) * 100;
+    percentKeystrokes = Math.round(percentKeystrokes * 100) / 100;
+    if (!avgKeystrokes || avgKeystrokes === 0) {
+        percentKeystrokes = 100;
+        avgKeystrokes = 0;
+    }
+    let percentLines = (dayLinesAdded / avgLines) * 100;
+    percentLines = Math.round(percentLines * 100) / 100;
+    if (!avgLines || avgLines === 0) {
+        percentLines = 100;
+        avgLines = 0;
+    }
+
+    let barPxHours = Math.round(percentHours);
+    let barColorHours = "00b4ee";
+    if (barPxHours >= 100) {
+        barPxHours = 100;
+        barColorHours = "FD9808";
+    }
+    let barPxKeystrokes = Math.round(percentKeystrokes);
+    let barColorKeystrokes = "00b4ee";
+    if (barPxKeystrokes >= 100) {
+        barPxKeystrokes = 100;
+        barColorKeystrokes = "FD9808";
+    }
+    let barPxLines = Math.round(percentLines);
+    let barColorLines = "00b4ee";
+    if (barPxLines >= 100) {
+        barPxLines = 100;
+        barColorLines = "FD9808";
+    }
+
+    return {
+        avgHours,
+        percentHours,
+        barPxHours,
+        barColorHours,
+        avgKeystrokes,
+        percentKeystrokes,
+        barPxKeystrokes,
+        barColorKeystrokes,
+        avgLines,
+        percentLines,
+        barPxLines,
+        barColorLines
+    };
+}
+
+function getLinksText(links: Array<string>): string {
+    let linksText = "";
+    for (let i = 0; i < links.length; i++) {
+        linksText += [
+            `\t\t\t\t\t\t<a class="cardLinkText" href="${links[i]}">`,
+            `\t\t\t\t\t\t\t${links[i]}`,
+            `\t\t\t\t\t\t</a>\n`
+        ].join("\n");
+    }
+    return linksText;
+}
+
+function getMilestonesText(milestones: Array<number>): string {
+    let milestonesText = "";
+    const milestoneNum = milestones.length;
+    for (let milestoneIndex = 0; milestoneIndex < 9; milestoneIndex++) {
+        if (milestoneIndex % 3 === 0) {
+            milestonesText += `\t\t\t\t\t<div class="cardMilestoneRow">\n`;
+        }
+
+        if (milestoneIndex < milestoneNum) {
+            let milestoneId = milestones[milestoneIndex];
+            let milestone = getMilestoneById(milestoneId);
+            milestonesText += [
+                `\t\t\t\t\t\t<div class="cardMilestone">`,
+                `\t\t\t\t\t\t\t<span class="tooltiptext">`,
+                `\t\t\t\t\t\t\t\t<div style="font-weight: bold;">${milestone.title}</div>`,
+                `\t\t\t\t\t\t\t\t<div>${milestone.description}</div>`,
+                `\t\t\t\t\t\t\t</span>`,
+                `\t\t\t\t\t\t\t<img class="cardMilestoneIcon" src="${milestone.icon}" alt="">`,
+                `\t\t\t\t\t\t</div>\n`
+            ].join("\n");
+        } else {
+            milestonesText += [`\t\t\t\t\t\t<div class="cardMilestone">`, `\t\t\t\t\t\t</div>\n`].join("\n");
+        }
+
+        if (milestoneIndex % 3 === 2) {
+            milestonesText += `\t\t\t\t\t</div>\n`;
+        }
+    }
+    return milestonesText;
+}
+
+function getLogCard(
+    day: Log,
+    formattedDate: string,
+    twitterShareUrl: string,
+    shareIconLink: string,
+    dropDownPath: string
+): string {
+    const {
+        avgHours,
+        percentHours,
+        barPxHours,
+        barColorHours,
+        avgKeystrokes,
+        percentKeystrokes,
+        barPxKeystrokes,
+        barColorKeystrokes,
+        avgLines,
+        percentLines,
+        barPxLines,
+        barColorLines
+    } = getLogsCardSummaryVariables(
+        day.codetime_metrics.hours,
+        day.codetime_metrics.keystrokes,
+        day.codetime_metrics.lines_added
+    );
+    const linksText = getLinksText(day.links);
+    const milestonesText = getMilestonesText(day.milestones);
+    return [
+        `\t<div class="logCard">`,
+        `\t\t<div class="cardHeader">`,
+        `\t\t\t<div class="cardHeaderTextSection">`,
+        `\t\t\t\t<div class="cardSubject">Day ${day.day_number}: ${day.title}</div>`,
+        `\t\t\t\t<div class="cardTextGroup">`,
+        `\t\t\t\t\t<div class="cardDateText">${formattedDate}</div>`,
+        `\t\t\t\t</div>`,
+        `\t\t\t</div>`,
+        `\t\t\t<div class="cardHeaderButtonSection">`,
+        `\t\t\t\t<a href="${twitterShareUrl}" title="Share this on Twitter"><button class="cardHeaderShareButton"><img class="cardHeaderShareButtonIcon" src=${shareIconLink}></button></a>`,
+        `\t\t\t\t<button class="cardHeaderEditLogButton">Edit Log</button>`,
+        `\t\t\t\t<button class="cardHeaderDropDownButton"><img class="cardHeaderShareButtonIcon" src=${dropDownPath}></button>`,
+        `\t\t\t</div>`,
+        `\t\t</div>`,
+        `\t\t<div class="cardContent">`,
+        `\t\t\t<div class="cardTextSection">`,
+        `\t\t\t\t<div class="cardTextGroup">`,
+        `\t\t\t\t\t<div class="cardText">${day.description}</div>`,
+        `\t\t\t\t\t<br>`,
+        `\t\t\t\t</div>`,
+        `\t\t\t\t<div class="cardTextGroup">`,
+        `\t\t\t\t\t<div>\n`,
+        `${linksText}`,
+        `\t\t\t\t\t</div>`,
+        `\t\t\t\t</div>`,
+        `\t\t\t</div>`,
+        `\t\t\t<div class="cardMetricsSection">`,
+        `\t\t\t\t<div class="cardMetricsTitle">Coding Metrics</div>`,
+        `\t\t\t\t<br>`,
+        `\t\t\t\t<div class='cardMetricGrid'>`,
+        `\t\t\t\t\t<div class="cardMetric">`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 16px; margin-bottom: 5px;">Active Code Time</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 20px; margin-bottom: 20px;">${day.codetime_metrics.hours}</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; margin-bottom: 5px;">${percentHours}% of Average</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; margin-bottom: 20px;">Average: ${avgHours} Hours</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricBarGroup">`,
+        `\t\t\t\t\t\t\t<div class="cardMetricBarRight"></div>`,
+        `\t\t\t\t\t\t\t<div class="cardMetricBarMiddle"></div>`,
+        `\t\t\t\t\t\t\t<div class="cardMetricBarMiddle" style="width: ${barPxHours}px; background-color: #${barColorHours};"></div>`,
+        `\t\t\t\t\t\t\t<div class="cardMetricBarLeft"></div>`,
+        `\t\t\t\t\t\t</div>`,
+        `\t\t\t\t\t</div>`,
+        `\t\t\t\t\t<div class="cardMetric">`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 16px; margin-bottom: 5px;">Keystrokes</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 20px; margin-bottom: 20px;">${day.codetime_metrics.keystrokes}</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; margin-bottom: 5px;">${percentKeystrokes}% of Average</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; margin-bottom: 20px;">Average: ${avgKeystrokes}</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricBarGroup">`,
+        `\t\t\t\t\t\t\t<div class="cardMetricBarRight"></div>`,
+        `\t\t\t\t\t\t\t<div class="cardMetricBarMiddle"></div>`,
+        `\t\t\t\t\t\t\t<div class="cardMetricBarMiddle" style="width: ${barPxKeystrokes}px; background-color: #${barColorKeystrokes};"></div>`,
+        `\t\t\t\t\t\t\t<div class="cardMetricBarLeft"></div>`,
+        `\t\t\t\t\t\t</div>`,
+        `\t\t\t\t\t</div>`,
+        `\t\t\t\t\t<div class="cardMetric">`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 16px; margin-bottom: 5px;">Lines Added</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 20px; margin-bottom: 20px;">${day.codetime_metrics.lines_added}</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; margin-bottom: 5px;">${percentLines}% of Average</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; margin-bottom: 20px;">Average: ${avgLines}</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricBarGroup">`,
+        `\t\t\t\t\t\t\t<div class="cardMetricBarRight"></div>`,
+        `\t\t\t\t\t\t\t<div class="cardMetricBarMiddle"></div>`,
+        `\t\t\t\t\t\t\t<div class="cardMetricBarMiddle" style="width: ${barPxLines}px; background-color: #${barColorLines};"></div>`,
+        `\t\t\t\t\t\t\t<div class="cardMetricBarLeft"></div>`,
+        `\t\t\t\t\t\t</div>`,
+        `\t\t\t\t\t</div>`,
+        `\t\t\t\t</div>`,
+        `\t\t\t</div>`,
+        `\t\t\t<div class="cardMilestoneSection">`,
+        `\t\t\t\t<div class="cardMilestoneTitle">Milestones</div>`,
+        `\t\t\t\t<br>`,
+        `\t\t\t\t<div class="cardMilestoneGrid">\n`,
+        `${milestonesText}`,
+        `\t\t\t\t\t</div>`,
+        `\t\t\t\t</div>`,
+        `\t\t\t</div>`,
+        `\t\t</div>`,
+        `\t</div>\n`
+    ].join("\n");
+}
+
+export function getUpdatedLogsHtml(): string {
+    const logsExists = checkLogsJson();
+
+    let logs: Array<Log> = getAllLogObjects();
+
+    // if in light mode
+    const {
+        cardTextColor,
+        cardBackgroundColor,
+        cardMetricBarSidesColor,
+        cardToolTipColor,
+        sharePath,
+        dropDownPath,
+        editLogCardColor
+    } = getStyleColorsBasedOnMode();
+
+    // CSS
+    let logsHtml = "";
+    let scriptHtml = "";
+
+    let submittedLogToday: boolean;
+    if (logs.length < 1 || (logs.length === 1 && !logs[0].day_number)) {
+        logsHtml = `\t\t<h2 id='noLogs'>Log Daily Progress to see it here! --> <a id="addLog" href="Add Log">Add log</a></h2>`;
+    } else {
+        let mostRecentLog = logs[logs.length - 1];
+        let logDate = new Date(mostRecentLog.date);
+        let dateNow = new Date();
+        submittedLogToday = compareDates(dateNow, logDate) && mostRecentLog.title !== "No Title";
+
+        if (!submittedLogToday) {
+            logsHtml += `\t\t<h2>Don't forget to submit your log today! --> <a id="addLog" href="Add Log">Add log</a></h2>\n`;
+        }
+
+        for (let i = logs.length - 1; i >= 0; i--) {
+            if (!submittedLogToday && i === logs.length - 1) {
+                continue;
+            }
+
+            const day = logs[i];
+
+            const twitterShareUrl = generateShareUrl(
+                day.day_number,
+                day.title,
+                day.codetime_metrics.hours,
+                day.codetime_metrics.keystrokes,
+                day.codetime_metrics.lines_added
+            );
+
+            const formattedDate = getFormattedDate(day.date);
+
+            const shareIconLink = day.shared
+                ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg"
+                : sharePath;
+
+            logsHtml += getLogCard(day, formattedDate, twitterShareUrl, shareIconLink, dropDownPath);
+        }
+    }
+
+    const templateVars = {
+        logsHtml,
+        cardTextColor,
+        cardBackgroundColor,
+        cardMetricBarSidesColor,
+        cardToolTipColor,
+        sharePath,
+        dropDownPath,
+        editLogCardColor
+    };
+
+    const templateString = fs.readFileSync(getLogsTemplate()).toString();
+    const fillTemplate = function (templateString: string, templateVars: any) {
+        return new Function("return `" + templateString + "`;").call(templateVars);
+    };
+
+    const logsHtmlContent = fillTemplate(templateString, templateVars);
+    return logsHtmlContent;
 }

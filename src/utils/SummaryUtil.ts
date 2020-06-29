@@ -1,7 +1,7 @@
 import { getSoftwareDir, isWindows, compareDates, getSoftwareSessionAsJson } from "./Util";
 import fs = require("fs");
 import { window } from "vscode";
-import { getMostRecentLogObject, checkLogsJson, checkIfOnStreak, getAllLogObjects, getLogsSummary } from "./LogsUtil";
+import { getMostRecentLogObject, checkIfOnStreak, getLogsSummary } from "./LogsUtil";
 import { getLanguages } from "./LanguageUtil";
 import { Summary } from "../models/Summary";
 import { Log } from "../models/Log";

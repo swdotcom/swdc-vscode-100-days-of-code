@@ -17,6 +17,8 @@ export function getSessionCodetimeMetrics(): Array<number> {
     // try to get codetime metrics from session summary file
     let codeTimeMetricsStr: string;
     try {
+        // retries help when a user downloads Code Time with 100 Days of Code
+        // they allow the file to be created and not throw errors
         let exists = false;
         let retries = 5;
         while (retries > 0 && !exists) {

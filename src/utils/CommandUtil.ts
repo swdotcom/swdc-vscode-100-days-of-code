@@ -1,7 +1,7 @@
 import { Disposable, commands, window, TreeView, ViewColumn, WebviewPanel, Uri } from "vscode";
 import { TreeNode } from "../models/TreeNode";
 import { Tree100DoCProvider, connectDoCTreeView } from "../tree/Tree100DoCProvider";
-import { getLogsHtml, updateLogsHtml, addLogToJson, editLogEntry, updateLogShare } from "./LogsUtil";
+import { addLogToJson, editLogEntry, updateLogShare, getUpdatedLogsHtml } from "./LogsUtil";
 import {
     checkDaysMilestones,
     checkLanguageMilestonesAchieved,
@@ -26,29 +26,24 @@ export function createCommands(): { dispose: () => void } {
     Doc100SftwProvider.bindView(Doc100SftwTreeView);
     cmds.push(connectDoCTreeView(Doc100SftwTreeView));
 
-    cmds.push(commands.registerCommand("DoC.ViewReadme", () => {
-        displayReadmeIfNotExists(true);
-    }));
+    cmds.push(
+        commands.registerCommand("DoC.ViewReadme", () => {
+            displayReadmeIfNotExists(true);
+        })
+    );
 
     cmds.push(
         commands.registerCommand("DoC.viewLogs", () => {
-            updateLogsHtml();
-            const logsHtmlPath = getLogsHtml();
-
             if (currentPanel) {
                 if (currentPanel.title !== "Logs") {
                     currentPanel.dispose();
                     commands.executeCommand("DoC.viewLogs");
                 } else {
-                    fs.readFile(logsHtmlPath, "utf8", (err: Error, data: string) => {
-                        if (err) {
-                            console.log(err);
-                        }
-                        // have to implement this check for worst case scenario
-                        if (currentPanel) {
-                            currentPanel.webview.html = data;
-                        }
-                    });
+                    // have to implement this check for worst case scenario
+                    if (currentPanel) {
+                        currentPanel.webview.html = getUpdatedLogsHtml();
+                    }
+
                     currentPanel.reveal(ViewColumn.One);
                 }
             } else {
@@ -56,28 +51,18 @@ export function createCommands(): { dispose: () => void } {
                     enableScripts: true
                 });
 
-                fs.readFile(logsHtmlPath, "utf8", (err: Error, data: string) => {
-                    if (err) {
-                        console.log(err);
-                    }
-                    if (currentPanel) {
-                        currentPanel.webview.html = data;
-                    }
-                });
+                if (currentPanel) {
+                    currentPanel.webview.html = getUpdatedLogsHtml();
+                }
 
                 const logInterval = setInterval(() => {
                     // updates only in the background
                     if (currentPanel && !currentPanel.active) {
-                        updateLogsHtml();
-                        fs.readFile(logsHtmlPath, "utf8", (err: Error, data: string) => {
-                            if (err) {
-                                console.log(err);
-                            }
-                            // have to implement this check for worst case scenario
-                            if (currentPanel) {
-                                currentPanel.webview.html = data;
-                            }
-                        });
+                        // updateLogsHtml();
+                        // have to implement this check for worst case scenario
+                        if (currentPanel) {
+                            currentPanel.webview.html = getUpdatedLogsHtml();
+                        }
                     }
                 }, 60000);
 

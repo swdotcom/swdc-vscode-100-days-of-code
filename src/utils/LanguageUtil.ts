@@ -1,7 +1,7 @@
 import { getSoftwareDir, isWindows } from "./Util";
 import fs = require("fs");
 
-export function getFileSummaryJson() {
+function getFileSummaryJson() {
     let file = getSoftwareDir();
     if (isWindows()) {
         file += "\\fileChangeSummary.json";
@@ -15,6 +15,8 @@ export function getLanguages() {
     const fileSummaryFile = getFileSummaryJson();
     let filesString: string;
     try {
+        // retries help when a user downloads Code Time with 100 Days of Code
+        // they allow the file to be created and not throw errors
         let exists = false;
         let retries = 5;
         while (retries > 0 && !exists) {
@@ -39,7 +41,7 @@ export function getLanguages() {
         languages.push(language);
     }
 
-    // for no duplicates, we convert arry into set and back into array
+    // for no duplicates, we convert array into set and back into array
     languages = Array.from(new Set(languages));
 
     return languages;
