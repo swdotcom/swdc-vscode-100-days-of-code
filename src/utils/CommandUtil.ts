@@ -9,7 +9,7 @@ import {
     updateMilestoneShare,
     getUpdatedMilestonesHtmlString
 } from "./MilestonesUtil";
-import { updateAddLogHtml, getAddLogHtml } from "./addLogUtil";
+import { getUpdatedAddLogHtmlString } from "./addLogUtil";
 import { getUpdatedDashboardHtmlString, getCertificateHtmlString } from "./DashboardUtil";
 import { displayReadmeIfNotExists } from "./Util";
 const fs = require("fs");
@@ -221,23 +221,16 @@ export function createCommands(): { dispose: () => void } {
 
     cmds.push(
         commands.registerCommand("DoC.addLog", () => {
-            updateAddLogHtml();
-            const addLogHtmlPath = getAddLogHtml();
-
             if (currentPanel) {
                 if (currentPanel.title !== "Add Daily Progress Log") {
                     currentPanel.dispose();
                     commands.executeCommand("DoC.addLog");
                 } else {
-                    fs.readFile(addLogHtmlPath, "utf8", (err: Error, data: string) => {
-                        if (err) {
-                            console.log(err);
-                        }
-                        // have to implement this check for worst case scenario
-                        if (currentPanel) {
-                            currentPanel.webview.html = data;
-                        }
-                    });
+                    // have to implement this check for worst case scenario
+                    if (currentPanel) {
+                        currentPanel.webview.html = getUpdatedAddLogHtmlString();
+                    }
+
                     currentPanel.reveal(ViewColumn.One);
                 }
             } else {
@@ -248,14 +241,9 @@ export function createCommands(): { dispose: () => void } {
                     { enableScripts: true }
                 );
 
-                fs.readFile(addLogHtmlPath, "utf8", (err: Error, data: string) => {
-                    if (err) {
-                        console.log(err);
-                    }
-                    if (currentPanel) {
-                        currentPanel.webview.html = data;
-                    }
-                });
+                if (currentPanel) {
+                    currentPanel.webview.html = getUpdatedAddLogHtmlString();
+                }
 
                 // handle submit or cancel
                 let log;

@@ -18,7 +18,6 @@ import {
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import { getLanguages } from "./LanguageUtil";
 import { softwarePost, isResponseOk, serverIsAvailable, softwarePut, softwareGet } from "../managers/HttpManager";
-import { rawListeners } from "process";
 
 // variables to keep in check the db update process
 export let updatedMilestonesDb = true;
@@ -30,6 +29,7 @@ let toUpdateMilestones: Array<any> = [];
 function getMilestonesTemplate(): string {
     return path.join(__dirname, "../assets/templates/milestones.template.html");
 }
+
 function getMilestonesJson(): string {
     let file = getSoftwareDir();
     if (isWindows()) {
