@@ -257,7 +257,6 @@ async function compareWithLocalLogs(logs: Array<Log>) {
         }
 
         if (changed) {
-            console.log("Logs updated from db");
             const sendLogs = { logs: localLogs };
             try {
                 fs.writeFileSync(logFilepath, JSON.stringify(sendLogs, null, 4));
@@ -319,7 +318,6 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
         logs[i].day_number = i + 1;
     }
 
-    console.log("Logs updated from db");
     const sendLogs = { logs };
     try {
         fs.writeFileSync(getLogsJson(), JSON.stringify(sendLogs, null, 4));
@@ -836,7 +834,6 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
     const exists = checkLogsJson();
     if (exists) {
         const metrics = getSessionCodetimeMetrics();
-        console.log(metrics);
         const logDate = new Date();
         const filepath = getLogsJson();
         const rawLogs = fs.readFileSync(filepath).toString();
@@ -1802,7 +1799,6 @@ export function getUpdatedLogsHtmlString(): string {
                 `\t\tshareButtons[i].addEventListener("click", function () {`,
                 `\t\t\tconst dayNumberValue = this.parentNode.parentNode.parentNode.firstChild.nextSibling.firstChild.nextSibling.innerHTML.split(" ")[1].slice(0, -1);`,
                 `\t\t\tthis.firstChild.src = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg";`,
-                `\t\t\tconsole.log(this.firstChild);`,
                 `\t\t\tvscode.postMessage({ command: "incrementShare", value: dayNumberValue }); `,
                 `\t\t}); `,
                 `\t} `,
