@@ -1,7 +1,7 @@
 import { getSoftwareDir, isWindows } from "./Util";
 import fs = require("fs");
 
-export function getSessionSummaryJson() {
+function getSessionSummaryJson() {
     let file = getSoftwareDir();
     if (isWindows()) {
         file += "\\sessionSummary.json";
@@ -13,6 +13,8 @@ export function getSessionSummaryJson() {
 
 export function getSessionCodetimeMetrics(): Array<number> {
     const sessionSummaryFile = getSessionSummaryJson();
+
+    // try to get codetime metrics from session summary file
     let codeTimeMetricsStr: string;
     try {
         let exists = false;
@@ -30,11 +32,14 @@ export function getSessionCodetimeMetrics(): Array<number> {
         console.log(err);
         return [0, 0, 0];
     }
+
+    // reading code time metrics from the string
     const metrics = JSON.parse(codeTimeMetricsStr);
     let minutes: number = 0;
     let keystrokes: number = 0;
     let linesAdded: number = 0;
 
+    // checks for avoiding null and undefined
     if (metrics.currentDayMinutes) {
         minutes = metrics.currentDayMinutes;
     }

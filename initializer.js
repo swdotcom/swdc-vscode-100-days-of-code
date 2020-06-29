@@ -29,7 +29,7 @@ async function initialize() {
 
     await runCommand(
         `${copyCmd} src${pathSep}assets${pathSep}* out${pathSep}assets${pathSep}.`,
-        "Copy the assets to the out dir"
+        "Copy the assets to the assets dir"
     );
 
     await runCommand(

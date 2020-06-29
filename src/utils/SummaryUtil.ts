@@ -8,7 +8,7 @@ import { Log } from "../models/Log";
 import { serverIsAvailable, softwarePost, isResponseOk, softwarePut, softwareGet } from "../managers/HttpManager";
 import { getTotalMilestonesAchieved } from "./MilestonesUtil";
 
-export function getSummaryJson() {
+function getSummaryJson() {
     let file = getSoftwareDir();
     if (isWindows()) {
         file += "\\userSummary.json";
@@ -19,6 +19,7 @@ export function getSummaryJson() {
 }
 
 export function checkSummaryJson() {
+    // checks if summary JSON exists. If not populates it with base values
     const filepath = getSummaryJson();
     try {
         if (fs.existsSync(filepath)) {
@@ -38,7 +39,7 @@ export function checkSummaryJson() {
                     `\t"lines_added": 0,`,
                     `\t"keystrokes": 0,`,
                     `\t"recent_milestones": [],`,
-                    `\t"curr_streak": 0,`,
+                    `\t"current_streak": 0,`,
                     `\t"shares": 0,`,
                     `\t"languages": [],`,
                     `\t"lastUpdated":  0\n}`
@@ -52,17 +53,22 @@ export function checkSummaryJson() {
 }
 
 export async function pushSummaryToDb() {
+    // checks if summary exists and updates/creates it
     const summaryExists = await fetchSummary();
     if (summaryExists) {
         pushUpdatedSummary();
+        fetchSummary();
     } else {
         pushNewSummary();
+        fetchSummary();
     }
 }
 
 async function pushNewSummary() {
+    // get the summary from the JSON
     const summary: Summary = getSummaryObject();
 
+    // convert the summary object to the db style object
     const toCreateSummary = {
         days: summary.days,
         minutes: summary.hours * 60,
@@ -74,24 +80,15 @@ async function pushNewSummary() {
         shares: summary.shares,
         languages: summary.languages
     };
-    let retry = 5;
     let available = false;
-    while (retry > 0) {
-        try {
-            available = await serverIsAvailable();
-        } catch (err) {
-            available = false;
-        }
-        retry--;
-        if (available) {
-            const jwt = getSoftwareSessionAsJson()["jwt"];
-            const resp = await softwarePost("100doc/summary", toCreateSummary, jwt);
-            const added: boolean = isResponseOk(resp);
-        } else {
-            console.log("New summary not created in db");
-        }
-        // Wait 10 seconds before next try
-        setTimeout(() => {}, 10000);
+    try {
+        available = await serverIsAvailable();
+    } catch (err) {
+        available = false;
+    }
+    if (available) {
+        const jwt = getSoftwareSessionAsJson()["jwt"];
+        const resp = await softwarePost("100doc/summary", toCreateSummary, jwt);
     }
 }
 
@@ -109,74 +106,56 @@ async function pushUpdatedSummary() {
         shares: summary.shares,
         languages: summary.languages
     };
-    let retry = 5;
     let available = false;
-    while (retry > 0) {
-        try {
-            available = await serverIsAvailable();
-        } catch (err) {
-            available = false;
-        }
-        retry--;
-        if (available) {
-            const jwt = getSoftwareSessionAsJson()["jwt"];
-            const resp = await softwarePut("100doc/summary", toCreateSummary, jwt);
-            if (isResponseOk(resp)) {
-                retry = 0;
-            }
-        } else {
-            console.log("New summary not created in db");
-        }
-        // Wait 10 seconds before next try
-        setTimeout(() => {}, 10000);
+
+    try {
+        available = await serverIsAvailable();
+    } catch (err) {
+        available = false;
+    }
+    if (available) {
+        const jwt = getSoftwareSessionAsJson()["jwt"];
+        const resp = await softwarePut("100doc/summary", toCreateSummary, jwt);
     }
 }
 
-export async function fetchSummary() {
-    let retry = 5;
+export async function fetchSummary(): Promise<boolean> {
     let available = false;
-    while (retry > 0) {
-        try {
-            available = await serverIsAvailable();
-        } catch (err) {
-            available = false;
-        }
-        retry--;
-        if (available) {
-            const jwt = getSoftwareSessionAsJson()["jwt"];
-            const summary = await softwareGet("100doc/summary", jwt).then(resp => {
-                if (isResponseOk(resp) && resp.data) {
-                    const rawSummary = resp.data;
-                    let summary = {
-                        days: rawSummary.days,
-                        hours: rawSummary.minutes / 60,
-                        keystrokes: rawSummary.keystrokes,
-                        lines_added: rawSummary.lines_added,
-                        longest_streak: rawSummary.longest_streak,
-                        milestones: rawSummary.milestones,
-                        shares: rawSummary.shares,
-                        languages: rawSummary.languages
-                    };
-                    return summary;
-                }
-            });
-            if (summary) {
-                compareLocalSummary(summary);
-                retry = 0;
-                return true;
+    try {
+        available = await serverIsAvailable();
+    } catch (err) {
+        available = false;
+    }
+    if (available) {
+        const jwt = getSoftwareSessionAsJson()["jwt"];
+        const summary = await softwareGet("100doc/summary", jwt).then(resp => {
+            if (isResponseOk(resp) && resp.data) {
+                const rawSummary = resp.data;
+                let summary = {
+                    days: rawSummary.days,
+                    hours: rawSummary.minutes / 60,
+                    keystrokes: rawSummary.keystrokes,
+                    lines_added: rawSummary.lines_added,
+                    longest_streak: rawSummary.longest_streak,
+                    milestones: rawSummary.milestones,
+                    shares: rawSummary.shares,
+                    languages: rawSummary.languages
+                };
+                return summary;
             }
-        } else {
-            console.log("New summary not created in db");
+        });
+        if (summary) {
+            compareLocalSummary(summary);
+            return true;
         }
-
-        // Wait 10 seconds before next try
-        setTimeout(() => {}, 10000);
     }
     return false;
 }
 
 function compareLocalSummary(dbSummary: any) {
     let summary: Summary = getSummaryObject();
+
+    // updates local summary if and only if db is as updated
     if (dbSummary.days >= summary.days) {
         summary.days = dbSummary.days;
         summary.hours = dbSummary.hours;
@@ -223,17 +202,13 @@ export function reevaluateSummary() {
 }
 
 export function updateSummaryJson() {
-    const summaryExists = checkSummaryJson();
-    const logsExists = checkLogsJson();
-    if (!summaryExists || !logsExists) {
-        return;
-    }
     let summary: Summary = getSummaryObject();
     const log: Log = getMostRecentLogObject();
     const onStreak = checkIfOnStreak();
     const currentDate = new Date(summary.currentDate);
     const dateOb = new Date();
 
+    // if current date is not today, update aggregate data
     if (!compareDates(dateOb, currentDate)) {
         summary.days += 1;
         summary.hours += summary.currentHours;
@@ -242,18 +217,21 @@ export function updateSummaryJson() {
         summary.currentDate = dateOb.valueOf();
 
         if (onStreak) {
-            summary.curr_streak += 1;
-            if (summary.curr_streak > summary.longest_streak) {
-                summary.longest_streak = summary.curr_streak;
+            summary.current_streak += 1;
+            if (summary.current_streak > summary.longest_streak) {
+                summary.longest_streak = summary.current_streak;
             }
         } else {
-            summary.curr_streak = 1;
+            summary.current_streak = 1;
         }
     }
+
+    // update day's data
     summary.currentHours = log.codetime_metrics.hours;
     summary.currentKeystrokes = log.codetime_metrics.keystrokes;
     summary.currentLines = log.codetime_metrics.lines_added;
 
+    // update languages aggregate and make sure none are repeated
     const newLanguages = getLanguages();
     const currLanguages = summary.languages;
     const totalLanguages = currLanguages.concat(newLanguages);
@@ -271,14 +249,13 @@ export function updateSummaryJson() {
 }
 
 export function updateSummaryMilestones(newMilestones: Array<number>, totalMilestones: number) {
-    const summaryExists = checkSummaryJson();
-    if (!summaryExists) {
-        return;
-    }
     let summary = getSummaryObject();
     summary.milestones = totalMilestones;
+
+    // order milestones in latest to oldest order of achievement
     summary.recent_milestones = newMilestones.reverse().concat(summary.recent_milestones);
-    while (summary.recent_milestones.length > 5) {
+    // limit milestones to 3 for displaying on the dashboard
+    while (summary.recent_milestones.length > 3) {
         summary.recent_milestones.pop();
     }
     summary.lastUpdated = new Date().getTime();
@@ -292,24 +269,16 @@ export function updateSummaryMilestones(newMilestones: Array<number>, totalMiles
 }
 
 export function getSummaryTotalHours() {
-    const summaryExists = checkSummaryJson();
-    if (!summaryExists) {
-        return;
-    }
     let summary = getSummaryObject();
     return summary.hours;
 }
 
 export function setSummaryTotalHours(newHours: number) {
-    const summaryExists = checkSummaryJson();
-    if (!summaryExists) {
-        return;
-    }
     let summary = getSummaryObject();
     summary.hours = newHours;
     const filepath = getSummaryJson();
     try {
-        fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
+        fs.writeFileSync(getSummaryJson(), JSON.stringify(summary, null, 4));
     } catch (err) {
         console.log(err);
         return;
@@ -317,10 +286,6 @@ export function setSummaryTotalHours(newHours: number) {
 }
 
 export function setSummaryCurrentHours(newCurrentHours: number) {
-    const summaryExists = checkSummaryJson();
-    if (!summaryExists) {
-        return;
-    }
     let summary = getSummaryObject();
     summary.currentHours = newCurrentHours;
     const filepath = getSummaryJson();
@@ -333,11 +298,7 @@ export function setSummaryCurrentHours(newCurrentHours: number) {
 }
 
 export function updateSummaryLanguages() {
-    const summaryExists = checkSummaryJson();
-    if (!summaryExists) {
-        return;
-    }
-
+    // update languages aggregate and make sure none are repeated
     const newLanguages = getLanguages();
     let summary = getSummaryObject();
     const currLanguages = summary.languages;
@@ -357,7 +318,6 @@ export function updateSummaryLanguages() {
 export function incrementSummaryShare() {
     const summary: Summary = getSummaryObject();
     summary.shares++;
-
     const filepath = getSummaryJson();
     try {
         fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
@@ -370,7 +330,7 @@ export function incrementSummaryShare() {
 export function getSummaryObject() {
     const exists = checkSummaryJson();
     if (!exists) {
-        window.showErrorMessage("Cannot access Summary file!");
+        window.showErrorMessage("Cannot access Summary file! Please contact cody@software.com for help.");
     }
     const filepath = getSummaryJson();
     let rawSummary = fs.readFileSync(filepath).toString();
@@ -378,6 +338,7 @@ export function getSummaryObject() {
 }
 
 export function getDaysLevel(daysComplete: number): number {
+    // based on days milestones
     if (daysComplete >= 110) {
         return 6;
     } else if (daysComplete >= 100) {
@@ -396,6 +357,7 @@ export function getDaysLevel(daysComplete: number): number {
 }
 
 export function getHoursLevel(hoursCoded: number): number {
+    // based on hours milestones
     if (hoursCoded >= 200) {
         return 6;
     } else if (hoursCoded >= 120) {
@@ -414,6 +376,7 @@ export function getHoursLevel(hoursCoded: number): number {
 }
 
 export function getLongStreakLevel(longestStreak: number): number {
+    // based on streaks milestones
     if (longestStreak >= 100) {
         return 6;
     } else if (longestStreak >= 60) {
@@ -432,6 +395,7 @@ export function getLongStreakLevel(longestStreak: number): number {
 }
 
 export function getMilestonesEarnedLevel(milestones: number): number {
+    // based on number of milestones
     if (milestones >= 50) {
         return 6;
     } else if (milestones >= 40) {
@@ -450,6 +414,7 @@ export function getMilestonesEarnedLevel(milestones: number): number {
 }
 
 export function getAverageHoursLevel(avgHour: number): number {
+    // based on avg hours for 100 days of code
     if (avgHour >= 3.0) {
         return 6;
     } else if (avgHour >= 2.5) {

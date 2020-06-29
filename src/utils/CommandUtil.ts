@@ -11,7 +11,7 @@ import {
     updateMilestoneShare
 } from "./MilestonesUtil";
 import { updateAddLogHtml, getAddLogHtml } from "./addLogUtil";
-import { getDashboardHtml, updateDashboardHtml, getCertificateHtml, updateCertificateHtml } from "./DashboardUtil";
+import { getUpdatedDashboardHtmlString, getCertificateHtmlString } from "./DashboardUtil";
 const fs = require("fs");
 
 export function createCommands(): { dispose: () => void } {
@@ -112,23 +112,14 @@ export function createCommands(): { dispose: () => void } {
 
     cmds.push(
         commands.registerCommand("DoC.viewDashboard", () => {
-            updateDashboardHtml();
-            const dashboardHtmlPath = getDashboardHtml();
-
             if (currentPanel) {
                 if (currentPanel.title !== "Dashboard") {
                     currentPanel.dispose();
                     commands.executeCommand("DoC.viewDashboard");
                 } else {
-                    fs.readFile(dashboardHtmlPath, "utf8", (err: Error, data: string) => {
-                        if (err) {
-                            console.log(err);
-                        }
-                        // have to implement this check for worst case scenario
-                        if (currentPanel) {
-                            currentPanel.webview.html = data;
-                        }
-                    });
+                    if (currentPanel) {
+                        currentPanel.webview.html = getUpdatedDashboardHtmlString();
+                    }
                     currentPanel.reveal(ViewColumn.One);
                 }
             } else {
@@ -136,26 +127,14 @@ export function createCommands(): { dispose: () => void } {
                     enableScripts: true
                 });
 
-                fs.readFile(dashboardHtmlPath, "utf8", (err: Error, data: string) => {
-                    if (err) {
-                        console.log(err);
-                    }
-                    if (currentPanel) {
-                        currentPanel.webview.html = data;
-                    }
-                });
+                if (currentPanel) {
+                    currentPanel.webview.html = getUpdatedDashboardHtmlString();
+                }
 
                 const dashboardInterval = setInterval(() => {
-                    updateDashboardHtml();
-                    fs.readFile(dashboardHtmlPath, "utf8", (err: Error, data: string) => {
-                        if (err) {
-                            console.log(err);
-                        }
-                        // have to implement this check for worst case scenario
-                        if (currentPanel) {
-                            currentPanel.webview.html = data;
-                        }
-                    });
+                    if (currentPanel) {
+                        currentPanel.webview.html = getUpdatedDashboardHtmlString();
+                    }
                 }, 60000);
 
                 currentPanel.webview.onDidReceiveMessage(message => {
@@ -186,13 +165,7 @@ export function createCommands(): { dispose: () => void } {
                                             "Congratulations!",
                                             ViewColumn.One
                                         );
-                                        updateCertificateHtml(text);
-                                        fs.readFile(getCertificateHtml(), "utf8", (err: Error, data: string) => {
-                                            if (err) {
-                                                console.log(err);
-                                            }
-                                            panel.webview.html = data;
-                                        });
+                                        panel.webview.html = getCertificateHtmlString(text);
                                         panel.reveal(ViewColumn.One);
                                     }
                                 });

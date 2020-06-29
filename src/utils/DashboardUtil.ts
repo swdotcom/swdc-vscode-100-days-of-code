@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows } from "./Util";
+import path = require("path");
 import fs = require("fs");
 import {
     getSummaryObject,
@@ -10,30 +10,16 @@ import {
 } from "./SummaryUtil";
 import { Summary } from "../models/Summary";
 import { getLastSevenLoggedDays, getAllCodetimeHours, getLogDateRange } from "./LogsUtil";
-import { getMilestoneById, milestoneShareUrlGenerator } from "./MilestonesUtil";
+import { getMilestoneById } from "./MilestonesUtil";
 import { window } from "vscode";
 
-export function getDashboardHtml(): string {
-    let file = getSoftwareDir();
-    if (isWindows()) {
-        file += "\\dashboard.html";
-    } else {
-        file += "/dashboard.html";
-    }
-    return file;
+const HOURS_THRESHOLD = 0.5;
+
+function getDashboardTemplate(): string {
+    return path.join(__dirname, "../assets/templates/dashboard.template.html");
 }
 
-export function getCertificateHtml(): string {
-    let file = getSoftwareDir();
-    if (isWindows()) {
-        file += "\\certificate.html";
-    } else {
-        file += "/certificate.html";
-    }
-    return file;
-}
-
-function getCertificateHtmlString(name: string): string {
+export function getCertificateHtmlString(name: string): string {
     return [
         `<html>`,
         `\t<body>`,
@@ -42,7 +28,7 @@ function getCertificateHtmlString(name: string): string {
         `\t\t\t\tid="Certificate"`,
         `\t\t\t\tsrc="https://100-days-of-code.s3-us-west-1.amazonaws.com/Certificate.svg"`,
         `\t\t\t\twidth="100%"`,
-        `\t\t\t\talt="PLEASE CONNECT TO INTERNET"`,
+        `\t\t\t\talt="Software 100 Days of Code certificate"`,
         `\t\t\t/>`,
         `\t\t\t<div`,
         `\t\t\t\tid="text"`,
@@ -65,179 +51,144 @@ function getCertificateHtmlString(name: string): string {
     ].join("\n");
 }
 
-function getUpdatedDashboardHtmlString() {
-    const summary: Summary = getSummaryObject();
-
-    // Metrics
-    let hours = summary.hours + summary.currentHours;
-    hours = parseFloat(hours.toFixed(2));
-    let days = summary.days;
-    let streaks = summary.longest_streak;
-    const currStreak = summary.curr_streak;
-    let avgHours = parseFloat((hours / days).toFixed(2));
-    if (summary.currentHours < 0.5) {
-        days--;
-        if (streaks === currStreak) {
-            streaks--;
-        }
-        if (days === 0) {
-            avgHours = 0;
-        }
-    }
-
-    // view certificate if coded over 0.5 hours on 100th day or over 100 days of coding achieved
-    let certificateVisibility = "hidden";
-    if (days > 100 || (days === 100 && summary.currentHours >= 0.5)) {
-        certificateVisibility = "visible";
-    }
-
-    const daysLevel = getDaysLevel(days);
-    const hoursLevel = getHoursLevel(hours);
-    const longStreakLevel = getLongStreakLevel(streaks);
-    const milestoneLevel = getMilestonesEarnedLevel(summary.milestones);
-    const avgHoursLevel = getAverageHoursLevel(avgHours);
-
-    let daysLevelHtml;
-    switch (daysLevel) {
+function getDaysLevelTooltipText(level: number): string {
+    switch (level) {
         case 0:
-            daysLevelHtml =
-                '\t\t<div class="tooltiptext">Complete 1 more day to reach Level 1 of Days Milestones</div>';
-            break;
+            return "Complete 1 more day to reach Level 1 of Days Milestones";
         case 1:
-            daysLevelHtml = `\t\t<div class="tooltiptext">You're at Level 1 of Days Milestones. Complete 10 days to reach Level 2.</div>`;
-            break;
+            return `You're at Level 1 of Days Milestones. Complete 10 days to reach Level 2.`;
         case 2:
-            daysLevelHtml = `\t\t<div class="tooltiptext">You're at Level 2 of Days Milestones. Complete 50 days to reach Level 3.</div>`;
-            break;
+            return `You're at Level 2 of Days Milestones. Complete 50 days to reach Level 3.`;
         case 3:
-            daysLevelHtml = `\t\t<div class="tooltiptext">You're at Level 3 of Days Milestones. Complete 75 days to reach Level 4.</div>`;
-            break;
+            return `You're at Level 3 of Days Milestones. Complete 75 days to reach Level 4.`;
         case 4:
-            daysLevelHtml = `\t\t<div class="tooltiptext">You're at Level 4 of Days Milestones. Complete 100 days to reach Level 5.</div>`;
-            break;
+            return `You're at Level 4 of Days Milestones. Complete 100 days to reach Level 5.`;
         case 5:
-            daysLevelHtml = `\t\t<div class="tooltiptext">You're at Level 5 of Days Milestones. Complete 110 days to reach Level <span class="inf">∞</span>.</div>`;
-            break;
+            return `You're at Level 5 of Days Milestones. Complete 110 days to reach Level <span class="inf">∞</span>.`;
         case 6:
-            daysLevelHtml = `\t\t<div class="tooltiptext">Congratulations, you're at Level <span class="inf">∞</span> of Days Milestones!</div>`;
-            break;
+            return `Congratulations, you're at Level <span class="inf">∞</span> of Days Milestones!`;
+        default:
+            return "";
     }
+}
 
-    let hoursLevelHtml;
-    switch (hoursLevel) {
+function getHoursLevelTooltipText(level: number): string {
+    switch (level) {
         case 0:
-            hoursLevelHtml =
-                '\t\t<div class="tooltiptext">Complete 1 more hour to reach Level 1 of Hours Milestones</div>';
-            break;
+            return `Complete 1 more hour to reach Level 1 of Hours Milestones`;
         case 1:
-            hoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 1 of Hours Milestones. Complete 30 hours to reach Level 2.</div>`;
-            break;
+            return `You're at Level 1 of Hours Milestones. Complete 30 hours to reach Level 2.`;
         case 2:
-            hoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 2 of Hours Milestones. Complete 60 hours to reach Level 3.</div>`;
-            break;
+            return `You're at Level 2 of Hours Milestones. Complete 60 hours to reach Level 3.`;
         case 3:
-            hoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 3 of Hours Milestones. Complete 90 hours to reach Level 4.</div>`;
-            break;
+            return `You're at Level 3 of Hours Milestones. Complete 90 hours to reach Level 4.`;
         case 4:
-            hoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 4 of Hours Milestones. Complete 120 hours to reach Level 5.</div>`;
-            break;
+            return `You're at Level 4 of Hours Milestones. Complete 120 hours to reach Level 5.`;
         case 5:
-            hoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 5 of Hours Milestones. Complete 200 hours to reach Level <span class="inf">∞</span>.</div>`;
-            break;
+            return `You're at Level 5 of Hours Milestones. Complete 200 hours to reach Level <span class="inf">∞</span>.`;
         case 6:
-            hoursLevelHtml = `\t\t<div class="tooltiptext">Congratulations, you're at Level <span class="inf">∞</span> of Hours Milestones!</div>`;
-            break;
+            return `Congratulations, you're at Level <span class="inf">∞</span> of Hours Milestones!`;
+        default:
+            return "";
     }
+}
 
-    let streakLevelHtml;
-    switch (longStreakLevel) {
+function getStreaksLevelTooltipText(level: number): string {
+    switch (level) {
         case 0:
-            streakLevelHtml =
-                '\t\t<div class="tooltiptext">Complete a 2 day streak to reach Level 1 of Streaks Milestones</div>';
-            break;
+            return "Complete a 2 day streak to reach Level 1 of Streaks Milestones";
         case 1:
-            streakLevelHtml = `\t\t<div class="tooltiptext">You're at Level 1 of Streaks Milestones. Complete a 7 day streak to reach Level 2.</div>`;
-            break;
+            return `You're at Level 1 of Streaks Milestones. Complete a 7 day streak to reach Level 2.`;
         case 2:
-            streakLevelHtml = `\t\t<div class="tooltiptext">You're at Level 2 of Streaks Milestones. Complete a 14 day streak to reach Level 3.</div>`;
-            break;
+            return `You're at Level 2 of Streaks Milestones. Complete a 14 day streak to reach Level 3.`;
         case 3:
-            streakLevelHtml = `\t\t<div class="tooltiptext">You're at Level 3 of Streaks Milestones. Complete a 30 day streak to reach Level 4.</div>`;
-            break;
+            return `You're at Level 3 of Streaks Milestones. Complete a 30 day streak to reach Level 4.`;
         case 4:
-            streakLevelHtml = `\t\t<div class="tooltiptext">You're at Level 4 of Streaks Milestones. Complete a 60 day streak to reach Level 5.</div>`;
-            break;
+            return `You're at Level 4 of Streaks Milestones. Complete a 60 day streak to reach Level 5.`;
         case 5:
-            streakLevelHtml = `\t\t<div class="tooltiptext">You're at Level 5 of Streaks Milestones. Complete a 100 day streak to reach Level <span class="inf">∞</span>.</div>`;
-            break;
+            return `You're at Level 5 of Streaks Milestones. Complete a 100 day streak to reach Level <span class="inf">∞</span>.`;
         case 6:
-            streakLevelHtml = `\t\t<div class="tooltiptext">Congratulations, you're at Level <span class="inf">∞</span> of Streaks Milestones!</div>`;
-            break;
+            return `Congratulations, you're at Level <span class="inf">∞</span> of Streaks Milestones!`;
+        default:
+            return "";
     }
+}
 
-    let milestoneLevelHtml;
-    switch (milestoneLevel) {
+function getMilestonesLevelTooltipText(level: number): string {
+    switch (level) {
         case 0:
-            milestoneLevelHtml =
-                '\t\t<div class="tooltiptext">Achieve 1 Milestone to reach Level 1 of Milestones</div>';
-            break;
+            return "Achieve 1 Milestone to reach Level 1 of Milestones";
         case 1:
-            milestoneLevelHtml = `\t\t<div class="tooltiptext">You're at Level 1 of Milestones. Achieve 10 Milestones to reach Level 2.</div>`;
-            break;
+            return `You're at Level 1 of Milestones. Achieve 10 Milestones to reach Level 2.`;
         case 2:
-            milestoneLevelHtml = `\t\t<div class="tooltiptext">You're at Level 2 of Milestones. Achieve 20 Milestones to reach Level 3.</div>`;
-            break;
+            return `You're at Level 2 of Milestones. Achieve 20 Milestones to reach Level 3.`;
         case 3:
-            milestoneLevelHtml = `\t\t<div class="tooltiptext">You're at Level 3 of Milestones. Achieve 30 Milestones to reach Level 4.</div>`;
-            break;
+            return `You're at Level 3 of Milestones. Achieve 30 Milestones to reach Level 4.`;
         case 4:
-            milestoneLevelHtml = `\t\t<div class="tooltiptext">You're at Level 4 of Milestones. Achieve 40 Milestones to reach Level 5.</div>`;
-            break;
+            return `You're at Level 4 of Milestones. Achieve 40 Milestones to reach Level 5.`;
         case 5:
-            milestoneLevelHtml = `\t\t<div class="tooltiptext">You're at Level 5 of Milestones. Achieve 50 Milestones to reach Level <span class="inf">∞</span>.</div>`;
-            break;
+            return `You're at Level 5 of Milestones. Achieve 50 Milestones to reach Level <span class="inf">∞</span>.`;
         case 6:
-            milestoneLevelHtml = `\t\t<div class="tooltiptext">Congratulations, you're at Level <span class="inf">∞</span> of Milestones!</div>`;
-            break;
+            return `Congratulations, you're at Level <span class="inf">∞</span> of Milestones!`;
+        default:
+            return "";
     }
+}
 
-    let avgHoursLevelHtml;
-    switch (avgHoursLevel) {
+function getAvgHoursLevelTooltipText(level: number): string {
+    switch (level) {
         case 0:
-            avgHoursLevelHtml =
-                '\t\t<div class="tooltiptext">Achieve a 0.5 hour average to reach Level 1 of Average Hours</div>';
-            break;
+            return "Achieve a 0.5 hour average to reach Level 1 of Average Hours";
         case 1:
-            avgHoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 1 of Average Hours. Achieve a 1.0 hour average to reach Level 2.</div>`;
-            break;
+            return `You're at Level 1 of Average Hours. Achieve a 1.0 hour average to reach Level 2.`;
         case 2:
-            avgHoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 2 of Average Hours. Achieve a 1.5 hour average to reach Level 3.</div>`;
-            break;
+            return `You're at Level 2 of Average Hours. Achieve a 1.5 hour average to reach Level 3.`;
         case 3:
-            avgHoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 3 of Average Hours. Achieve a 2.0 hour average to reach Level 4.</div>`;
-            break;
+            return `You're at Level 3 of Average Hours. Achieve a 2.0 hour average to reach Level 4.`;
         case 4:
-            avgHoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 4 of Average Hours. Achieve a 2.5 hour average to reach Level 5.</div>`;
-            break;
+            return `You're at Level 4 of Average Hours. Achieve a 2.5 hour average to reach Level 5.`;
         case 5:
-            avgHoursLevelHtml = `\t\t<div class="tooltiptext">You're at Level 5 of Average Hours. Achieve a 3.0 hour average to reach Level <span class="inf">∞</span>.</div>`;
-            break;
+            return `You're at Level 5 of Average Hours. Achieve a 3.0 hour average to reach Level <span class="inf">∞</span>.`;
         case 6:
-            avgHoursLevelHtml = `\t\t<div class="tooltiptext">Congratulations, you're at Level <span class="inf">∞</span> of Average Hours!</div>`;
-            break;
+            return `Congratulations, you're at Level <span class="inf">∞</span> of Average Hours!`;
+        default:
+            return "";
     }
+}
+
+function generateShareUrl(days: number, hours: number, streaks: number, milestones: number, avgHours: number): string {
     const shareText = [
-        `100 Days Of Code Progress:`,
+        `My 100 Days Of Code Progress:`,
         `Days: ${days}`,
         `Total Hours: ${hours} hrs`,
         `Longest Streak: ${streaks} days`,
-        `Milestones Earned: ${summary.milestones}`,
+        `Milestones Earned: ${milestones}`,
         `Avg Hours/Day: ${avgHours} hrs\n`,
         `Data supplied from @software_hq’s 100 Days Of Code VScode plugin`
     ].join("\n");
     const shareURI = encodeURI(shareText);
-    const twitterShareUrl = `https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.software.com%2F100-days-of-code&text=${shareURI}&hashtags=100DaysOfCode%2CSoftware%2CDeveloper`;
+    return `https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.software.com%2F100-days-of-code&text=${shareURI}&hashtags=100DaysOfCode`;
+}
 
+function getStyleColorsBasedOnMode(): any {
+    const tempWindow: any = window;
+
+    let cardTextColor = "#FFFFFF";
+    let cardBackgroundColor = "rgba(255,255,255,0.05)";
+    let datagramXMinColor = "#FFFFFF";
+    let datagramBackground = "rgba(0,0,0,0);";
+    let cardToolTipColor = "rgba(109, 109, 109, .9)";
+    if (tempWindow.activeColorTheme.kind === 1) {
+        cardTextColor = "#444444";
+        cardBackgroundColor = "rgba(0,0,0,0.10)";
+        datagramXMinColor = "#444444";
+        datagramBackground = "rgba(0,0,0,0.10);";
+        cardToolTipColor = "rgba(165, 165, 165, .9)";
+    }
+    return { cardTextColor, cardBackgroundColor, datagramXMinColor, datagramBackground, cardToolTipColor };
+}
+
+function getDatagramHtmlComponents(): any {
     // Datagram
     const codeTimeHours: Array<number> = getAllCodetimeHours();
     let max = 0;
@@ -299,6 +250,10 @@ function getUpdatedDashboardHtmlString() {
         barsHtml = `<h2>Waiting for your Code Time data!</h2>`;
     }
 
+    return { barsHtml, xAxisDates, min, max, mid, dateJustifyContent };
+}
+
+function getLogsHtml(): string {
     // Logs
     const logs = getLastSevenLoggedDays();
     let logsHtml = "";
@@ -331,13 +286,16 @@ function getUpdatedDashboardHtmlString() {
             logsHtml += `\t\t\t\t<span>${logs[i].title}</span>\n\t\t\t</div>`;
         }
     }
+    return logsHtml;
+}
 
+function getMilestonesHtml(recent_milestones: Array<number>): string {
     // Milestones
     let milestoneHtml = "";
-    if (summary.recent_milestones.length > 0) {
+    if (recent_milestones.length > 0) {
         let count = 3;
-        for (let i = 0; i < summary.recent_milestones.length; i++) {
-            const milestoneId = summary.recent_milestones[i];
+        for (let i = 0; i < recent_milestones.length; i++) {
+            const milestoneId = recent_milestones[i];
             const milestone = getMilestoneById(milestoneId);
             milestoneHtml += [
                 `\t\t\t\t<div class="milestoneCard">`,
@@ -358,466 +316,103 @@ function getUpdatedDashboardHtmlString() {
     } else {
         milestoneHtml = `<h2 style="text-align: center; padding-top: 50px;">Excited for you to achieve your 1st Milestone!<h2>`;
     }
-
-    // if in light mode
-    const tempWindow: any = window;
-
-    let cardTextColor = "#FFFFFF";
-    let cardBackgroundColor = "rgba(255,255,255,0.05)";
-    let datagramXMinColor = "#FFFFFF";
-    let datagramBackground = "rgba(0,0,0,0);";
-    let cardToolTipColor = "rgba(109, 109, 109, .9)";
-    if (tempWindow.activeColorTheme.kind === 1) {
-        cardTextColor = "#444444";
-        cardBackgroundColor = "rgba(0,0,0,0.10)";
-        datagramXMinColor = "#444444";
-        datagramBackground = "rgba(0,0,0,0.10);";
-        cardToolTipColor = "rgba(165, 165, 165, .9)";
-    }
-
-    let htmlString = [
-        `<html>`,
-        `<style>`,
-        `\tbody {`,
-        `\t\tfont-family: sans-serif;`,
-        `\t\twidth: 800px;`,
-        `\t\tborder-radius: 3px;`,
-        `\t\tborder-width: 2px;`,
-        `\t\tborder-color: ${cardBackgroundColor};`,
-        `\t\tborder-style: solid;`,
-        `\t\tcolor: ${cardTextColor}`,
-        `\t\tmargin: 10px;`,
-        `\t}\n`,
-        `\th1 {`,
-        `\t\tfont-size: 24px;`,
-        `\t\tfont-weight: 600;`,
-        `\t}\n`,
-        `\t#head {`,
-        `\t\tmargin-top: 15px;`,
-        `\t}\n`,
-        `\t.inline {`,
-        `\t\tdisplay: inline;`,
-        `\t\tcolor: ${cardTextColor}`,
-        `\t}\n`,
-        `\t#shareProgress {`,
-        `\t\tfont-size: 16px;`,
-        `\t\tline-height: 24px;`,
-        `\t\tcolor: #ffffff;`,
-        `\t\tfloat: right;`,
-        `\t\tbackground-color: #00b4ee;`,
-        `\t\tborder-color: #00b4ee;`,
-        `\t\tborder-radius: 3px;`,
-        `\t\tcursor: pointer;`,
-        `\t}\n`,
-        `\t#certificate {`,
-        `\t\tvisibility: ${certificateVisibility};`,
-        `\t\tfont-size: 16px;`,
-        `\t\tline-height: 24px;`,
-        `\t\tpadding: 2px;`,
-        `\t\twidth: 150px;`,
-        `\t\tcolor: ${cardTextColor};`,
-        `\t\tfloat: right;`,
-        `\t\tmargin-right: 10px;`,
-        `\t\tborder-color: rgba(0, 0, 0, 0);`,
-        `\t\tborder-radius: 3px;`,
-        `\t\tcursor: pointer;`,
-        `\t}\n`,
-        `\t.level0 {`,
-        `\t\tbackground: rgba(255, 255, 255, 0.05);`,
-        `\t}\n`,
-        `\t.level1 {`,
-        `\t\tbackground: linear-gradient(180deg,`,
-        `\t\t\t\trgba(251, 0, 0, 0.35) 0%,`,
-        `\t\t\t\trgba(255, 151, 213, 0.35) 100%);`,
-        `\t}\n`,
-        `\t.level2 {`,
-        `\t\tbackground: linear-gradient(180deg,`,
-        `\t\t\t\trgba(255, 245, 0, 0.35) 0%,`,
-        `\t\t\t\trgba(133, 250, 56, 0.35) 70.3%,`,
-        `\t\t\t\trgba(0, 140, 39, 0.35) 100%);`,
-        `\t}\n`,
-        `\t.level3 {`,
-        `\t\tbackground: linear-gradient(180deg,`,
-        `\t\t\t\trgba(214, 126, 255, 0.35) 0%,`,
-        `\t\t\t\trgba(86, 113, 255, 0.35) 67.71%,`,
-        `\t\t\t\trgba(0, 224, 255, 0.35) 100%);`,
-        `\t}\n`,
-        `\t.level4 {`,
-        `\t\tbackground: linear-gradient(180deg,`,
-        `\t\t\t\trgba(255, 0, 0, 0.35) 2.05%,`,
-        `\t\t\t\trgba(255, 168, 0, 0.35) 73.44%,`,
-        `\t\t\t\trgba(255, 245, 0, 0.35) 100%);`,
-        `\t}\n`,
-        `\t.level5 {`,
-        `\t\tbackground: linear-gradient(180deg,`,
-        `\t\t\t\trgba(0, 224, 255, 0.35) 0%,`,
-        `\t\t\t\trgba(219, 0, 255, 0.35) 49.6%,`,
-        `\t\t\t\trgba(253, 106, 0, 0.35) 100%);`,
-        `\t}\n`,
-        `\t.level6 {`,
-        `\t\tbackground: linear-gradient(180deg,`,
-        `\t\t\t\trgba(219, 0, 255, 0.35) 3.41%,`,
-        `\t\t\t\trgba(103, 115, 255, 0.35) 18.6%,`,
-        `\t\t\t\trgba(13, 208, 255, 0.35) 32.96%,`,
-        `\t\t\t\trgba(88, 213, 51, 0.35) 51.83%,`,
-        `\t\t\t\trgba(255, 237, 1, 0.35) 75.22%,`,
-        `\t\t\t\trgba(255, 97, 1, 0.35) 86.71%,`,
-        `\t\t\t\trgba(255, 10, 1, 0.35) 100%);`,
-        `\t}\n`,
-        `\t#topMetrics {`,
-        `\t\tdisplay: flex;`,
-        `\t\tjustify-content: space-between;`,
-        `\t\twidth: inherit;`,
-        `\t\tmargin-top: 20px;`,
-        `\t}\n`,
-        `\t.metricsCard {`,
-        `\t\tdisplay: inline-block;`,
-        `\t\tborder-radius: 3px;`,
-        `\t\tcolor: ${cardTextColor};`,
-        `\t\twidth: 150px;`,
-        `\t\theight: 90px;`,
-        `\t}\n`,
-        `\t.metricsHead {`,
-        `\t\tpadding-top: 15px;`,
-        `\t\tpadding-left: 10px;`,
-        `\t\tfont-size: 21px;`,
-        `\t\tfont-weight: 600;`,
-        `\t}\n`,
-        `\t.metricsBody {`,
-        `\t\tpadding-top: 10px;`,
-        `\t\tpadding-left: 10px;`,
-        `\t\tpadding-right: 10px;`,
-        `\t\theight: 40px;`,
-        `\t\tfont-size: 16px;`,
-        `\t\tfont-weight: 400;`,
-        `\t\tword-wrap: break-word;`,
-        `\t}\n`,
-        `\t#bigGrid {`,
-        `\t\tdisplay: grid;`,
-        `\t\tgrid-template-columns: 450px 350px;`,
-        `\t}\n`,
-        `\t#logs {`,
-        `\t\tmargin-top: 10px;`,
-        `\t\tpadding-left: 16px;`,
-        `\t\tpadding-top: 5px;`,
-        `\t\tpadding-right: 5px;`,
-        `\t\twidth: 430px;`,
-        `\t\tmin-height: 285px;`,
-        `\t\tbackground-color: ${cardBackgroundColor};`,
-        `\t\tcolor: ${cardTextColor};`,
-        `\t\tborder-radius: 3px;`,
-        `\t}\n`,
-        `\t#logTitle {`,
-        `\t\tmargin-top: 5px;`,
-        `\t\tdisplay: inline-block;`,
-        `\t\tcolor: ${cardTextColor};`,
-        `\t\tfont-size: 20px;`,
-        `\t}\n`,
-        `\t#viewLogs {`,
-        `\t\tmargin-top: 5px;`,
-        `\t\tmargin-right: 5px;`,
-        `\t\tfloat: right;`,
-        `\t\tfont-size: 14px;`,
-        `\t\tline-height: 25px;`,
-        `\t\tborder-radius: 3px;`,
-        `\t\tborder-color: rgba(0, 0, 0, 0);`,
-        `\t\tbackground-color: ${cardBackgroundColor};`,
-        `\t\tcolor: ${cardTextColor};`,
-        `\t\tcursor: pointer;`,
-        `\t}\n`,
-        `\t#logHeadings {`,
-        `\t\tdisplay: grid;`,
-        `\t\twidth: 435px;`,
-        `\t\tmargin-left: -15px;`,
-        `\t\tpadding-left: 15px;`,
-        `\t\tgrid-template-columns: 50px 160px 220px;`,
-        `\t\tfont-size: 16px;`,
-        `\t\tline-height: 25px;`,
-        `\t\tfont-weight: 400;`,
-        `\t\tbackground-color: ${cardBackgroundColor};`,
-        `\t\tcolor: ${cardTextColor};`,
-        `\t\tmargin-top: 15px;`,
-        `\t\theight: 25px;`,
-        `\t\tvertical-align: middle;`,
-        `\t}\n`,
-        `\t.logBody {`,
-        `\t\tmargin-top: 10px;`,
-        `\t\tdisplay: grid;`,
-        `\t\tpadding: 2px;`,
-        `\t\twidth: 100%;`,
-        `\t\tgrid-template-columns: 50px 160px 220px;`,
-        `\t\tfont-size: 16px;`,
-        `\t\tcolor: ${cardTextColor};`,
-        `\t\tword-wrap: break-word;`,
-        `\t}\n`,
-        `\t#chart {`,
-        `\t\tposition: relative;`,
-        `\t\twidth: 750px;`,
-        `\t\theight: 325px;`,
-        `\t\tbackground-color: ${datagramBackground};`,
-        `\t\tborder-color: ${cardBackgroundColor};`,
-        `\t\tcolor: ${cardTextColor};`,
-        `\t\tborder-width: 1px;`,
-        `\t\tborder-style: solid;`,
-        `\t\tborder-radius: 3px;`,
-        `\t\tmargin-top: 20px;`,
-        `\t\tmargin-bottom: 20px;`,
-        `\t\tpadding: 20px;`,
-        `\t}\n`,
-        `\t#chartXMin {`,
-        `\t\tposition: absolute;`,
-        `\t\tbackground-color: ${datagramXMinColor};`,
-        `\t\twidth: 720px;`,
-        `\t\theight: 2px;`,
-        `\t\tbottom: 50px;`,
-        `\t\tleft: 40px;`,
-        `\t\tz-index: 1;`,
-        `\t}\n`,
-        `\t#chartXMid {`,
-        `\t\tposition: absolute;`,
-        `\t\tbackground-color: ${cardBackgroundColor};`,
-        `\t\twidth: 720px;`,
-        `\t\theight: 1px;`,
-        `\t\tbottom: 185px;`,
-        `\t\tleft: 40px;`,
-        `\t}\n`,
-        `\t#chartXMax {`,
-        `\t\tposition: absolute;`,
-        `\t\tbackground-color: ${cardBackgroundColor};`,
-        `\t\twidth: 720px;`,
-        `\t\theight: 1px;`,
-        `\t\tbottom: 300px;`,
-        `\t\tleft: 40px;`,
-        `\t}\n`,
-        `\t#chartTitle {`,
-        `\t\ttext-align: center;`,
-        `\t\tfont-size: 20px;`,
-        `\t}\n`,
-        `\t#chartBarContainer {`,
-        `\t\twidth: 700px;`,
-        `\t\theight: 250px;`,
-        `\t\tposition: absolute;`,
-        `\t\tdisplay: flex;`,
-        `\t\tbottom: 50px;`,
-        `\t\tleft: 60px;`,
-        `\t\tjustify-content: space-around;`,
-        `\t}\n`,
-        `\t.chartBar {`,
-        `\t\tposition: relative;`,
-        `\t\tbackground-color: #00b4ee;`,
-        `\t\tborder-top-left-radius: 5px;`,
-        `\t\tborder-top-right-radius: 5px;`,
-        `\t\twidth: 10%;`,
-        `\t\theight: 10px;`,
-        `\t\tmargin-left: 2px;`,
-        `\t\tmargin-right: 2px;`,
-        `\t\tbottom: 0px;`,
-        `\t}\n`,
-        `\t.chartYLabel {`,
-        `\t\tposition: absolute;`,
-        `\t\ttext-align: center;`,
-        `\t\twidth: 40px;`,
-        `\t\tleft: 0px;`,
-        `\t}\n`,
-        `\t#chartDateBar {`,
-        `\t\tposition: absolute;`,
-        `\t\tdisplay: inline-flex;`,
-        `\t\twidth: 700px;`,
-        `\t\tleft: 60px;`,
-        `\t\tbottom: 20px;`,
-        `\t\tjustify-content: ${dateJustifyContent};`,
-        `\t}\n`,
-        `\t.chartDateText {`,
-        `\t\tfont-size: 12px;`,
-        `\t}\n`,
-        `\t/* milestones */`,
-        `\t#milestones {`,
-        `\t\tmargin-top: 10px;`,
-        `\t\tmargin-left: 13px;`,
-        `\t\tpadding-left: 16px;`,
-        `\t\tpadding-top: 5px;`,
-        `\t\tpadding-right: 5px;`,
-        `\t\twidth: 315px;`,
-        `\t\tmin-height: 285px;`,
-        `\t\tbackground-color: ${cardBackgroundColor};`,
-        `\t\tborder-radius: 3px;`,
-        `\t}\n`,
-        `\t#milestoneTitle {`,
-        `\t\tdisplay: inline-block;`,
-        `\t\tmargin-top: 5px;`,
-        `\t\tfont-size: 20px;`,
-        `\t\tpadding-bottom: 5px;`,
-        `\t\tcolor: ${cardTextColor};`,
-        `\t}\n`,
-        `\t#viewMilestones {`,
-        `\t\tmargin-top: 5px;`,
-        `\t\tmargin-right: 5px;`,
-        `\t\tfloat: right;`,
-        `\t\tfont-size: 14px;`,
-        `\t\tline-height: 25px;`,
-        `\t\tborder-radius: 3px;`,
-        `\t\tborder-color: rgba(0, 0, 0, 0);`,
-        `\t\tbackground-color: ${cardBackgroundColor};`,
-        `\t\tcolor: ${cardTextColor};`,
-        `\t\tcursor: pointer;`,
-        `\t}\n`,
-        `\t.milestoneCard {`,
-        `\t\tmargin: 10px;`,
-        `\t\tmargin-top: 20px;`,
-        `\t\twidth: 270px;`,
-        `\t\tdisplay: inline-block;`,
-        `\t\tcolor: ${cardTextColor};`,
-        `\t}\n`,
-        `\t.logo {`,
-        `\t\theight: 50px;`,
-        `\t\twidth: 50px;`,
-        `\t\tdisplay: inline-block;`,
-        `\t}\n`,
-        `\t.milestoneData {`,
-        `\t\tdisplay: inline-block;`,
-        `\t\twidth: 200px;`,
-        `\t\theight: 50px;`,
-        `\t\tvertical-align: top;`,
-        `\t\tmargin-left: 10px;`,
-        `\t}\n`,
-        `\t.milestoneTitle {`,
-        `\t\tfont-size: 16px;`,
-        `\t\tline-height: 25px;`,
-        `\t\tword-wrap: break-word;`,
-        `\t}\n`,
-        `\t.milestoneDesc {`,
-        `\t\tfont-size: 14px;`,
-        `\t\tline-height: 20px;`,
-        `\t\tcolor: #919EAB;`,
-        `\t\tword-wrap: break-word;\n`,
-        `\t}`,
-        `\t.metricsCard .tooltiptext {`,
-        `\t\tposition: relative;`,
-        `\t\tvisibility: hidden;`,
-        `\t\twidth: 130px;`,
-        `\t\tleft: 5px;`,
-        `\t\tborder-radius: 3px;`,
-        `\t\tbackground-color: ${cardToolTipColor};`,
-        `\t\tbackground-blend-mode: darken;`,
-        `\t\tcolor: ${cardTextColor};`,
-        `\t\ttext-align: center;`,
-        `\t\tpadding: 5px;`,
-        `\t\tz-index: 1;`,
-        `\t}`,
-        `\t.metricsCard:hover .tooltiptext {`,
-        `\t\tvisibility: visible;`,
-        `\t}`,
-        `\t.inf {`,
-        `\t\tfont-size: larger;`,
-        `\t}`,
-        `</style>`,
-        `\t<body>`,
-        `\t<div id="head">`,
-        `\t<h1 class="inline">100 Days of Code Dashboard</h1>`,
-        `\t<a`,
-        `\t\thref="${twitterShareUrl}"><button`,
-        `\t\t\tid="shareProgress" title="Share dashboard metrics on Twitter">Share Progress</button></a>`,
-        `\t<button id="certificate" class="level6">Get your Certificate</button>`,
-        `\t</div>`,
-        `\t<div id="topMetrics">`,
-        `\t\t<div class="metricsCard level${daysLevel}">`,
-        `\t\t<div class="metricsHead">${days}</div>`,
-        `\t\t<div class="metricsBody">days complete</div>`,
-        `${daysLevelHtml}`,
-        `\t\t</div>\n`,
-        `\t\t<div class="metricsCard level${hoursLevel}">`,
-        `\t\t<div class="metricsHead">${hours}</div>`,
-        `\t\t<div class="metricsBody">hours coded</div>`,
-        `${hoursLevelHtml}`,
-        `\t\t</div>\n`,
-        `\t\t<div class="metricsCard level${longStreakLevel}">`,
-        `\t\t<div class="metricsHead">${streaks}</div>`,
-        `\t\t<div class="metricsBody">longest streaks</div>`,
-        `${streakLevelHtml}`,
-        `\t\t</div>\n`,
-        `\t\t<div class="metricsCard level${milestoneLevel}">`,
-        `\t\t<div class="metricsHead">${summary.milestones}</div>`,
-        `\t\t<div class="metricsBody">milestones earned</div>`,
-        `${milestoneLevelHtml}`,
-        `\t\t</div>\n`,
-        `\t\t<div class="metricsCard level${avgHoursLevel}">`,
-        `\t\t<div class="metricsHead">${avgHours}</div>`,
-        `\t\t<div class="metricsBody">average hours/day</div>`,
-        `${avgHoursLevelHtml}`,
-        `\t\t</div>`,
-        `\t</div>\n`,
-        `\t<div id="bigGrid">`,
-        `\t\t<div id="left">`,
-        `\t\t<div id="logs">`,
-        `\t\t\t<div id="logTitle">Logs</div>`,
-        `\t\t\t<button id="viewLogs">View Logs</button>`,
-        `\t\t\t<div id="logHeadings">`,
-        `\t\t\t\t<span>Day</span>`,
-        `\t\t\t\t<span>Date</span>`,
-        `\t\t\t\t<span>Subject</span>`,
-        `\t\t\t</div>`,
-        `${logsHtml}`,
-        `\t\t\t</div>`,
-        `\t\t</div>\n`,
-        `\t\t<div id="right">`,
-        `\t\t\t<div id="milestones">`,
-        `\t\t\t\t<div id="milestoneTitle">Recent Milestones</div>`,
-        `\t\t\t\t<button id="viewMilestones">View Milestones</button>`,
-        `${milestoneHtml}`,
-        `\t\t</div>\n`,
-        `\t</div>\n`,
-        `\t\t<div id="chart">`,
-        `\t\t\t<div id="chartTitle">Code Time: ${days} Days</div>`,
-        `\t\t\t<div id="chartXMin"></div>`,
-        `\t\t\t<div class="chartYLabel" style="bottom: 45px">${min} hr</div>`,
-        `\t\t\t<div id="chartXMid"></div>`,
-        `\t\t\t<div class="chartYLabel" style="bottom: 180px">${mid} hr</div>`,
-        `\t\t\t<div id="chartXMax"></div>`,
-        `\t\t\t<div class="chartYLabel" style="bottom: 295px">${max} hr</div>`,
-        `\t\t\t<div id="chartBarContainer">`,
-        `${barsHtml}`,
-        `\t\t\t</div>`,
-        `\t\t\t<div id="chartDateBar">`,
-        `${xAxisDates}`,
-        `\t\t\t</div>`,
-        `\t\t</div>`,
-        `\t\t</div>`,
-        `\t</div>`,
-        `\t</body>`,
-        `\t<script>`,
-        `\t\tconst vscode = acquireVsCodeApi();`,
-        `\t\tconst milestonesButton = document.getElementById("viewMilestones");`,
-        `\t\tconst logsButton = document.getElementById("viewLogs");`,
-        `\t\tconst certificate = document.getElementById("certificate");`,
-        `\t\tcertificate.addEventListener("click", function () {`,
-        `\t\t\tvscode.postMessage({command: "Certificate"})`,
-        `\t\t})`,
-        `\t\tlogsButton.addEventListener("click", function(){`,
-        `\t\t\tvscode.postMessage({command: "Logs"});`,
-        `\t\t});`,
-        `\t\tmilestonesButton.addEventListener("click", function(){`,
-        `\t\t\tvscode.postMessage({command: "Milestones"});`,
-        `\t\t});`,
-        `\t</script>`,
-        `</html>`
-    ].join("\n");
-    return htmlString;
+    return milestoneHtml;
 }
 
-export function updateDashboardHtml(): void {
-    let filepath = getDashboardHtml();
-    try {
-        fs.writeFileSync(filepath, getUpdatedDashboardHtmlString());
-    } catch (err) {
-        console.log(err);
-    }
-}
+export function getUpdatedDashboardHtmlString(): string {
+    const summary: Summary = getSummaryObject();
 
-export function updateCertificateHtml(name: string): void {
-    let filepath = getCertificateHtml();
-    try {
-        fs.writeFileSync(filepath, getCertificateHtmlString(name));
-    } catch (err) {
-        console.log(err);
+    // Metrics
+    let hours = summary.hours + summary.currentHours;
+    hours = parseFloat(hours.toFixed(2));
+    let days = summary.days;
+    let streaks = summary.longest_streak;
+    const currStreak = summary.current_streak;
+    const milestones = summary.milestones;
+    let avgHours = parseFloat((hours / days).toFixed(2));
+
+    if (summary.currentHours < HOURS_THRESHOLD) {
+        days--;
+        if (streaks === currStreak) {
+            streaks--;
+        }
+        if (days === 0) {
+            avgHours = 0;
+        }
     }
+
+    // view certificate if coded over HOURS_THRESHOLD on 100th day or over 100 days of coding achieved
+    let certificateVisibility = "hidden";
+    if (days > 100 || (days === 100 && summary.currentHours >= HOURS_THRESHOLD)) {
+        certificateVisibility = "visible";
+    }
+
+    const daysLevel = getDaysLevel(days);
+    const hoursLevel = getHoursLevel(hours);
+    const streaksLevel = getLongStreakLevel(streaks);
+    const milestonesLevel = getMilestonesEarnedLevel(milestones);
+    const avgHoursLevel = getAverageHoursLevel(avgHours);
+
+    const daysLevelTooltip = getDaysLevelTooltipText(daysLevel);
+    const hoursLevelTooltip = getHoursLevelTooltipText(hoursLevel);
+    const streaksLevelTooltip = getStreaksLevelTooltipText(streaksLevel);
+    const milestonesLevelTooltip = getMilestonesLevelTooltipText(milestonesLevel);
+    const avgHoursLevelTooltip = getAvgHoursLevelTooltipText(avgHoursLevel);
+
+    const twitterShareUrl = generateShareUrl(days, hours, streaks, milestones, avgHours);
+
+    const {
+        cardTextColor,
+        cardBackgroundColor,
+        datagramXMinColor,
+        datagramBackground,
+        cardToolTipColor
+    } = getStyleColorsBasedOnMode();
+
+    const { barsHtml, xAxisDates, min, max, mid, dateJustifyContent } = getDatagramHtmlComponents();
+
+    const logsHtml = getLogsHtml();
+
+    const milestoneHtml = getMilestonesHtml(summary.recent_milestones);
+
+    const templateVars = {
+        hours,
+        days,
+        streaks,
+        milestones,
+        avgHours,
+        daysLevel,
+        hoursLevel,
+        streaksLevel,
+        milestonesLevel,
+        avgHoursLevel,
+        daysLevelTooltip,
+        hoursLevelTooltip,
+        streaksLevelTooltip,
+        milestonesLevelTooltip,
+        avgHoursLevelTooltip,
+        twitterShareUrl,
+        cardTextColor,
+        cardBackgroundColor,
+        datagramXMinColor,
+        datagramBackground,
+        cardToolTipColor,
+        barsHtml,
+        xAxisDates,
+        min,
+        max,
+        mid,
+        dateJustifyContent,
+        logsHtml,
+        milestoneHtml,
+        certificateVisibility
+    };
+
+    const templateString = fs.readFileSync(getDashboardTemplate()).toString();
+    const fillTemplate = function (templateString: string, templateVars: any) {
+        return new Function("return `" + templateString + "`;").call(templateVars);
+    };
+
+    const dashboardHtmlContent = fillTemplate(templateString, templateVars);
+    return dashboardHtmlContent;
 }

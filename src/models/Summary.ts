@@ -10,7 +10,7 @@ export class Summary {
     public lines_added: number = 0;
     public keystrokes: number = 0;
     public recent_milestones: number[] = [];
-    public curr_streak: number = 0;
+    public current_streak: number = 0;
     public shares: number = 0;
     public languages: string[] = [];
     public lastUpdated: number = 0;

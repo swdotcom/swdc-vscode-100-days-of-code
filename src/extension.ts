@@ -41,9 +41,10 @@ export function activate(ctx: vscode.ExtensionContext) {
     // This line of code will only be executed once when your extension is activated
     console.log("swdc-100-days-of-code: activated");
 
+    // Initialize all the files and db setup for the plugin
     initializePlugin();
 
-    // add the code time commands
+    // adding commands for 100 Days of code pages and events
     ctx.subscriptions.push(createCommands());
 }
 
@@ -53,6 +54,10 @@ export async function initializePlugin() {
     checkMilestonesJson();
     checkSummaryJson();
 
+    // try to send payloads that weren't sent
+    // and fetch data from the db as well
+
+    // logs
     checkLogsPayload();
     if (!sentLogsDb) {
         pushNewLogs(false);
@@ -62,6 +67,7 @@ export async function initializePlugin() {
     }
     fetchLogs();
 
+    // milestones
     checkMilestonesPayload();
     if (!sentMilestonesDb) {
         pushNewMilestones();
@@ -86,7 +92,7 @@ export async function initializePlugin() {
 
 export function initializeIntervalJobs() {
     one_minute_interval = setInterval(async () => {
-        // updates logs with latest metrics
+        // updates logs with latest metrics and checks for milestones
         updateLogsMilestonesAndMetrics([]);
         checkCodeTimeMetricsMilestonesAchieved();
         checkLanguageMilestonesAchieved();
@@ -94,6 +100,9 @@ export function initializeIntervalJobs() {
     }, one_min_millis);
 
     five_minute_interval = setInterval(async () => {
+        // try to send payloads that weren't sent
+        // and fetch data from the db as well every 5 minutes
+
         // logs
         if (!sentLogsDb) {
             pushNewLogs(false);
@@ -128,10 +137,12 @@ export function initializeIntervalJobs() {
     }, one_min_millis * 60);
 }
 
-// this method is called when your extension is deactivated
 export function deactivate(ctx: vscode.ExtensionContext) {
+    // creating payload files to store payloads that weren't sent
     createLogsPayloadJson();
     createMilestonesPayloadJson();
+
+    // clearing the the intervals for processes
     clearInterval(one_minute_interval);
     clearInterval(five_minute_interval);
     clearInterval(one_hour_interval);
