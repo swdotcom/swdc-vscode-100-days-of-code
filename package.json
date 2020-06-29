@@ -41,6 +41,10 @@
     "contributes": {
         "commands": [
             {
+                "command": "DoC.ViewReadme",
+                "title": "100 Days of Code: View Readme"
+            },
+            {
                 "command": "DoC.viewLogs",
                 "title": "100 Days of Code: View Logs"
             },

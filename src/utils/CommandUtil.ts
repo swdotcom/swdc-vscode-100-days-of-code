@@ -12,6 +12,7 @@ import {
 } from "./MilestonesUtil";
 import { updateAddLogHtml, getAddLogHtml } from "./addLogUtil";
 import { getUpdatedDashboardHtmlString, getCertificateHtmlString } from "./DashboardUtil";
+import { displayReadmeIfNotExists } from "./Util";
 const fs = require("fs");
 
 export function createCommands(): { dispose: () => void } {
@@ -25,6 +26,10 @@ export function createCommands(): { dispose: () => void } {
     });
     Doc100SftwProvider.bindView(Doc100SftwTreeView);
     cmds.push(connectDoCTreeView(Doc100SftwTreeView));
+
+    cmds.push(commands.registerCommand("DoC.ViewReadme", () => {
+        displayReadmeIfNotExists(true);
+    }));
 
     cmds.push(
         commands.registerCommand("DoC.viewLogs", () => {

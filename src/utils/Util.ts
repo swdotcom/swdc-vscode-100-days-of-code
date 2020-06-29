@@ -72,18 +72,17 @@ export function getLocalREADMEFile() {
     return file;
 }
 
-export function displayReadmeIfNotExists(override = false, launchTreeOnInit = false) {
-    const displayedReadme = getItem("vscode_ZtReadme");
+export function displayReadmeIfNotExists(override = false) {
+    const displayedReadme = getItem("vscode_CtReadme");
     if (!displayedReadme || override) {
-        if (!displayedReadme && launchTreeOnInit) {
-            // reveal the tree
-            // commands.executeCommand("zoomtime.displayTree");
-        }
-
         const readmeUri = Uri.file(getLocalREADMEFile());
 
-        commands.executeCommand("markdown.showPreview", readmeUri, ViewColumn.One);
-        setItem("vscode_ZtReadme", true);
+        commands.executeCommand(
+            "markdown.showPreview",
+            readmeUri,
+            ViewColumn.One
+        );
+        setItem("vscode_CtReadme", true);
     }
 }
 
