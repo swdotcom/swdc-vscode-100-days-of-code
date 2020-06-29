@@ -11,8 +11,15 @@ function getSessionSummaryJson() {
     return file;
 }
 
-export function getSessionCodetimeMetrics(): Array<number> {
+export function getSessionCodetimeMetrics(): any {
     const sessionSummaryFile = getSessionSummaryJson();
+
+    let metricsOut = {
+        minutes: 0,
+        keystrokes: 0,
+        linesAdded: 0
+
+    };
 
     // try to get codetime metrics from session summary file
     let codeTimeMetricsStr: string;
@@ -26,29 +33,26 @@ export function getSessionCodetimeMetrics(): Array<number> {
         if (exists) {
             codeTimeMetricsStr = fs.readFileSync(sessionSummaryFile).toString();
         } else {
-            return [0, 0, 0];
+            return metricsOut;
         }
     } catch (err) {
         console.log(err);
-        return [0, 0, 0];
+        return metricsOut;
     }
 
     // reading code time metrics from the string
     const metrics = JSON.parse(codeTimeMetricsStr);
-    let minutes: number = 0;
-    let keystrokes: number = 0;
-    let linesAdded: number = 0;
 
     // checks for avoiding null and undefined
     if (metrics.currentDayMinutes) {
-        minutes = metrics.currentDayMinutes;
+        metricsOut.minutes = metrics.currentDayMinutes;
     }
     if (metrics.currentDayKeystrokes) {
-        keystrokes = metrics.currentDayKeystrokes;
+        metricsOut.keystrokes = metrics.currentDayKeystrokes;
     }
     if (metrics.currentDayLinesAdded) {
-        linesAdded = metrics.currentDayLinesAdded;
+        metricsOut.linesAdded = metrics.currentDayLinesAdded;
     }
 
-    return [minutes, keystrokes, linesAdded];
+    return metricsOut;
 }

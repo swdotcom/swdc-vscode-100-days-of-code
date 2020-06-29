@@ -835,12 +835,8 @@ export async function editLogEntry(
 export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
     const exists = checkLogsJson();
     if (exists) {
-        const metrics: Array<number> = getSessionCodetimeMetrics();
-        // metrics of form [minutes, keystrokes, lines]
-        if (metrics === []) {
-            console.log("error fetching metrics");
-            return;
-        }
+        const metrics = getSessionCodetimeMetrics();
+        console.log(metrics);
         const logDate = new Date();
         const filepath = getLogsJson();
         const rawLogs = fs.readFileSync(filepath).toString();
@@ -853,9 +849,9 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
             const dayNum = getLatestLogEntryNumber() + 1;
             log.date = logDate.valueOf();
             log.milestones = milestones;
-            log.codetime_metrics.hours = parseFloat((metrics[0] / 60).toFixed(1));
-            log.codetime_metrics.keystrokes = metrics[1];
-            log.codetime_metrics.lines_added = metrics[2];
+            log.codetime_metrics.hours = parseFloat((metrics.minutes / 60).toFixed(1));
+            log.codetime_metrics.keystrokes = metrics.keystrokes;
+            log.codetime_metrics.lines_added = metrics.linesAdded;
             log.day_number = dayNum;
             log.title = "No Title";
             log.description = "No Description";
@@ -883,10 +879,10 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
                 // If user added extra hours, we don't want to reduce those
                 logs[i].codetime_metrics.hours = Math.max(
                     logs[i].codetime_metrics.hours,
-                    parseFloat((metrics[0] / 60).toFixed(1))
+                    parseFloat((metrics.minutes / 60).toFixed(1))
                 );
-                logs[i].codetime_metrics.keystrokes = metrics[1];
-                logs[i].codetime_metrics.lines_added = metrics[2];
+                logs[i].codetime_metrics.keystrokes = metrics.keystrokes;
+                logs[i].codetime_metrics.lines_added = metrics.linesAdded;
 
                 logs[i].milestones = logs[i].milestones.concat(milestones);
                 const sendLogs = { logs };
