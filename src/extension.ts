@@ -8,17 +8,7 @@ import {
     checkLanguageMilestonesAchieved,
     checkDaysMilestones
 } from "./utils/MilestonesUtil";
-import {
-    checkLogsJson,
-    updateLogsMilestonesAndMetrics,
-    fetchLogs,
-    updatedLogsDb,
-    pushNewLogs,
-    sentLogsDb,
-    pushUpdatedLogs,
-    createLogsPayloadJson,
-    checkLogsPayload
-} from "./utils/LogsUtil";
+import { checkLogsJson, updateLogsMilestonesAndMetrics } from "./utils/LogsUtil";
 import { checkSummaryJson, pushSummaryToDb } from "./utils/SummaryUtil";
 import {
     checkMilestonesPayload,
@@ -30,6 +20,15 @@ import {
     fetchMilestonesForYesterdayAndToday,
     createMilestonesPayloadJson
 } from "./utils/MilestonesDbUtil";
+import {
+    checkLogsPayload,
+    sentLogsDb,
+    pushNewLogs,
+    updatedLogsDb,
+    pushUpdatedLogs,
+    fetchLogs,
+    createLogsPayloadJson
+} from "./utils/LogsDbUtils";
 
 let one_minute_interval: NodeJS.Timeout;
 let five_minute_interval: NodeJS.Timeout;

@@ -1,7 +1,7 @@
 import { Disposable, commands, window, TreeView, ViewColumn, WebviewPanel, Uri } from "vscode";
 import { TreeNode } from "../models/TreeNode";
 import { Tree100DoCProvider, connectDoCTreeView } from "../tree/Tree100DoCProvider";
-import { addLogToJson, editLogEntry, updateLogShare, getUpdatedLogsHtml } from "./LogsUtil";
+import { addLogToJson, editLogEntry, updateLogShare } from "./LogsUtil";
 import {
     checkDaysMilestones,
     checkLanguageMilestonesAchieved,
@@ -12,6 +12,7 @@ import { getUpdatedAddLogHtmlString } from "./addLogUtil";
 import { getUpdatedDashboardHtmlString, getCertificateHtmlString } from "./DashboardUtil";
 import { displayReadmeIfNotExists } from "./Util";
 import { getUpdatedMilestonesHtmlString } from "./MilestonesTemplateUtil";
+import { getUpdatedLogsHtml } from "./LogsTemplateUtil";
 const fs = require("fs");
 
 export function createCommands(): { dispose: () => void } {
