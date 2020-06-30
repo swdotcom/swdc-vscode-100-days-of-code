@@ -1,13 +1,8 @@
-import { getSoftwareDir, isWindows, compareDates, getSoftwareSessionAsJson } from "./Util";
+import { getSoftwareDir, isWindows, compareDates } from "./Util";
 import fs = require("fs");
 import { window, commands } from "vscode";
 import path = require("path");
-import {
-    updateLogsMilestonesAndMetrics,
-    getDayNumberFromDate,
-    setDailyMilestonesByDayNumber,
-    updateLogMilestonesByDates
-} from "./LogsUtil";
+import { updateLogsMilestonesAndMetrics, setDailyMilestonesByDayNumber, updateLogMilestonesByDates } from "./LogsUtil";
 import { Summary } from "../models/Summary";
 import {
     getSummaryObject,
@@ -17,18 +12,7 @@ import {
 } from "./SummaryUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import { getLanguages } from "./LanguageUtil";
-import { softwarePost, isResponseOk, serverIsAvailable, softwarePut, softwareGet } from "../managers/HttpManager";
-
-// variables to keep in check the db update process
-export let updatedMilestonesDb = true;
-export let sentMilestonesDb = true;
-
-let toCreateMilestones: Array<any> = [];
-let toUpdateMilestones: Array<any> = [];
-
-function getMilestonesTemplate(): string {
-    return path.join(__dirname, "../assets/templates/milestones.template.html");
-}
+import { pushMilestonesToDb } from "./MilestonesDbUtil";
 
 function getMilestonesJson(): string {
     let file = getSoftwareDir();
@@ -52,215 +36,6 @@ export function checkMilestonesJson(): boolean {
         }
     } catch (err) {
         return false;
-    }
-}
-
-function getMilestonesPayloadJson(): string {
-    let file = getSoftwareDir();
-    if (isWindows()) {
-        file += "\\milestonesPayload.json";
-    } else {
-        file += "/milestonesPayload.json";
-    }
-    return file;
-}
-
-export function createMilestonesPayloadJson() {
-    const filepath = getMilestonesPayloadJson();
-    const fileData = {
-        updatedMilestonesDb,
-        sentMilestonesDb,
-        toCreateMilestones,
-        toUpdateMilestones
-    };
-    try {
-        fs.writeFileSync(filepath, JSON.stringify(fileData, null, 4));
-    } catch (err) {
-        console.log(err);
-    }
-}
-
-export function checkMilestonesPayload() {
-    const filepath = getMilestonesPayloadJson();
-    try {
-        if (fs.existsSync(filepath)) {
-            const payloadData = JSON.parse(fs.readFileSync(filepath).toString());
-            updatedMilestonesDb = payloadData["updatedMilestonesDb"];
-            sentMilestonesDb = payloadData["sentMilestonesDb"];
-            toCreateMilestones = payloadData["toCreateMilestones"];
-            toUpdateMilestones = payloadData["toUpdateMilestones"];
-        }
-    } catch (err) {
-        console.log(err);
-    }
-}
-
-export async function fetchMilestonesByDate(date: number): Promise<Array<number>> {
-    // End Date Time is 11:59:59 pm
-    let endDate = new Date(date);
-    endDate.setHours(23, 59, 59, 0);
-
-    // Start Date Time is 12:00:01 am
-    let startDate = new Date(endDate.valueOf() - 68400000);
-    startDate.setHours(0, 0, 1, 0);
-    let available = false;
-    try {
-        available = await serverIsAvailable();
-    } catch (err) {
-        available = false;
-    }
-    if (available) {
-        const jwt = getSoftwareSessionAsJson()["jwt"];
-        const milestones = await softwareGet(
-            `100doc/milestones?start_date=${Math.round(startDate.valueOf() / 1000)}&end_date=${Math.round(
-                endDate.valueOf() / 1000
-            )}`,
-            jwt
-        ).then(resp => {
-            if (isResponseOk(resp)) {
-                return resp.data;
-            }
-        });
-        if (milestones) {
-            // checking if milestones are sent. if not, return empty array
-            if (milestones.length > 1) {
-                return milestones[0].milestones;
-            } else {
-                return [];
-            }
-        }
-    }
-    return [];
-}
-
-export async function fetchMilestonesForYesterdayAndToday() {
-    // End Date is 11:59:59 pm today
-    let endDate = new Date();
-    endDate.setHours(23, 59, 59, 0);
-
-    // Start Date is 12:00:01 am yesterday
-    let startDate = new Date(endDate.valueOf() - 68400000 * 2);
-    startDate.setHours(0, 0, 1, 0);
-    let available = false;
-    try {
-        available = await serverIsAvailable();
-    } catch (err) {
-        available = false;
-    }
-    if (available) {
-        const jwt = getSoftwareSessionAsJson()["jwt"];
-        const milestones = await softwareGet(
-            `100doc/milestones?start_date=${Math.round(startDate.valueOf() / 1000)}&end_date=${Math.round(
-                endDate.valueOf() / 1000
-            )}`,
-            jwt
-        ).then(resp => {
-            if (isResponseOk(resp)) {
-                return resp.data;
-            }
-        });
-        if (milestones) {
-            compareWithLocalMilestones(milestones);
-        }
-    }
-}
-
-export async function fetchAllMilestones() {
-    let available = false;
-    try {
-        available = await serverIsAvailable();
-    } catch (err) {
-        available = false;
-    }
-    if (available) {
-        const jwt = getSoftwareSessionAsJson()["jwt"];
-        const milestones = await softwareGet("100doc/milestones", jwt).then(resp => {
-            if (isResponseOk(resp)) {
-                return resp.data;
-            }
-        });
-        if (milestones) {
-            compareWithLocalMilestones(milestones);
-        }
-    }
-}
-
-export function pushMilestonesToDb(date: number, milestones: Array<number>) {
-    // handles creating and updating of milestones and adds milestones accordingly
-    const dateData = new Date(date);
-    const update: boolean = checkIfMilestonesAchievedOnDate(date);
-    if (update) {
-        // Takes into check new milestones and old ones
-        milestones = getMilestonesByDate(date);
-    }
-    const offset_minutes = dateData.getTimezoneOffset();
-    const day_number = getDayNumberFromDate(date);
-    const sendMilestones = {
-        day_number,
-        local_date: Math.round(date / 1000), // milliseconds --> seconds
-        offset_minutes,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        milestones
-    };
-
-    // handles update and create
-    if (update) {
-        toUpdateMilestones.push(sendMilestones);
-        pushUpdatedMilestones();
-    } else {
-        toCreateMilestones.push(sendMilestones);
-        pushNewMilestones();
-    }
-}
-
-export async function pushNewMilestones() {
-    let available = false;
-    try {
-        available = await serverIsAvailable();
-    } catch (err) {
-        available = false;
-    }
-    if (available) {
-        const jwt = getSoftwareSessionAsJson()["jwt"];
-        const resp = await softwarePost("100doc/milestones", toCreateMilestones, jwt);
-        const added: boolean = isResponseOk(resp);
-        if (!added) {
-            sentMilestonesDb = false;
-        } else {
-            sentMilestonesDb = true;
-            toCreateMilestones = [];
-            return;
-        }
-    } else {
-        sentMilestonesDb = false;
-    }
-}
-
-export async function pushUpdatedMilestones() {
-    // try to post new milestones before sending updated
-    // milestones as the edits might be on the non posted milestones
-    if (!sentMilestonesDb) {
-        await pushNewMilestones();
-    }
-    let available = false;
-    try {
-        available = await serverIsAvailable();
-    } catch (err) {
-        available = false;
-    }
-    if (available) {
-        const jwt = getSoftwareSessionAsJson()["jwt"];
-        const resp = await softwarePut("100doc/milestones", toUpdateMilestones, jwt);
-        const added: boolean = isResponseOk(resp);
-        if (!added) {
-            updatedMilestonesDb = false;
-        } else {
-            updatedMilestonesDb = true;
-            toUpdateMilestones = [];
-            return;
-        }
-    } else {
-        updatedMilestonesDb = false;
     }
 }
 
@@ -291,7 +66,7 @@ export function getMilestonesByDate(date: number): Array<number> {
     return sendMilestones;
 }
 
-function compareWithLocalMilestones(dbMilestones: any) {
+export function compareWithLocalMilestones(dbMilestones: any) {
     // goes through each milestone and updates based on db data
     const exists = checkMilestonesJson();
     if (!exists) {
@@ -348,7 +123,7 @@ function compareWithLocalMilestones(dbMilestones: any) {
     }
 }
 
-function checkIfMilestonesAchievedOnDate(date: number): boolean {
+export function checkIfMilestonesAchievedOnDate(date: number): boolean {
     const exists = checkMilestonesJson();
     if (!exists) {
         return false;
@@ -601,7 +376,7 @@ function checkIdRange(id: number): boolean {
     }
     return false;
 }
-// Used by logs
+
 export function getMilestoneById(id: number) {
     const exists = checkMilestonesJson();
     if (!exists) {
@@ -617,7 +392,6 @@ export function getMilestoneById(id: number) {
     return milestones[id - 1];
 }
 
-// Achieved Milestone change in json and logs
 function achievedMilestonesJson(ids: Array<number>): void {
     const exists = checkMilestonesJson();
     if (!exists) {
@@ -708,7 +482,6 @@ function achievedMilestonesJson(ids: Array<number>): void {
     }
 }
 
-// checks if milestone was shared. if not makes it shared and updates summary json
 export function updateMilestoneShare(id: number) {
     const exists = checkMilestonesJson();
     if (!exists) {
@@ -754,163 +527,15 @@ export function getTotalMilestonesAchieved(): number {
     return totalMilestonesAchieved;
 }
 
-export function getMilestonesHtml(): string {
-    let file = getSoftwareDir();
-    if (isWindows()) {
-        file += "\\milestones.html";
-    } else {
-        file += "/milestones.html";
-    }
-    return file;
-}
-
-export function milestoneShareUrlGenerator(id: number, title: string, description: string): string {
-    const beginURI = "https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.software.com%2Fmilestone%2F";
-    const endURI =
-        "%0aWoohoo%21%20I%20earned%20this%20milestone%20while%20completing%20the%20%23100DaysOfCode%20Challenge%20with%20@software_hq%27s%20100%20Days%20of%20Code%20VS%20Code%20Plugin.&hashtags=100DaysOfCode%2CSoftware%2CDeveloper%2CAchiever";
-    const titleURI = encodeURI(title);
-    const descriptionURI = encodeURI(description);
-    let url = `${beginURI}${id}&text=${titleURI}%20-%20${descriptionURI}${endURI}`;
-    return url;
-}
-
-function getStyleColorsBasedOnMode(): any {
-    const tempWindow: any = window;
-
-    let cardTextColor = "#FFFFFF";
-    let cardBackgroundColor = "rgba(255,255,255,0.05)";
-    let cardGrayedLevel = "#474747";
-    let sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
-    if (tempWindow.activeColorTheme.kind === 1) {
-        cardTextColor = "#444444";
-        cardBackgroundColor = "rgba(0,0,0,0.10)";
-        cardGrayedLevel = "#B5B5B5";
-        sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shareLight.svg";
-    }
-    return { cardTextColor, cardBackgroundColor, cardGrayedLevel, sharePath };
-}
-
-export function getUpdatedMilestonesHtmlString(): string {
+export function getAllMilestones(): Array<any> {
     // Checks if the file exists and if not, creates a new file
     const exists = checkMilestonesJson();
     if (!exists) {
         window.showErrorMessage("Cannot access Milestone file! Please contact cody@software.com for help.");
-        return "";
+        return [];
     }
     const filepath = getMilestonesJson();
     let rawMilestones = fs.readFileSync(filepath).toString();
     let milestones = JSON.parse(rawMilestones).milestones;
-
-    const { cardTextColor, cardBackgroundColor, cardGrayedLevel, sharePath } = getStyleColorsBasedOnMode();
-
-    // for calculating recents
-    const date = Date.now();
-
-    // for adding to the html string later
-    let recents: string = "";
-    let allMilestones: string = "\n\t\t<hr>\n\t\t<h2>All Milestones</h2>\n";
-
-    // share icon
-    for (let i = 0; i < milestones.length; i++) {
-        const milestone = milestones[i];
-        const id: number = milestone.id;
-        const title: string = milestone.title;
-        const description: string = milestone.description;
-        const level: number = milestone.level;
-        const achieved: boolean = milestone.achieved;
-        const shareIcon: string = milestone.shared
-            ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg"
-            : sharePath;
-
-        let icon: string;
-        let dateAchieved: number = 0;
-        const shareLink = milestoneShareUrlGenerator(i + 1, title, description);
-        // If achieved, card must be colored. Otherwise, card should be gray
-
-        // for adding gray scale effect class into html
-        let grayedCard: string = "";
-        let grayedLevel: string = "";
-
-        // can only share if achieved
-        let shareHtml: string = "";
-
-        // can only have date if achieved
-        let dateHtml: string = "";
-
-        // Re: If achieved, card must be colored. Otherwise, card should be gray
-        if (achieved) {
-            icon = milestone.icon;
-            dateAchieved = milestone.date_achieved;
-            shareHtml = `\t\t\t<a href="${shareLink}" title="Share this on Twitter"><img src="${shareIcon}" class="milestoneShare"/></a>`;
-
-            // getting date in mm/dd/yyyy format
-            let dateOb = new Date(dateAchieved);
-
-            const dayNum = dateOb.getDate();
-            const month = dateOb.getMonth() + 1; // Month is 0 indexed
-            const year = dateOb.getFullYear();
-
-            dateHtml = `\t\t\t<div class="date">${month}/${dayNum}/${year}</div>`;
-        } else {
-            icon = milestone.gray_icon;
-            grayedCard = "grayed";
-            grayedLevel = "grayedLevel";
-        }
-
-        // if level 0, no level tag on top.
-        // if level 6, replace it with ∞
-        let levelHtml: string = "";
-        if (level > 0 && level < 6) {
-            levelHtml = `\t\t\t<div class="level${level} milestoneCardLevel ${grayedLevel}">Level ${level}</div>`;
-        } else if (level === 6) {
-            levelHtml = `\t\t\t<div class="level${level} milestoneCardLevel ${grayedLevel}">Level <span class="inf">∞</span></div>`;
-        }
-
-        const milestoneCardHtml: string = [
-            `\t\t<div class="milestoneCard ${grayedCard}">`,
-            `\t\t\t<div class="hiddenId">${id}</div>`,
-            `${levelHtml}`,
-            `${shareHtml}`,
-            `\t\t\t<div class="milestoneTitle">${title}</div>`,
-            `\t\t\t<img class="logo" src=${icon} alt="Connect internet to view this really cool logo!">`,
-            `\t\t\t<div class="milestoneDesc">${description}</div>`,
-            `${dateHtml}`,
-            `\t\t</div>\n`
-        ].join("\n");
-
-        // Checks for the same date
-        const dateNow = new Date();
-        const dateOb = new Date(dateAchieved);
-        if (compareDates(dateOb, dateNow)) {
-            if (recents === "") {
-                recents += `\n\t\t<h2>Today's Milestones</h2>\n`;
-            }
-            recents += milestoneCardHtml;
-        }
-
-        allMilestones += milestoneCardHtml;
-    }
-
-    // If no milestones earned today
-    if (recents === "") {
-        recents += `\n\t\t<h2>Today's Milestones</h2>\n`;
-        recents += `\t\t<div class="noMilestones">No Milestones in the Past 24 hours</div>\n`;
-    }
-
-    const templateVars = {
-        cardTextColor,
-        cardBackgroundColor,
-        cardGrayedLevel,
-        sharePath,
-        recents,
-        allMilestones
-    };
-
-    const templateString = fs.readFileSync(getMilestonesTemplate()).toString();
-    const fillTemplate = function (templateString: string, templateVars: any) {
-        return new Function("return `" + templateString + "`;").call(templateVars);
-    };
-
-    const milestoneHtmlContent = fillTemplate(templateString, templateVars);
-    return milestoneHtmlContent;
+    return milestones;
 }

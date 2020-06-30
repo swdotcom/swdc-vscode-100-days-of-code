@@ -11,6 +11,7 @@ import {
 import { Summary } from "../models/Summary";
 import { getLastSevenLoggedDays, getAllCodetimeHours, getLogDateRange } from "./LogsUtil";
 import { getMilestoneById } from "./MilestonesUtil";
+import { monthNames } from "./Constants";
 import { window } from "vscode";
 
 const HOURS_THRESHOLD = 0.5;
@@ -257,20 +258,6 @@ function getLogsHtml(): string {
     // Logs
     const logs = getLastSevenLoggedDays();
     let logsHtml = "";
-    const monthNames = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December"
-    ];
 
     const d = new Date();
     if (logs.length === 0) {

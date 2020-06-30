@@ -4,22 +4,8 @@ import fs = require("fs");
 import { getMostRecentLogObject, getLatestLogEntryNumber } from "./LogsUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import { Log } from "../models/Log";
+import { monthNames } from "./Constants";
 import { window } from "vscode";
-
-const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December"
-];
 
 function getAddLogTemplate(): string {
     return path.join(__dirname, "../assets/templates/addLog.template.html");

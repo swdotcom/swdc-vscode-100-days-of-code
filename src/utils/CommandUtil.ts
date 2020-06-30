@@ -6,12 +6,12 @@ import {
     checkDaysMilestones,
     checkLanguageMilestonesAchieved,
     checkCodeTimeMetricsMilestonesAchieved,
-    updateMilestoneShare,
-    getUpdatedMilestonesHtmlString
+    updateMilestoneShare
 } from "./MilestonesUtil";
 import { getUpdatedAddLogHtmlString } from "./addLogUtil";
 import { getUpdatedDashboardHtmlString, getCertificateHtmlString } from "./DashboardUtil";
 import { displayReadmeIfNotExists } from "./Util";
+import { getUpdatedMilestonesHtmlString } from "./MilestonesTemplateUtil";
 const fs = require("fs");
 
 export function createCommands(): { dispose: () => void } {

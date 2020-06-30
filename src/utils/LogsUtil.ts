@@ -3,15 +3,7 @@ import path = require("path");
 import fs = require("fs");
 import { CodetimeMetrics } from "../models/CodetimeMetrics";
 import { Log } from "../models/Log";
-import {
-    getMilestoneById,
-    checkSharesMilestones,
-    fetchMilestonesByDate,
-    pushMilestonesToDb,
-    fetchAllMilestones,
-    getMilestonesByDate,
-    checkIfDaily
-} from "./MilestonesUtil";
+import { getMilestoneById, checkSharesMilestones, getMilestonesByDate, checkIfDaily } from "./MilestonesUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import {
     getSummaryObject,
@@ -25,6 +17,7 @@ import {
 } from "./SummaryUtil";
 import { softwareGet, serverIsAvailable, softwarePost, isResponseOk, softwarePut } from "../managers/HttpManager";
 import { window, commands } from "vscode";
+import { fetchMilestonesByDate, pushMilestonesToDb, fetchAllMilestones } from "./MilestonesDbUtil";
 
 export let updatedLogsDb = true;
 export let sentLogsDb = true;

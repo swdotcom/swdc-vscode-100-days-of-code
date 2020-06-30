@@ -9,3 +9,18 @@ export const api_endpoint = "https://api.software.com";
 //
 // "http://localhost:3000", "https://qa.software.com", "https://staging.software.com", "https://app.software.com"
 export const launch_url = "https://app.software.com";
+
+export const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December"
+];
