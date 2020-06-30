@@ -11,10 +11,8 @@ import {
 import { Summary } from "../models/Summary";
 import { getLastSevenLoggedDays, getAllCodetimeHours, getLogDateRange } from "./LogsUtil";
 import { getMilestoneById } from "./MilestonesUtil";
-import { monthNames } from "./Constants";
+import { monthNames, HOURS_THRESHOLD } from "./Constants";
 import { window } from "vscode";
-
-const HOURS_THRESHOLD = 0.5;
 
 function getDashboardTemplate(): string {
     return path.join(__dirname, "../assets/templates/dashboard.template.html");

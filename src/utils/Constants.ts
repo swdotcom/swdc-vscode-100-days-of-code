@@ -24,3 +24,5 @@ export const monthNames = [
     "November",
     "December"
 ];
+
+export const HOURS_THRESHOLD = 0.5;
