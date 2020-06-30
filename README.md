@@ -1,11 +1,14 @@
 <br />
 
-<h1 align="center">
-  <!-- Icon here <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/software-headphones.png" height="30px" />&nbsp -->
-  100 Days of Code
-  <br />
-  &nbsp
-</h1>
+<div>
+  <h1 align="center">
+    <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/100DocLogo.gif" height="60px" style="vertical-align: middle; display: inline;"/>
+    &nbsp
+    100 Days of Code
+    <br />
+    &nbsp
+  </h1>
+</div>
 
 <br />
 
@@ -22,6 +25,11 @@
   <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.music-time">
     <img alt="Rating" src="https://vsmarketplacebadge.apphb.com/rating-short/softwaredotcom.music-time.svg"></a>
 </p> -->
+
+<p align="center" style="margin: 0 10%">
+    <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/Landing+Image.png" alt="100 Days of Code Landing Image" />
+</p>
+
 
 ## The 100 Days Of Code Challenge
 
@@ -55,7 +63,7 @@ The 100 Days of Code plugin is built on [Code Time](https://www.software.com/cod
 
 ### **1. Create a log entry**
 
-Logs are journal entries for your 100 Days of Code challenge to help you stay on track and remember all of your accomplishments. Each log entry includes a title, description, and set of links that you can add if you want to link to your projects. Logs are also automatically populated with your code time, number of keystrokes, and lines added for that day of coding.
+Logs are journal entries for your 100 Days of Code challenge to help you stay on track and remember all of your accomplishments. Each log entry includes a title, description, and set of links that you can add if you want to link to your projects and resources. Logs are also automatically populated with your code time, number of keystrokes, and lines added for that day of coding.
 
 <p align="center" style="margin: 0 10%">
     <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/Add+Log+Navigation.png" alt="Navigate to add log page for 100 Days of Code" />
