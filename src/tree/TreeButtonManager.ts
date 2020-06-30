@@ -45,7 +45,7 @@ export function getDashboardButton() {
 }
 
 export function getDoCLogsButon() {
-    return getActionButton("View Daily Logs", "View your daily log entries", "DoC.viewLogs", "logs.svg");
+    return getActionButton("View Logs", "View your log entries", "DoC.viewLogs", "logs.svg");
 }
 
 export function getDocMilestonesButton() {
