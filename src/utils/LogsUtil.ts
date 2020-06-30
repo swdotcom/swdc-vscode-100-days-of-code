@@ -10,8 +10,7 @@ import {
     getSummaryTotalHours,
     setSummaryCurrentHours,
     setSummaryTotalHours,
-    reevaluateSummary,
-    pushSummaryToDb
+    reevaluateSummary
 } from "./SummaryUtil";
 import { window, commands } from "vscode";
 import { fetchMilestonesByDate, pushMilestonesToDb, fetchAllMilestones } from "./MilestonesDbUtil";
@@ -23,6 +22,7 @@ import {
     clearToUpdateLogs,
     toUpdateLogsPush
 } from "./LogsDbUtils";
+import { pushSummaryToDb } from "./SummaryDbUtil";
 
 let dateLogMessage: Date | any = undefined;
 

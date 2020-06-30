@@ -9,7 +9,7 @@ import {
     checkDaysMilestones
 } from "./utils/MilestonesUtil";
 import { checkLogsJson, updateLogsMilestonesAndMetrics } from "./utils/LogsUtil";
-import { checkSummaryJson, pushSummaryToDb } from "./utils/SummaryUtil";
+import { checkSummaryJson } from "./utils/SummaryUtil";
 import {
     checkMilestonesPayload,
     sentMilestonesDb,
@@ -29,6 +29,7 @@ import {
     fetchLogs,
     createLogsPayloadJson
 } from "./utils/LogsDbUtils";
+import { pushSummaryToDb } from "./utils/SummaryDbUtil";
 
 let one_minute_interval: NodeJS.Timeout;
 let five_minute_interval: NodeJS.Timeout;
