@@ -13,6 +13,7 @@ import {
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import { getLanguages } from "./LanguageUtil";
 import { pushMilestonesToDb } from "./MilestonesDbUtil";
+import { HOURS_THRESHOLD } from "./Constants";
 
 function getMilestonesJson(): string {
     let file = getSoftwareDir();
@@ -300,7 +301,7 @@ export function checkDaysMilestones(): void {
 
     // curr day is completed only after a certain threshold hours are met
     // no checks for prev day
-    if (summary.currentHours < 0.5) {
+    if (summary.currentHours < HOURS_THRESHOLD) {
         days--;
         streaks--;
     }
