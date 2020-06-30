@@ -389,7 +389,7 @@ export async function addLogToJson(
     }
     const dayNum = getLatestLogEntryNumber() + 1;
 
-    if (dayNum === -1) {
+    if (dayNum === 0) {
         console.log("Logs json could not be read");
         return false;
     }
@@ -432,14 +432,13 @@ export async function addLogToJson(
 export function getLatestLogEntryNumber(): number {
     const exists = checkLogsJson();
     if (exists) {
-        const dateNow = new Date();
         const filepath = getLogsJson();
         const rawLogs = fs.readFileSync(filepath).toString();
         const logs = JSON.parse(rawLogs).logs;
 
         return logs.length;
     }
-    return -2;
+    return -1;
 }
 
 export function getMostRecentLogObject() {

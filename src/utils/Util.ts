@@ -1,5 +1,6 @@
 import { commands, ViewColumn, Uri, workspace, window } from "vscode";
 import { isResponseOk, softwareGet } from "../managers/HttpManager";
+import { getLatestLogEntryNumber } from "./LogsUtil";
 // import { api_endpoint } from "./Constants";
 
 const fs = require("fs");
@@ -73,8 +74,8 @@ export function getLocalREADMEFile() {
 }
 
 export function displayReadmeIfNotExists(override = false) {
-    const displayedReadme = getItem("vscode_CtReadme");
-    if (!displayedReadme || override) {
+    const logsEmpty = getLatestLogEntryNumber() <= 0;
+    if (logsEmpty || override) {
         const readmeUri = Uri.file(getLocalREADMEFile());
 
         commands.executeCommand("markdown.showPreview", readmeUri, ViewColumn.One);

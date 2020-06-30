@@ -30,6 +30,7 @@ import {
     createLogsPayloadJson
 } from "./utils/LogsDbUtils";
 import { pushSummaryToDb } from "./utils/SummaryDbUtil";
+import { displayReadmeIfNotExists } from "./utils/Util";
 
 let one_minute_interval: NodeJS.Timeout;
 let five_minute_interval: NodeJS.Timeout;
@@ -55,6 +56,9 @@ export async function initializePlugin() {
     checkLogsJson();
     checkMilestonesJson();
     checkSummaryJson();
+
+    // Displays README on first launch
+    displayReadmeIfNotExists();
 
     // try to send payloads that weren't sent
     // and fetch data from the db as well
