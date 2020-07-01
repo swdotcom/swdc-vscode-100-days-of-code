@@ -162,7 +162,7 @@ function getMilestonesText(milestones: Array<number>): string {
                 `\t\t\t\t\t\t\t\t<div style="font-weight: bold;">${milestone.title}</div>`,
                 `\t\t\t\t\t\t\t\t<div>${milestone.description}</div>`,
                 `\t\t\t\t\t\t\t</span>`,
-                `\t\t\t\t\t\t\t<img class="cardMilestoneIcon" src="${milestone.icon}" alt="">`,
+                `\t\t\t\t\t\t\t<img class="cardMilestoneIcon" src="${milestone.icon}" alt="${milestone.title}">`,
                 `\t\t\t\t\t\t</div>\n`
             ].join("\n");
         } else {
@@ -213,9 +213,9 @@ function getLogCard(
         `\t\t\t\t</div>`,
         `\t\t\t</div>`,
         `\t\t\t<div class="cardHeaderButtonSection">`,
-        `\t\t\t\t<a href="${twitterShareUrl}" title="Share this on Twitter"><button class="cardHeaderShareButton"><img class="cardHeaderShareButtonIcon" src=${shareIconLink}></button></a>`,
+        `\t\t\t\t<a href="${twitterShareUrl}" title="Share this on Twitter"><button class="cardHeaderShareButton"><img class="cardHeaderShareButtonIcon" src=${shareIconLink} alt="Share"></button></a>`,
         `\t\t\t\t<button class="cardHeaderEditLogButton">Edit Log</button>`,
-        `\t\t\t\t<button class="cardHeaderDropDownButton"><img class="cardHeaderShareButtonIcon" src=${dropDownPath}></button>`,
+        `\t\t\t\t<button class="cardHeaderDropDownButton"><img class="cardHeaderShareButtonIcon" src=${dropDownPath} alt="Drop Down"></button>`,
         `\t\t\t</div>`,
         `\t\t</div>`,
         `\t\t<div class="cardContent">`,

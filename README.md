@@ -2,7 +2,7 @@
 
 <div>
   <h1 align="center">
-    <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/100DocLogo.gif" height="60px" style="vertical-align: middle; display: inline;"/>
+    <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/100DocLogo.gif" height="60px" style="vertical-align: middle; display: inline;" alt="Logo"/>
     &nbsp
     100 Days of Code
     <br />
