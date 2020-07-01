@@ -114,8 +114,7 @@
         	.cardHeaderEditLogButton {
         		cursor: pointer;
         		font-style: normal;
-        		font-weight: bold;
-        		font-size: 18px;
+        		font-size: 14px;
         		text-align: center;
         		color: ${this.cardTextColor};
         		background-color: ${this.cardBackgroundColor};
@@ -131,12 +130,12 @@
         		position: absolute;
         		background-color: rgba(0,0,0,0);
         		border-color: rgba(0,0,0,0);
-        		transform: translate(50px, -18px);
+        		transform: translate(40px, -15px);
         		margin: 5px;
         	}
         	.cardHeaderShareButtonIcon {
-        		width: 22px;
-        		height: 22px;
+        		width: 18px;
+        		height: 18px;
         	}
         	.cardHeaderDropDownButton {
         		cursor: pointer;
@@ -457,12 +456,12 @@
                     content.style.maxHeight = null;
                     dropDownIcon.style.transform = "rotate(180deg)";
                     editButton.style.visibility = "hidden";
-                    shareButton.style.transform = "translate(50px, -18px)";
+                    shareButton.style.transform = "translate(40px, -15px)";
                 } else {
                     content.style.maxHeight = content.scrollHeight + "px";
                     dropDownIcon.style.transform = "rotate(0deg)";
                     editButton.style.visibility = "visible";
-                    shareButton.style.transform = "translate(-48px, -18px)";
+                    shareButton.style.transform = "translate(-48px, -15px)";
                 }
             });
         }
