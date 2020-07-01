@@ -57,13 +57,15 @@ export function compareLocalSummary(dbSummary: any) {
     // updates local summary if and only if db is as updated
     if (dbSummary.days >= summary.days) {
         summary.days = dbSummary.days;
-        summary.hours = dbSummary.hours;
-        summary.keystrokes = dbSummary.keystrokes;
-        summary.lines_added = dbSummary.lines_added;
-        summary.longest_streak = dbSummary.longest_streak;
-        summary.milestones = dbSummary.milestones;
-        summary.shares = dbSummary.shares;
-        summary.languages = dbSummary.languages;
+        summary.hours = dbSummary.hours > summary.hours ? dbSummary.hours : summary.hours;
+        summary.keystrokes = dbSummary.keystrokes > summary.keystrokes ? dbSummary.keystrokes : summary.keystrokes;
+        summary.lines_added = dbSummary.lines_added > summary.lines_added ? dbSummary.lines_added : summary.lines_added;
+        summary.longest_streak =
+            dbSummary.longest_streak > summary.longest_streak ? dbSummary.longest_streak : summary.longest_streak;
+        summary.milestones = dbSummary.milestones > summary.milestones ? dbSummary.milestones : summary.milestones;
+        summary.shares = dbSummary.shares > summary.shares ? dbSummary.shares : summary.shares;
+        summary.languages =
+            dbSummary.languages.length > summary.languages.length ? dbSummary.languages : summary.languages;
 
         const filepath = getSummaryJson();
         try {
