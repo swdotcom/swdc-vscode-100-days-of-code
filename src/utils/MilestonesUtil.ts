@@ -558,7 +558,9 @@ export function getThreeMostRecentMilestones(): Array<number> {
     let sendMilestones: Array<number> = [];
     const rawSendMilestones = milestones.slice(0, 3);
     rawSendMilestones.forEach((milestone: any) => {
-        sendMilestones.push(milestone.id);
+        if (milestone.achieved) {
+            sendMilestones.push(milestone.id);
+        }
     });
     return sendMilestones;
 }
