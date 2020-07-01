@@ -30,7 +30,6 @@
     <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/Landing+Image.png" alt="100 Days of Code Landing Image" />
 </p>
 
-
 ## The 100 Days Of Code Challenge
 
 The 100 Days of Code is a coding challenge created by [Alexander Kallaway](https://twitter.com/ka11away) to encourage people to learn new coding skills. The challenge follows one simple rule:
@@ -87,7 +86,7 @@ Logging your daily progress is important to get the most out of the 100 Days of 
     <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/View+Log+Page.png" alt="View log for 100 Days of Code" />
 </p>
 
-When you submit a log, it is added to your **Logs** page. Here you can view details about each log, including title, description, links, code metrics, and milestones for that day.
+When you submit a log, it is added to your **Logs** page. Here you can view details about each log, including title, description, links, code metrics, and milestones for that day. Each day's metrics are compared to your average metrics calculated from all your log entries throughout the challenge.
 
 If you forget to create a log for a day that you worked, don’t worry! We will automatically create a log for you. It will appear in your logs as **No Title**. You can edit these logs at any time with any additional details that you would like to add.
 
