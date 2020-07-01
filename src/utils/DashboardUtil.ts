@@ -246,7 +246,7 @@ function getDatagramHtmlComponents(): any {
     }
     // no days
     if (barsHtml === "" || max === 0) {
-        barsHtml = `<h2>Waiting for your Code Time data!</h2>`;
+        barsHtml = `<div style="text-align: center; font-size: 14px; font-weight: bolder; margin-top: 50px; margin-right: 25px;">Waiting for your Code Time data!</div>`;
     }
 
     return { barsHtml, xAxisDates, min, max, mid, dateJustifyContent };
@@ -259,7 +259,7 @@ function getLogsHtml(): string {
 
     const d = new Date();
     if (logs.length === 0) {
-        logsHtml = `<h2 style="text-align: center; padding-top: 50px;">Excited for you to start your 1st day in #100DaysOfCode Challenge!<h2>`;
+        logsHtml = `<div style="text-align: center; padding-top: 75px; font-size: 14px; font-weight: bolder;">Excited for you to start your 1st day in #100DaysOfCode Challenge!</div>`;
     } else {
         for (let i = 0; i < logs.length; i++) {
             logsHtml += `\t\t\t<div class="logBody">\n\t\t\t\t<span>${logs[i].day_number}</span>\n`;
@@ -299,7 +299,7 @@ function getMilestonesHtml(recent_milestones: Array<number>): string {
             }
         }
     } else {
-        milestoneHtml = `<h2 style="text-align: center; padding-top: 50px;">Excited for you to achieve your 1st Milestone!<h2>`;
+        milestoneHtml = `<div style="text-align: center; padding-top: 75px; font-size: 14px; font-weight: bolder; padding-right: 10px;">Excited for you to achieve your 1st Milestone!</div>`;
     }
     return milestoneHtml;
 }

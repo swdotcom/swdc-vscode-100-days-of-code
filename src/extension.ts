@@ -98,11 +98,14 @@ export async function initializePlugin() {
 
 export function initializeIntervalJobs() {
     one_minute_interval = setInterval(async () => {
-        // updates logs with latest metrics and checks for milestones
-        updateLogsMilestonesAndMetrics([]);
-        checkCodeTimeMetricsMilestonesAchieved();
-        checkLanguageMilestonesAchieved();
-        checkDaysMilestones();
+        const currDate = new Date();
+        if (currDate.getHours() !== 0 || currDate.getMinutes() > 3) {
+            // updates logs with latest metrics and checks for milestones
+            updateLogsMilestonesAndMetrics([]);
+            checkCodeTimeMetricsMilestonesAchieved();
+            checkLanguageMilestonesAchieved();
+            checkDaysMilestones();
+        }
     }, one_min_millis);
 
     five_minute_interval = setInterval(async () => {
