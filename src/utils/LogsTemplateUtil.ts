@@ -335,7 +335,7 @@ export function getUpdatedLogsHtml(): string {
             const formattedDate = getFormattedDate(day.date);
 
             const shareIconLink = day.shared
-                ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg"
+                ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/checkedShare.svg"
                 : sharePath;
 
             logsHtml += getLogCard(day, formattedDate, twitterShareUrl, shareIconLink, dropDownPath);

@@ -52,37 +52,39 @@ export function checkMilestonesPayload() {
 }
 
 export async function fetchMilestonesByDate(date: number): Promise<Array<number>> {
-    // End Date Time is 11:59:59 pm
-    let endDate = new Date(date);
-    endDate.setHours(23, 59, 59, 0);
+    const jwt = getSoftwareSessionAsJson()["jwt"];
+    if (jwt) {
+        // End Date Time is 11:59:59 pm
+        let endDate = new Date(date);
+        endDate.setHours(23, 59, 59, 0);
 
-    // Start Date Time is 12:00:01 am
-    let startDate = new Date(endDate.valueOf() - 68400000);
-    startDate.setHours(0, 0, 1, 0);
-    let available = false;
-    try {
-        available = await serverIsAvailable();
-    } catch (err) {
-        available = false;
-    }
-    if (available) {
-        const jwt = getSoftwareSessionAsJson()["jwt"];
-        const milestones = await softwareGet(
-            `100doc/milestones?start_date=${Math.round(startDate.valueOf() / 1000)}&end_date=${Math.round(
-                endDate.valueOf() / 1000
-            )}`,
-            jwt
-        ).then(resp => {
-            if (isResponseOk(resp)) {
-                return resp.data;
-            }
-        });
-        if (milestones) {
-            // checking if milestones are sent. if not, return empty array
-            if (milestones.length > 1) {
-                return milestones[0].milestones;
-            } else {
-                return [];
+        // Start Date Time is 12:00:01 am
+        let startDate = new Date(endDate.valueOf() - 68400000);
+        startDate.setHours(0, 0, 1, 0);
+        let available = false;
+        try {
+            available = await serverIsAvailable();
+        } catch (err) {
+            available = false;
+        }
+        if (available) {
+            const milestones = await softwareGet(
+                `100doc/milestones?start_date=${Math.round(startDate.valueOf() / 1000)}&end_date=${Math.round(
+                    endDate.valueOf() / 1000
+                )}`,
+                jwt
+            ).then(resp => {
+                if (isResponseOk(resp)) {
+                    return resp.data;
+                }
+            });
+            if (milestones) {
+                // checking if milestones are sent. if not, return empty array
+                if (milestones.length > 1) {
+                    return milestones[0].milestones;
+                } else {
+                    return [];
+                }
             }
         }
     }
@@ -90,53 +92,57 @@ export async function fetchMilestonesByDate(date: number): Promise<Array<number>
 }
 
 export async function fetchMilestonesForYesterdayAndToday() {
-    // End Date is 11:59:59 pm today
-    let endDate = new Date();
-    endDate.setHours(23, 59, 59, 0);
+    const jwt = getSoftwareSessionAsJson()["jwt"];
+    if (jwt) {
+        // End Date is 11:59:59 pm today
+        let endDate = new Date();
+        endDate.setHours(23, 59, 59, 0);
 
-    // Start Date is 12:00:01 am yesterday
-    let startDate = new Date(endDate.valueOf() - 68400000 * 2);
-    startDate.setHours(0, 0, 1, 0);
-    let available = false;
-    try {
-        available = await serverIsAvailable();
-    } catch (err) {
-        available = false;
-    }
-    if (available) {
-        const jwt = getSoftwareSessionAsJson()["jwt"];
-        const milestones = await softwareGet(
-            `100doc/milestones?start_date=${Math.round(startDate.valueOf() / 1000)}&end_date=${Math.round(
-                endDate.valueOf() / 1000
-            )}`,
-            jwt
-        ).then(resp => {
-            if (isResponseOk(resp)) {
-                return resp.data;
+        // Start Date is 12:00:01 am yesterday
+        let startDate = new Date(endDate.valueOf() - 68400000 * 2);
+        startDate.setHours(0, 0, 1, 0);
+        let available = false;
+        try {
+            available = await serverIsAvailable();
+        } catch (err) {
+            available = false;
+        }
+        if (available) {
+            const milestones = await softwareGet(
+                `100doc/milestones?start_date=${Math.round(startDate.valueOf() / 1000)}&end_date=${Math.round(
+                    endDate.valueOf() / 1000
+                )}`,
+                jwt
+            ).then(resp => {
+                if (isResponseOk(resp)) {
+                    return resp.data;
+                }
+            });
+            if (milestones) {
+                compareWithLocalMilestones(milestones);
             }
-        });
-        if (milestones) {
-            compareWithLocalMilestones(milestones);
         }
     }
 }
 
 export async function fetchAllMilestones() {
-    let available = false;
-    try {
-        available = await serverIsAvailable();
-    } catch (err) {
-        available = false;
-    }
-    if (available) {
-        const jwt = getSoftwareSessionAsJson()["jwt"];
-        const milestones = await softwareGet("100doc/milestones", jwt).then(resp => {
-            if (isResponseOk(resp)) {
-                return resp.data;
+    const jwt = getSoftwareSessionAsJson()["jwt"];
+    if (jwt) {
+        let available = false;
+        try {
+            available = await serverIsAvailable();
+        } catch (err) {
+            available = false;
+        }
+        if (available) {
+            const milestones = await softwareGet("100doc/milestones", jwt).then(resp => {
+                if (isResponseOk(resp)) {
+                    return resp.data;
+                }
+            });
+            if (milestones) {
+                compareWithLocalMilestones(milestones);
             }
-        });
-        if (milestones) {
-            compareWithLocalMilestones(milestones);
         }
     }
 }
@@ -170,22 +176,26 @@ export function pushMilestonesToDb(date: number, milestones: Array<number>) {
 }
 
 export async function pushNewMilestones() {
-    let available = false;
-    try {
-        available = await serverIsAvailable();
-    } catch (err) {
-        available = false;
-    }
-    if (available) {
-        const jwt = getSoftwareSessionAsJson()["jwt"];
-        const resp = await softwarePost("100doc/milestones", toCreateMilestones, jwt);
-        const added: boolean = isResponseOk(resp);
-        if (!added) {
-            sentMilestonesDb = false;
+    const jwt = getSoftwareSessionAsJson()["jwt"];
+    if (jwt) {
+        let available = false;
+        try {
+            available = await serverIsAvailable();
+        } catch (err) {
+            available = false;
+        }
+        if (available) {
+            const resp = await softwarePost("100doc/milestones", toCreateMilestones, jwt);
+            const added: boolean = isResponseOk(resp);
+            if (!added) {
+                sentMilestonesDb = false;
+            } else {
+                sentMilestonesDb = true;
+                toCreateMilestones = [];
+                return;
+            }
         } else {
-            sentMilestonesDb = true;
-            toCreateMilestones = [];
-            return;
+            sentMilestonesDb = false;
         }
     } else {
         sentMilestonesDb = false;
@@ -193,27 +203,31 @@ export async function pushNewMilestones() {
 }
 
 export async function pushUpdatedMilestones() {
-    // try to post new milestones before sending updated
-    // milestones as the edits might be on the non posted milestones
-    if (!sentMilestonesDb) {
-        await pushNewMilestones();
-    }
-    let available = false;
-    try {
-        available = await serverIsAvailable();
-    } catch (err) {
-        available = false;
-    }
-    if (available) {
-        const jwt = getSoftwareSessionAsJson()["jwt"];
-        const resp = await softwarePut("100doc/milestones", toUpdateMilestones, jwt);
-        const added: boolean = isResponseOk(resp);
-        if (!added) {
-            updatedMilestonesDb = false;
+    const jwt = getSoftwareSessionAsJson()["jwt"];
+    if (jwt) {
+        // try to post new milestones before sending updated
+        // milestones as the edits might be on the non posted milestones
+        if (!sentMilestonesDb) {
+            await pushNewMilestones();
+        }
+        let available = false;
+        try {
+            available = await serverIsAvailable();
+        } catch (err) {
+            available = false;
+        }
+        if (available) {
+            const resp = await softwarePut("100doc/milestones", toUpdateMilestones, jwt);
+            const added: boolean = isResponseOk(resp);
+            if (!added) {
+                updatedMilestonesDb = false;
+            } else {
+                updatedMilestonesDb = true;
+                toUpdateMilestones = [];
+                return;
+            }
         } else {
-            updatedMilestonesDb = true;
-            toUpdateMilestones = [];
-            return;
+            updatedMilestonesDb = false;
         }
     } else {
         updatedMilestonesDb = false;

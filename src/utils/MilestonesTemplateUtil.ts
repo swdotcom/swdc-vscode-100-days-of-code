@@ -55,7 +55,7 @@ export function getUpdatedMilestonesHtmlString(): string {
         const level: number = milestone.level;
         const achieved: boolean = milestone.achieved;
         const shareIcon: string = milestone.shared
-            ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/alreadyShared.svg"
+            ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/checkedShare.svg"
             : sharePath;
 
         let icon: string;

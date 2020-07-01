@@ -53,40 +53,41 @@ export function checkLogsPayload() {
 
 export async function fetchLogs() {
     const jwt = getSoftwareSessionAsJson()["jwt"];
-    const dateNow = new Date();
-    let available = false;
-    try {
-        available = await serverIsAvailable();
-    } catch (err) {
-        available = false;
-    }
-    if (available) {
-        const logs = await softwareGet("/100doc/logs", jwt).then(resp => {
-            if (isResponseOk(resp)) {
-                const rawLogs = resp.data;
-                let logs: Array<Log> = [];
-                rawLogs.forEach((element: any) => {
-                    let log = new Log();
-                    log.title = element.title;
-                    log.description = element.description;
-                    log.day_number = element.day_number;
-                    log.codetime_metrics.hours = parseFloat((element.minutes / 60).toFixed(2));
-                    log.codetime_metrics.keystrokes = element.keystrokes;
-                    log.codetime_metrics.lines_added = element.lines_added;
-                    log.date = element.local_date * 1000; // seconds --> milliseconds
-                    log.links = element.ref_links;
-                    logs.push(log);
-                });
-                // sorts log in ascending order
-                logs.sort((a: Log, b: Log) => {
-                    return a.day_number - b.day_number;
-                });
-                return logs;
+    if (jwt) {
+        let available = false;
+        try {
+            available = await serverIsAvailable();
+        } catch (err) {
+            available = false;
+        }
+        if (available) {
+            const logs = await softwareGet("/100doc/logs", jwt).then(resp => {
+                if (isResponseOk(resp)) {
+                    const rawLogs = resp.data;
+                    let logs: Array<Log> = [];
+                    rawLogs.forEach((element: any) => {
+                        let log = new Log();
+                        log.title = element.title;
+                        log.description = element.description;
+                        log.day_number = element.day_number;
+                        log.codetime_metrics.hours = parseFloat((element.minutes / 60).toFixed(2));
+                        log.codetime_metrics.keystrokes = element.keystrokes;
+                        log.codetime_metrics.lines_added = element.lines_added;
+                        log.date = element.local_date * 1000; // seconds --> milliseconds
+                        log.links = element.ref_links;
+                        logs.push(log);
+                    });
+                    // sorts log in ascending order
+                    logs.sort((a: Log, b: Log) => {
+                        return a.day_number - b.day_number;
+                    });
+                    return logs;
+                }
+            });
+            if (logs) {
+                compareWithLocalLogs(logs);
+                // exits out in the next iteration
             }
-        });
-        if (logs) {
-            compareWithLocalLogs(logs);
-            // exits out in the next iteration
         }
     }
 }
@@ -112,21 +113,25 @@ export async function pushNewLogs(addNew: boolean) {
         };
         toCreateLogs.push(sendLog);
     }
-    let available = false;
-    try {
-        available = await serverIsAvailable();
-    } catch (err) {
-        available = false;
-    }
-    if (available) {
-        const jwt = getSoftwareSessionAsJson()["jwt"];
-        const resp = await softwarePost("100doc/logs", toCreateLogs, jwt);
-        const added: boolean = isResponseOk(resp);
-        if (!added) {
-            sentLogsDb = false;
+    const jwt = getSoftwareSessionAsJson()["jwt"];
+    if (jwt) {
+        let available = false;
+        try {
+            available = await serverIsAvailable();
+        } catch (err) {
+            available = false;
+        }
+        if (available) {
+            const resp = await softwarePost("100doc/logs", toCreateLogs, jwt);
+            const added: boolean = isResponseOk(resp);
+            if (!added) {
+                sentLogsDb = false;
+            } else {
+                sentLogsDb = true;
+                toCreateLogs = [];
+            }
         } else {
-            sentLogsDb = true;
-            toCreateLogs = [];
+            sentLogsDb = false;
         }
     } else {
         sentLogsDb = false;
@@ -166,20 +171,24 @@ export async function pushUpdatedLogs(addNew: boolean, dayNumber: number) {
             updatedLogsDb = false;
         }
     }
-    let available = false;
-    try {
-        available = await serverIsAvailable();
-    } catch (err) {
-        available = false;
-    }
-    if (available) {
-        const jwt = getSoftwareSessionAsJson()["jwt"];
-        const added: boolean = isResponseOk(await softwarePut("100doc/logs", toUpdateLogs, jwt));
-        if (!added) {
-            updatedLogsDb = false;
+    const jwt = getSoftwareSessionAsJson()["jwt"];
+    if (jwt) {
+        let available = false;
+        try {
+            available = await serverIsAvailable();
+        } catch (err) {
+            available = false;
+        }
+        if (available) {
+            const added: boolean = isResponseOk(await softwarePut("100doc/logs", toUpdateLogs, jwt));
+            if (!added) {
+                updatedLogsDb = false;
+            } else {
+                updatedLogsDb = true;
+                toUpdateLogs = [];
+            }
         } else {
-            updatedLogsDb = true;
-            toUpdateLogs = [];
+            updatedLogsDb = false;
         }
     } else {
         updatedLogsDb = false;
