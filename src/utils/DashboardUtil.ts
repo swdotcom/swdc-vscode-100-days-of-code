@@ -285,8 +285,7 @@ function getMilestonesHtml(recent_milestones: Array<number>): string {
             milestoneHtml += [
                 `\t\t\t\t<div class="milestoneCard">`,
                 `\t\t\t\t\t<img class="logo"`,
-                `\t\t\t\t\tsrc="${milestone.icon}"`,
-                `\t\t\t\t\talt="Connect internet to view this really cool logo!">`,
+                `\t\t\t\t\tsrc="${milestone.icon}">`,
                 `\t\t\t\t\t<div class="milestoneData">`,
                 `\t\t\t\t\t\t<div class="milestoneTitle">${milestone.title}</div>`,
                 `\t\t\t\t\t\t<div class="milestoneDesc">${milestone.description}</div>`,

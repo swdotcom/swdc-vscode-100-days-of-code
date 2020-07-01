@@ -77,7 +77,7 @@ export function getUpdatedMilestonesHtmlString(): string {
         if (achieved) {
             icon = milestone.icon;
             dateAchieved = milestone.date_achieved;
-            shareHtml = `\t\t\t<a href="${shareLink}" title="Share this on Twitter"><img src="${shareIcon}" class="milestoneShare"/></a>`;
+            shareHtml = `\t\t\t<a href="${shareLink}" title="Share this on Twitter"><img src="${shareIcon}" class="milestoneShare" alt="Share"/></a>`;
 
             // getting date in mm/dd/yyyy format
             let dateOb = new Date(dateAchieved);
@@ -108,7 +108,7 @@ export function getUpdatedMilestonesHtmlString(): string {
             `${levelHtml}`,
             `${shareHtml}`,
             `\t\t\t<div class="milestoneTitle">${title}</div>`,
-            `\t\t\t<img class="logo" src=${icon} alt="Connect internet to view this really cool logo!">`,
+            `\t\t\t<img class="logo" src=${icon} alt="Icon">`,
             `\t\t\t<div class="milestoneDesc">${description}</div>`,
             `${dateHtml}`,
             `\t\t</div>\n`
@@ -130,7 +130,7 @@ export function getUpdatedMilestonesHtmlString(): string {
     // If no milestones earned today
     if (recents === "") {
         recents += `\n\t\t<h2>Today's Milestones</h2>\n`;
-        recents += `\t\t<div class="noMilestones">No Milestones in the Past 24 hours</div>\n`;
+        recents += `\t\t<div class="noMilestones">No new Milestones today</div>\n`;
     }
 
     const templateVars = {
