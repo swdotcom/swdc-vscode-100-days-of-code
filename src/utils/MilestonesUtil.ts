@@ -540,3 +540,25 @@ export function getAllMilestones(): Array<any> {
     let milestones = JSON.parse(rawMilestones).milestones;
     return milestones;
 }
+
+export function getThreeMostRecentMilestones(): Array<number> {
+    let milestones: Array<any> = getAllMilestones();
+    milestones.sort((a: any, b: any) => {
+        // sorting in descending order of date_achieved
+        if (a.achieved && b.achieved) {
+            return b.date_achieved - a.date_achieved;
+        } else if (a.achieved) {
+            return -1;
+        } else if (b.achieved) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+    let sendMilestones: Array<number> = [];
+    const rawSendMilestones = milestones.slice(0, 3);
+    rawSendMilestones.forEach((milestone: any) => {
+        sendMilestones.push(milestone.id);
+    });
+    return sendMilestones;
+}

@@ -13,6 +13,7 @@ import { getUpdatedDashboardHtmlString, getCertificateHtmlString } from "./Dashb
 import { displayReadmeIfNotExists } from "./Util";
 import { getUpdatedMilestonesHtmlString } from "./MilestonesTemplateUtil";
 import { getUpdatedLogsHtml } from "./LogsTemplateUtil";
+import { reevaluateSummary } from "./SummaryUtil";
 const fs = require("fs");
 
 export function createCommands(): { dispose: () => void } {
@@ -79,6 +80,7 @@ export function createCommands(): { dispose: () => void } {
                                 dayUpdate.links,
                                 dayUpdate.hours
                             );
+                            reevaluateSummary();
                             break;
                         case "addLog":
                             if (currentPanel) {
@@ -272,6 +274,7 @@ export function createCommands(): { dispose: () => void } {
                                 checkDaysMilestones();
                                 currentPanel.dispose();
                                 commands.executeCommand("DoC.viewLogs");
+                                reevaluateSummary();
                             }
                             break;
                     }

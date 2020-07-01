@@ -156,17 +156,16 @@ function getAvgHoursLevelTooltipText(level: number): string {
 }
 
 function generateShareUrl(days: number, hours: number, streaks: number, milestones: number, avgHours: number): string {
+    const hashtagURI = "%23";
     const shareText = [
-        `My 100 Days Of Code Progress:`,
-        `Days: ${days}`,
-        `Total Hours: ${hours} hrs`,
+        `\nDays: ${days}`,
+        `Total Hours Coded: ${hours} hrs`,
         `Longest Streak: ${streaks} days`,
         `Milestones Earned: ${milestones}`,
-        `Avg Hours/Day: ${avgHours} hrs\n`,
-        `Data supplied from @software_hq’s 100 Days Of Code VScode plugin`
+        `Avg Hours/Day: ${avgHours} hrs\n`
     ].join("\n");
     const shareURI = encodeURI(shareText);
-    return `https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.software.com%2F100-days-of-code&text=${shareURI}&hashtags=100DaysOfCode`;
+    return `https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.software.com%2F100-days-of-code&text=My%20${hashtagURI}100DaysOfCode%20Progress:${shareURI}I%27m%20using%20@software_hq%27s%20${hashtagURI}100DaysOfCode%20${hashtagURI}vscode%20extension`;
 }
 
 function getStyleColorsBasedOnMode(): any {
