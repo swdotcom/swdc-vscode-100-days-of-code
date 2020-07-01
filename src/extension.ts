@@ -9,7 +9,7 @@ import {
     checkDaysMilestones
 } from "./utils/MilestonesUtil";
 import { checkLogsJson, updateLogsMilestonesAndMetrics } from "./utils/LogsUtil";
-import { checkSummaryJson } from "./utils/SummaryUtil";
+import { checkSummaryJson, reevaluateSummary } from "./utils/SummaryUtil";
 import {
     checkMilestonesPayload,
     sentMilestonesDb,
@@ -91,6 +91,7 @@ export async function initializePlugin() {
     checkCodeTimeMetricsMilestonesAchieved();
     checkLanguageMilestonesAchieved();
     checkDaysMilestones();
+    reevaluateSummary();
 
     // sets interval jobs
     initializeIntervalJobs();

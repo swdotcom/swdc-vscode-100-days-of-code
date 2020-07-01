@@ -174,6 +174,7 @@ export async function compareWithLocalLogs(logs: Array<Log>) {
             } catch (err) {
                 console.log(err);
             }
+            reevaluateSummary();
         }
     }
 }

@@ -5,7 +5,7 @@ import { getMostRecentLogObject, checkIfOnStreak, getLogsSummary } from "./LogsU
 import { getLanguages } from "./LanguageUtil";
 import { Summary } from "../models/Summary";
 import { Log } from "../models/Log";
-import { getTotalMilestonesAchieved } from "./MilestonesUtil";
+import { getTotalMilestonesAchieved, getThreeMostRecentMilestones } from "./MilestonesUtil";
 
 function getSummaryJson() {
     let file = getSoftwareDir();
@@ -92,6 +92,7 @@ export function reevaluateSummary() {
     summary.longest_streak = aggregateLogData.longest_streak;
     summary.current_streak = aggregateLogData.current_streak;
     summary.milestones = totalMilestones;
+    summary.recent_milestones = getThreeMostRecentMilestones();
 
     const filepath = getSummaryJson();
     try {
