@@ -4,7 +4,7 @@
     "description": "100 Days of Code helps you reach your goals and complete the #100DaysOfCode Challenge.",
     "version": "0.1.0",
     "publisher": "softwaredotcom",
-    "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/100DocLogo.gif",
+    "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/100-days-of-code-icon.png",
     "scripts": {
         "vscode:prepublish": "yarn run compile",
         "compile": "tsc -p ./",
