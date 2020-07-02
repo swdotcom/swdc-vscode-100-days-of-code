@@ -38,7 +38,7 @@ The 100 Days of Code is a coding challenge created by [Alexander Kallaway](https
 
 Tens of thousands of developers from around the world have taken on this challenge. Whether you are learning to code or an experienced developer, everyone—of any skill level—can participate in the 100 Days of Code challenge.
 
-We want to do our part to make your experience a little easier (and more fun too!). To get a complete overview of the challenge and why you should join the community, visit the [100 Days of Code official website](https://www.100daysofcode.com/) or check out our [Essential Guide to the 100 Days of Code](https://www.software.com/src/essential-guide-to-the-100-days-of-code-challenge).
+We want to do our part to make your experience a little easier (and more fun too!). To get a complete overview of the challenge and why you should join the community, visit the [100 Days of Code official website](https://www.100daysofcode.com/), or check out our [Essential Guide to the 100 Days of Code](https://www.software.com/src/essential-guide-to-the-100-days-of-code-challenge).
 
 <br>
 
@@ -48,7 +48,7 @@ We want to do our part to make your experience a little easier (and more fun too
 
 -   **Collect milestones**: Work toward milestones while coding and unlock badges for your accomplishments along the way.
 
--   **Build your dashboard**: Quickly view your overall milestone progress, recent logs and overall code time throughout the challenge.
+-   **Build your dashboard**: Quickly view your overall milestone progress, recent logs, and overall code time throughout the challenge.
 
 -   **Share your progress**: Easily share your logs and milestones to Twitter.
 
@@ -68,7 +68,7 @@ Logs are journal entries for your 100 Days of Code challenge to help you stay on
     <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/Add+Log+Navigation.png" alt="Navigate to add log page for 100 Days of Code" />
 </p>
 
-Open the Code Time view in the sidebar and navigate to 100 Days of Code section. Open the **Add Log** page by clicking **View Logs**. Click the **Add Log** link at the top of new window.
+Open the Code Time view in the sidebar and navigate to 100 Days of Code section. Open the **Add Log** page by clicking **View Logs**. Click the **Add Log** link at the top of the new window.
 
 You can only add one log entry per day. Any coding metrics (like code time) recorded after you submit your log entry will be automatically updated in the log. The title, description, and links for any log entry can be edited at any time.
 
@@ -102,11 +102,13 @@ Milestones are fun, shareable badges that you can earn during the #100DaysOfCode
 
 To open the **Milestones** view, click **View Milestones** below the **View Logs** link in the Code Time view of your editor's sidebar.
 
+Milestones are divided into six levels of difficulty. You should complete the level one Milestones within the first few days, the level five Milestones should be completed by the end of the challenge, and the level 6 Milestones are for those who are looking for a little more when the challenge has been completed.
+
 <br>
 
 ### **4. View Dashboard**
 
-The **Dashboard** helps you visualize your progress during the challenge. You can view your aggregate code metrics for the challenge, your most recent Logs and Milestones, and a graph of your code time throughout the challenge.
+The **Dashboard** helps you visualize your progress during the challenge. You can view your aggregated code metrics for the challenge, your most recent Logs and Milestones, and a graph of your code time throughout the challenge.
 
 <p align="center" style="margin: 0 10%">
   <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/Dashboard+Page.png" alt="View Dashboard page for 100 Days of Code" />
@@ -118,7 +120,7 @@ To navigate to the dashboard, click the **View Dashboard** button in the 100 Day
 
 ### **5. Share your progress**
 
-To be a part of the community, it's important to share you progress during the 100 Days of Code challenge. Even minor progress is progress, and we encourage you to share something every day.
+To be a part of the community, it's important to share your progress during the 100 Days of Code challenge. Even minor progress is progress, and we encourage you to share something every day.
 
 <p align="center" style="margin: 0 10%">
   <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/First+Day+Full+Tweet.png" alt="Share log to Twitter for 100 Days of Code" />
