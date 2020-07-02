@@ -68,13 +68,7 @@ export function compareLocalSummary(dbSummary: any) {
         summary.languages =
             dbSummary.languages.length > summary.languages.length ? dbSummary.languages : summary.languages;
 
-        const filepath = getSummaryJson();
-        try {
-            fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
-        } catch (err) {
-            console.log(err);
-            return;
-        }
+        writeToSummaryJson(summary);
     }
 }
 
@@ -96,13 +90,7 @@ export function reevaluateSummary() {
     summary.milestones = totalMilestones;
     summary.recent_milestones = getThreeMostRecentMilestones();
 
-    const filepath = getSummaryJson();
-    try {
-        fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
-    } catch (err) {
-        console.log(err);
-        return;
-    }
+    writeToSummaryJson(summary);
 }
 
 export function updateSummaryJson() {
@@ -143,13 +131,7 @@ export function updateSummaryJson() {
     summary.languages = reducedLanguages;
 
     summary.lastUpdated = new Date().getTime();
-    const filepath = getSummaryJson();
-    try {
-        fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
-    } catch (err) {
-        console.log(err);
-        return;
-    }
+    writeToSummaryJson(summary);
 }
 
 export function updateSummaryMilestones(newMilestones: Array<number>, totalMilestones: number) {
@@ -163,13 +145,7 @@ export function updateSummaryMilestones(newMilestones: Array<number>, totalMiles
         summary.recent_milestones.pop();
     }
     summary.lastUpdated = new Date().getTime();
-    const filepath = getSummaryJson();
-    try {
-        fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
-    } catch (err) {
-        console.log(err);
-        return;
-    }
+    writeToSummaryJson(summary);
 }
 
 export function getSummaryTotalHours() {
@@ -180,25 +156,13 @@ export function getSummaryTotalHours() {
 export function setSummaryTotalHours(newHours: number) {
     let summary = getSummaryObject();
     summary.hours = newHours;
-    const filepath = getSummaryJson();
-    try {
-        fs.writeFileSync(getSummaryJson(), JSON.stringify(summary, null, 4));
-    } catch (err) {
-        console.log(err);
-        return;
-    }
+    writeToSummaryJson(summary);
 }
 
 export function setSummaryCurrentHours(newCurrentHours: number) {
     let summary = getSummaryObject();
     summary.currentHours = newCurrentHours;
-    const filepath = getSummaryJson();
-    try {
-        fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
-    } catch (err) {
-        console.log(err);
-        return;
-    }
+    writeToSummaryJson(summary);
 }
 
 export function updateSummaryLanguages() {
@@ -210,25 +174,13 @@ export function updateSummaryLanguages() {
     const reducedLanguages = Array.from(new Set(totalLanguages));
     summary.languages = reducedLanguages;
     summary.lastUpdated = new Date().getTime();
-    const filepath = getSummaryJson();
-    try {
-        fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
-    } catch (err) {
-        console.log(err);
-        return;
-    }
+    writeToSummaryJson(summary);
 }
 
 export function incrementSummaryShare() {
     const summary: Summary = getSummaryObject();
     summary.shares++;
-    const filepath = getSummaryJson();
-    try {
-        fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
-    } catch (err) {
-        console.log(err);
-        return;
-    }
+    writeToSummaryJson(summary);
 }
 
 export function getSummaryObject() {
@@ -333,5 +285,14 @@ export function getAverageHoursLevel(avgHour: number): number {
         return 1;
     } else {
         return 0;
+    }
+}
+
+function writeToSummaryJson(summary: Summary) {
+    const filepath = getSummaryJson();
+    try {
+        fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
+    } catch (err) {
+        console.log(err);
     }
 }
