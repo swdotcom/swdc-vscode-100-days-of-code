@@ -192,7 +192,7 @@
         for (let i = 0; i < shareButtons.length; i++) {
             shareButtons[i].addEventListener("click", function () {
                 var hiddenId = this.parentNode.parentNode.getElementsByClassName("hiddenId")[0].textContent;
-                this.src = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/checkedShare.svg";
+                this.src = "${this.shareCheckedPath}";
                 vscode.postMessage({ command: "incrementShare", value: hiddenId });
             });
         }

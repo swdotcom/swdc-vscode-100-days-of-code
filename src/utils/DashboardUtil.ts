@@ -173,15 +173,15 @@ function getStyleColorsBasedOnMode(): any {
 
     let cardTextColor = "#FFFFFF";
     let cardBackgroundColor = "rgba(255,255,255,0.05)";
-    let datagramXMinColor = "#FFFFFF";
+    let datagramXMinColor = "rgba(170,170,170,1)";
     let datagramBackground = "rgba(0,0,0,0);";
-    let cardToolTipColor = "rgba(109, 109, 109, .9)";
+    let cardToolTipColor = "rgba(109,109,109,0.9)";
     if (tempWindow.activeColorTheme.kind === 1) {
         cardTextColor = "#444444";
         cardBackgroundColor = "rgba(0,0,0,0.10)";
         datagramXMinColor = "#444444";
         datagramBackground = "rgba(0,0,0,0.10);";
-        cardToolTipColor = "rgba(165, 165, 165, .9)";
+        cardToolTipColor = "rgba(165,165,165,0.9)";
     }
     return { cardTextColor, cardBackgroundColor, datagramXMinColor, datagramBackground, cardToolTipColor };
 }

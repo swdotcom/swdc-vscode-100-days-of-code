@@ -25,20 +25,25 @@ function getStyleColorsBasedOnMode(): any {
     let cardBackgroundColor = "rgba(255,255,255,0.05)";
     let cardGrayedLevel = "#474747";
     let sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+    let shareCheckedPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/checkedShare.svg";
     if (tempWindow.activeColorTheme.kind === 1) {
         cardTextColor = "#444444";
         cardBackgroundColor = "rgba(0,0,0,0.10)";
         cardGrayedLevel = "#B5B5B5";
         sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shareLight.svg";
+        shareCheckedPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/checkedShareLight.svg";
     }
-    return { cardTextColor, cardBackgroundColor, cardGrayedLevel, sharePath };
+    return { cardTextColor, cardBackgroundColor, cardGrayedLevel, sharePath, shareCheckedPath };
 }
 
 export function getUpdatedMilestonesHtmlString(): string {
-    const { cardTextColor, cardBackgroundColor, cardGrayedLevel, sharePath } = getStyleColorsBasedOnMode();
-
-    // for calculating recents
-    const date = Date.now();
+    const {
+        cardTextColor,
+        cardBackgroundColor,
+        cardGrayedLevel,
+        sharePath,
+        shareCheckedPath
+    } = getStyleColorsBasedOnMode();
 
     const milestones = getAllMilestones();
 
@@ -54,9 +59,7 @@ export function getUpdatedMilestonesHtmlString(): string {
         const description: string = milestone.description;
         const level: number = milestone.level;
         const achieved: boolean = milestone.achieved;
-        const shareIcon: string = milestone.shared
-            ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/checkedShare.svg"
-            : sharePath;
+        const shareIcon: string = milestone.shared ? shareCheckedPath : sharePath;
 
         let icon: string;
         let dateAchieved: number = 0;
@@ -138,6 +141,7 @@ export function getUpdatedMilestonesHtmlString(): string {
         cardBackgroundColor,
         cardGrayedLevel,
         sharePath,
+        shareCheckedPath,
         recents,
         allMilestones
     };

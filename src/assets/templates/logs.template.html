@@ -623,8 +623,7 @@
                 const dayNumberValue = this.parentNode.parentNode.parentNode.firstChild.nextSibling.firstChild.nextSibling.innerHTML
                     .split(" ")[1]
                     .slice(0, -1);
-                this.firstChild.src =
-                    "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/checkedShare.svg";
+                this.firstChild.src = "${this.shareCheckedPath}";
                 console.log(this.firstChild);
                 vscode.postMessage({ command: "incrementShare", value: dayNumberValue });
             });

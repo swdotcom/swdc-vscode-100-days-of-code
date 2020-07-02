@@ -19,6 +19,7 @@ function getStyleColorsBasedOnMode(): any {
     let cardMetricBarSidesColor = "rgba(255,255,255,0.20)";
     let cardToolTipColor = "rgba(109, 109, 109, .9)";
     let sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+    let shareCheckedPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/checkedShare.svg";
     let dropDownPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Logs/dropDown.svg";
     let editLogCardColor = "#292929";
     if (tempWindow.activeColorTheme.kind === 1) {
@@ -27,6 +28,7 @@ function getStyleColorsBasedOnMode(): any {
         cardMetricBarSidesColor = "rgba(0,0,0,0.20)";
         cardToolTipColor = "rgba(165, 165, 165, .9)";
         sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shareLight.svg";
+        shareCheckedPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/checkedShareLight.svg";
         dropDownPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Logs/dropDownLight.svg";
         editLogCardColor = "#E5E5E5";
     }
@@ -36,6 +38,7 @@ function getStyleColorsBasedOnMode(): any {
         cardMetricBarSidesColor,
         cardToolTipColor,
         sharePath,
+        shareCheckedPath,
         dropDownPath,
         editLogCardColor
     };
@@ -286,8 +289,6 @@ function getLogCard(
 }
 
 export function getUpdatedLogsHtml(): string {
-    const logsExists = checkLogsJson();
-
     let logs: Array<Log> = getAllLogObjects();
 
     // if in light mode
@@ -297,13 +298,13 @@ export function getUpdatedLogsHtml(): string {
         cardMetricBarSidesColor,
         cardToolTipColor,
         sharePath,
+        shareCheckedPath,
         dropDownPath,
         editLogCardColor
     } = getStyleColorsBasedOnMode();
 
     // CSS
     let logsHtml = "";
-    let scriptHtml = "";
 
     let submittedLogToday: boolean;
     if (logs.length < 1 || (logs.length === 1 && !logs[0].day_number)) {
@@ -335,9 +336,7 @@ export function getUpdatedLogsHtml(): string {
 
             const formattedDate = getFormattedDate(day.date);
 
-            const shareIconLink = day.shared
-                ? "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/checkedShare.svg"
-                : sharePath;
+            const shareIconLink = day.shared ? shareCheckedPath : sharePath;
 
             logsHtml += getLogCard(day, formattedDate, twitterShareUrl, shareIconLink, dropDownPath);
         }
@@ -350,6 +349,7 @@ export function getUpdatedLogsHtml(): string {
         cardMetricBarSidesColor,
         cardToolTipColor,
         sharePath,
+        shareCheckedPath,
         dropDownPath,
         editLogCardColor
     };
