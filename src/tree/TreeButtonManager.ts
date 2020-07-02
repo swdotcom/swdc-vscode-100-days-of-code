@@ -18,27 +18,9 @@ export function getActionButton(
     return item;
 }
 
-// export function getSubmitFeedbackButton() {
-//     return getActionButton(
-//         "Submit feedback",
-//         "Send us an email at cody@software.com",
-//         "zoomtime.sendFeedback",
-//         "message.svg"
-//     );
-// }
-
 export function getDoCLearnMoreButton() {
     return getActionButton("Learn more", "View the Code Time Readme to learn more", "DoC.ViewReadme", "learn-more.svg");
 }
-
-// export function getLaunchSoftwareWebButton() {
-//     return getActionButton(
-//         "Launch Software.com",
-//         "Opens software.com in browser",
-//         "DoC.LaunchSoftwareWebsite",
-//         "sw-paw-circle.svg"
-//     );
-// }
 
 export function getDashboardButton() {
     return getActionButton("View Dashboard", "View Dashboard", "DoC.viewDashboard", "dashboard.svg");

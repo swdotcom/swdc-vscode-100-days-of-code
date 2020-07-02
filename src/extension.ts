@@ -8,7 +8,7 @@ import {
     checkLanguageMilestonesAchieved,
     checkDaysMilestones
 } from "./utils/MilestonesUtil";
-import { checkLogsJson, updateLogsMilestonesAndMetrics } from "./utils/LogsUtil";
+import { checkLogsJson, updateLogsMilestonesAndMetrics, getLatestLogEntryNumber } from "./utils/LogsUtil";
 import { checkSummaryJson, reevaluateSummary } from "./utils/SummaryUtil";
 import {
     checkMilestonesPayload,
@@ -31,6 +31,7 @@ import {
 } from "./utils/LogsDbUtils";
 import { pushSummaryToDb } from "./utils/SummaryDbUtil";
 import { displayReadmeIfNotExists } from "./utils/Util";
+import { commands } from "vscode";
 
 let one_minute_interval: NodeJS.Timeout;
 let five_minute_interval: NodeJS.Timeout;
@@ -59,6 +60,11 @@ export async function initializePlugin() {
 
     // Displays README on first launch
     displayReadmeIfNotExists();
+
+    // init condition
+    if (getLatestLogEntryNumber() <= 0) {
+        commands.executeCommand("DoC.revealTree");
+    }
 
     // try to send payloads that weren't sent
     // and fetch data from the db as well

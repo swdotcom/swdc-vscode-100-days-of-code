@@ -35,6 +35,12 @@ export function createCommands(): { dispose: () => void } {
     );
 
     cmds.push(
+        commands.registerCommand("DoC.revealTree", () => {
+            Doc100SftwProvider.revealTree();
+        })
+    );
+
+    cmds.push(
         commands.registerCommand("DoC.viewLogs", () => {
             if (currentPanel) {
                 if (currentPanel.title !== "Logs") {

@@ -45,9 +45,6 @@ export const connectDoCTreeView = (view: TreeView<TreeNode>) => {
                     // run the command
                     commands.executeCommand(item.command);
                 }
-            } else if (item.value) {
-                launchUrl(item.value);
-                commands.executeCommand("doctime.refreshTree");
             }
         }),
 
