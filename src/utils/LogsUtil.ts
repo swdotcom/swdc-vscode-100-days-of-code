@@ -60,6 +60,16 @@ export function getAllLogObjects(): Array<Log> {
     return [];
 }
 
+function writeToLogsJson(logs: Array<Log>) {
+    const sendLogs = { logs };
+    const filepath = getLogsJson();
+    try {
+        fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 export function getLogsSummary(): any {
     const logs: Array<Log> = getAllLogObjects();
     let totalHours = 0;
@@ -98,84 +108,67 @@ export function getLogsSummary(): any {
 }
 
 export function getDayNumberFromDate(dateUnix: number): number {
-    const exists = checkLogsJson();
-    if (exists) {
-        const filepath = getLogsJson();
-        const rawLogs = fs.readFileSync(filepath).toString();
-        const logs = JSON.parse(rawLogs).logs;
-
-        let date = new Date(dateUnix);
-        for (let log of logs) {
-            if (compareDates(new Date(log.date), date)) {
-                return log.day_number;
-            }
+    const logs = getAllLogObjects();
+    let date = new Date(dateUnix);
+    for (let log of logs) {
+        if (compareDates(new Date(log.date), date)) {
+            return log.day_number;
         }
     }
     return -1;
 }
 
 export async function compareWithLocalLogs(logs: Array<Log>) {
-    const exists = checkLogsJson();
-    if (exists) {
-        const logFilepath = getLogsJson();
-        let rawLogs = fs.readFileSync(logFilepath).toString();
-        let localLogs: Array<Log> = JSON.parse(rawLogs).logs;
-        let changed = false;
+    let localLogs: Array<Log> = getAllLogObjects();
+    let changed = false;
 
-        if (localLogs.length > logs.length) {
+    if (localLogs.length > logs.length) {
+        return mergeLocalLogs(localLogs, logs);
+    }
+
+    for (let i = 0; i < localLogs.length; i++) {
+        if (
+            logs[i].day_number !== localLogs[i].day_number ||
+            !compareDates(new Date(logs[i].date), new Date(localLogs[i].date))
+        ) {
             return mergeLocalLogs(localLogs, logs);
         }
-
-        for (let i = 0; i < localLogs.length; i++) {
-            if (
-                logs[i].day_number !== localLogs[i].day_number ||
-                !compareDates(new Date(logs[i].date), new Date(localLogs[i].date))
-            ) {
-                return mergeLocalLogs(localLogs, logs);
-            }
-            if (logs[i].title !== localLogs[i].title) {
-                localLogs[i].title = logs[i].title;
-                changed = true;
-            }
-            if (logs[i].description !== localLogs[i].description) {
-                localLogs[i].description = logs[i].description;
-                changed = true;
-            }
-            if (JSON.stringify(logs[i].links) !== JSON.stringify(localLogs[i].links)) {
-                localLogs[i].links = logs[i].links;
-                changed = true;
-            }
-            if (logs[i].codetime_metrics.hours > localLogs[i].codetime_metrics.hours) {
-                localLogs[i].codetime_metrics.hours = logs[i].codetime_metrics.hours;
-                changed = true;
-            }
-            if (logs[i].codetime_metrics.keystrokes > localLogs[i].codetime_metrics.keystrokes) {
-                localLogs[i].codetime_metrics.keystrokes = logs[i].codetime_metrics.keystrokes;
-                changed = true;
-            }
-            if (logs[i].codetime_metrics.lines_added > localLogs[i].codetime_metrics.lines_added) {
-                localLogs[i].codetime_metrics.lines_added = logs[i].codetime_metrics.lines_added;
-                changed = true;
-            }
-        }
-
-        if (localLogs.length < logs.length) {
-            for (let i = localLogs.length; i < logs.length; i++) {
-                logs[i].milestones = await fetchMilestonesByDate(logs[i].date);
-                localLogs.push(logs[i]);
-            }
+        if (logs[i].title !== localLogs[i].title) {
+            localLogs[i].title = logs[i].title;
             changed = true;
         }
-
-        if (changed) {
-            const sendLogs = { logs: localLogs };
-            try {
-                fs.writeFileSync(logFilepath, JSON.stringify(sendLogs, null, 4));
-            } catch (err) {
-                console.log(err);
-            }
-            reevaluateSummary();
+        if (logs[i].description !== localLogs[i].description) {
+            localLogs[i].description = logs[i].description;
+            changed = true;
         }
+        if (JSON.stringify(logs[i].links) !== JSON.stringify(localLogs[i].links)) {
+            localLogs[i].links = logs[i].links;
+            changed = true;
+        }
+        if (logs[i].codetime_metrics.hours > localLogs[i].codetime_metrics.hours) {
+            localLogs[i].codetime_metrics.hours = logs[i].codetime_metrics.hours;
+            changed = true;
+        }
+        if (logs[i].codetime_metrics.keystrokes > localLogs[i].codetime_metrics.keystrokes) {
+            localLogs[i].codetime_metrics.keystrokes = logs[i].codetime_metrics.keystrokes;
+            changed = true;
+        }
+        if (logs[i].codetime_metrics.lines_added > localLogs[i].codetime_metrics.lines_added) {
+            localLogs[i].codetime_metrics.lines_added = logs[i].codetime_metrics.lines_added;
+            changed = true;
+        }
+    }
+
+    if (localLogs.length < logs.length) {
+        for (let i = localLogs.length; i < logs.length; i++) {
+            logs[i].milestones = await fetchMilestonesByDate(logs[i].date);
+            localLogs.push(logs[i]);
+        }
+        changed = true;
+    }
+    if (changed) {
+        writeToLogsJson(localLogs);
+        reevaluateSummary();
     }
 }
 
@@ -230,12 +223,7 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
         logs[i].day_number = i + 1;
     }
 
-    const sendLogs = { logs };
-    try {
-        fs.writeFileSync(getLogsJson(), JSON.stringify(sendLogs, null, 4));
-    } catch (err) {
-        console.log(err);
-    }
+    writeToLogsJson(logs);
 
     // Updates the userSummary.json with the merged logs data
     reevaluateSummary();
@@ -295,57 +283,35 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
 }
 
 function checkIfDateExists(): boolean {
-    const exists = checkLogsJson();
-    if (exists) {
-        const dateNow = new Date();
-        const filepath = getLogsJson();
-        const rawLogs = fs.readFileSync(filepath).toString();
-        const logs = JSON.parse(rawLogs).logs;
+    const dateNow = new Date();
+    const logs = getAllLogObjects();
 
-        for (let i = logs.length - 1; i >= 0; i--) {
-            const dateOb = new Date(logs[i].date);
-            // Older date
-            if (dateNow.valueOf > dateOb.valueOf) {
-                return false;
-            }
+    for (let i = logs.length - 1; i >= 0; i--) {
+        const dateOb = new Date(logs[i].date);
+        // Older date
+        if (dateNow.valueOf > dateOb.valueOf) {
+            return false;
+        }
 
-            // Checking if date exists
-            if (compareDates(dateOb, dateNow)) {
-                return true;
-            }
+        // Checking if date exists
+        if (compareDates(dateOb, dateNow)) {
+            return true;
         }
     }
     return false;
 }
 
 export function setDailyMilestonesByDayNumber(dayNumber: number, newMilestones: Array<number>) {
-    const exists = checkLogsJson();
-    if (exists) {
-        const filepath = getLogsJson();
-        const rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
-        let log = logs[dayNumber - 1];
-        newMilestones = newMilestones.concat(log.milestones);
-        newMilestones = Array.from(new Set(newMilestones));
-        log.milestones = newMilestones;
-        const sendLogs = { logs };
-        try {
-            fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
-        } catch (err) {
-            console.log(err);
-        }
-    }
+    let logs = getAllLogObjects();
+    let log = logs[dayNumber - 1];
+    newMilestones = newMilestones.concat(log.milestones);
+    newMilestones = Array.from(new Set(newMilestones));
+    log.milestones = newMilestones;
+    writeToLogsJson(logs);
 }
 
 export function updateLogMilestonesByDates(dates: Array<number>) {
-    const exists = checkLogsJson();
-    if (!exists) {
-        console.log("Cannot open logs json");
-        return;
-    }
-    const filepath = getLogsJson();
-    const rawLogs = fs.readFileSync(filepath).toString();
-    let logs = JSON.parse(rawLogs).logs;
+    let logs = getAllLogObjects();
     for (let date of dates) {
         const dayNumber = getDayNumberFromDate(date);
         let allMilestonesFromDay: Array<number> = getMilestonesByDate(date);
@@ -367,12 +333,7 @@ export function updateLogMilestonesByDates(dates: Array<number>) {
         pushMilestonesToDb(date, milestones);
     }
 
-    const sendLogs = { logs };
-    try {
-        fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
-    } catch (err) {
-        console.log(err);
-    }
+    writeToLogsJson(logs);
 }
 
 export async function addLogToJson(
@@ -383,11 +344,6 @@ export async function addLogToJson(
     lines: string,
     links: Array<string>
 ) {
-    const exists = checkLogsJson();
-    if (!exists) {
-        console.log("error accessing json");
-        return;
-    }
     const dayNum = getLatestLogEntryNumber() + 1;
 
     if (dayNum === 0) {
@@ -395,9 +351,7 @@ export async function addLogToJson(
         return false;
     }
 
-    const filepath = getLogsJson();
-    const rawLogs = fs.readFileSync(filepath).toString();
-    let logs = JSON.parse(rawLogs);
+    let logs = getAllLogObjects();
 
     let codetimeMetrics = new CodetimeMetrics();
 
@@ -419,187 +373,119 @@ export async function addLogToJson(
         return updateLogByDate(log);
     }
 
-    logs.logs.push(log);
-    try {
-        fs.writeFileSync(filepath, JSON.stringify(logs, null, 4));
-    } catch (err) {
-        console.log(err);
-        return false;
-    }
+    logs.push(log);
+    writeToLogsJson(logs);
+
     updateSummaryJson();
     await pushNewLogs(true);
 }
 
 export function getLatestLogEntryNumber(): number {
-    const exists = checkLogsJson();
-    if (exists) {
-        const filepath = getLogsJson();
-        const rawLogs = fs.readFileSync(filepath).toString();
-        const logs = JSON.parse(rawLogs).logs;
-
-        return logs.length;
-    }
-    return -1;
+    const logs = getAllLogObjects();
+    return logs.length;
 }
 
-export function getMostRecentLogObject() {
-    const exists = checkLogsJson();
-    if (exists) {
-        const logFilepath = getLogsJson();
-        const rawLogs = fs.readFileSync(logFilepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
-
-        if (logs.length > 0) {
-            return logs[logs.length - 1];
-        } else {
-            return;
-        }
+export function getMostRecentLogObject(): Log | any {
+    let logs = getAllLogObjects();
+    if (logs.length > 0) {
+        return logs[logs.length - 1];
+    } else {
+        return;
     }
-    return;
 }
 
 export function getLogDateRange(): Array<number> {
-    const exists = checkLogsJson();
-    if (exists) {
-        const filepath = getLogsJson();
-        const rawLogs = fs.readFileSync(filepath).toString();
-        const logs = JSON.parse(rawLogs).logs;
-        let dates = [];
-        dates.push(logs[0].date);
-        dates.push(logs[logs.length - 1].date);
-        return dates;
-    } else {
-        let dates = new Array(2);
-        return dates;
-    }
+    const logs = getAllLogObjects();
+    let dates = [];
+    dates.push(logs[0].date);
+    dates.push(logs[logs.length - 1].date);
+    return dates;
 }
 
 export function getAllCodetimeHours(): Array<number> {
-    const exists = checkLogsJson();
-    if (exists) {
-        const filepath = getLogsJson();
-        const rawLogs = fs.readFileSync(filepath).toString();
-        const logs = JSON.parse(rawLogs).logs;
-
-        let sendHours: Array<number> = [];
-        for (let i = 0; i < logs.length; i++) {
-            if (logs[i].day_number) {
-                sendHours.push(logs[i].codetime_metrics.hours);
-            }
+    const logs = getAllLogObjects();
+    let sendHours: Array<number> = [];
+    for (let i = 0; i < logs.length; i++) {
+        if (logs[i].day_number) {
+            sendHours.push(logs[i].codetime_metrics.hours);
         }
-        return sendHours;
     }
-    return [];
+    return sendHours;
 }
 
 export function getLastSevenLoggedDays(): Array<Log> {
-    const exists = checkLogsJson();
-    if (exists) {
-        const filepath = getLogsJson();
-        const rawLogs = fs.readFileSync(filepath).toString();
-        const logs = JSON.parse(rawLogs).logs;
+    const logs = getAllLogObjects();
 
-        let sendLogs = [];
-        if (logs[logs.length - 1].title !== "No Title") {
-            sendLogs.push(logs[logs.length - 1]);
-        }
-        for (let i = logs.length - 2; i >= 0; i--) {
-            if (logs[i].day_number) {
-                sendLogs.push(logs[i]);
-                if (sendLogs.length === 7) {
-                    return sendLogs;
-                }
+    let sendLogs = [];
+    if (logs[logs.length - 1].title !== "No Title") {
+        sendLogs.push(logs[logs.length - 1]);
+    }
+    for (let i = logs.length - 2; i >= 0; i--) {
+        if (logs[i].day_number) {
+            sendLogs.push(logs[i]);
+            if (sendLogs.length === 7) {
+                return sendLogs;
             }
         }
-        return sendLogs;
     }
-    return [];
+    return sendLogs;
 }
 
 export function checkIfOnStreak(): boolean {
-    const exists = checkLogsJson();
-    if (exists) {
-        const filepath = getLogsJson();
-        const rawLogs = fs.readFileSync(filepath).toString();
-        const logs = JSON.parse(rawLogs).logs;
-        // one day streak
-        if (logs.length < 2) {
-            return true;
-        }
-        const currDate = new Date(logs[logs.length - 1].date);
-        const prevDatePlusDay = new Date(logs[logs.length - 2].date + 86400000);
-        return compareDates(currDate, prevDatePlusDay);
+    const logs = getAllLogObjects();
+    // one day streak
+    if (logs.length < 2) {
+        return true;
     }
-    return false;
+    const currDate = new Date(logs[logs.length - 1].date);
+    const prevDatePlusDay = new Date(logs[logs.length - 2].date + 86400000);
+    return compareDates(currDate, prevDatePlusDay);
 }
 
 export async function updateLogByDate(log: Log) {
-    const exists = checkLogsJson();
-    if (exists) {
-        const logDate = new Date(log.date);
-        const filepath = getLogsJson();
-        const rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
+    const logDate = new Date(log.date);
+    let logs = getAllLogObjects();
+    const dateExists = checkIfDateExists();
+    if (!dateExists) {
+        addLogToJson(
+            log.title,
+            log.description,
+            log.codetime_metrics.hours.toString(),
+            log.codetime_metrics.keystrokes.toString(),
+            log.codetime_metrics.lines_added.toString(),
+            log.links
+        );
+        return;
+    }
 
-        const dateExists = checkIfDateExists();
-        if (!dateExists) {
-            addLogToJson(
-                log.title,
-                log.description,
-                log.codetime_metrics.hours.toString(),
-                log.codetime_metrics.keystrokes.toString(),
-                log.codetime_metrics.lines_added.toString(),
-                log.links
-            );
+    for (let i = logs.length - 1; i >= 0; i--) {
+        const dateOb = new Date(logs[i].date);
+
+        // Checking if date matches
+        if (compareDates(dateOb, logDate)) {
+            logs[i].title = log.title;
+            logs[i].description = log.description;
+            logs[i].links = log.links;
+            logs[i].date = log.date;
+            logs[i].codetime_metrics.keystrokes = log.codetime_metrics.keystrokes;
+            logs[i].codetime_metrics.lines_added = log.codetime_metrics.lines_added;
+            // If user added extra hours, we don't want to reduce those
+            logs[i].codetime_metrics.hours = Math.max(logs[i].codetime_metrics.hours, log.codetime_metrics.hours);
+
+            writeToLogsJson(logs);
+            await pushUpdatedLogs(true, logs[i].day_number);
             return;
-        }
-
-        for (let i = logs.length - 1; i >= 0; i--) {
-            const dateOb = new Date(logs[i].date);
-
-            // Checking if date matches
-            if (compareDates(dateOb, logDate)) {
-                logs[i].title = log.title;
-                logs[i].description = log.description;
-                logs[i].links = log.links;
-                logs[i].date = log.date;
-                logs[i].codetime_metrics.keystrokes = log.codetime_metrics.keystrokes;
-                logs[i].codetime_metrics.lines_added = log.codetime_metrics.lines_added;
-                // If user added extra hours, we don't want to reduce those
-                logs[i].codetime_metrics.hours = Math.max(logs[i].codetime_metrics.hours, log.codetime_metrics.hours);
-                const sendLogs = { logs };
-
-                try {
-                    fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
-                } catch (err) {
-                    console.log(err);
-                    return;
-                }
-                await pushUpdatedLogs(true, logs[i].day_number);
-                return;
-            }
         }
     }
 }
 
 export function updateLogShare(day: number) {
-    const exists = checkLogsJson();
-    if (exists) {
-        const filepath = getLogsJson();
-        let rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
-
-        if (!logs[day - 1].shared) {
-            logs[day - 1].shared = true;
-            incrementSummaryShare();
-            checkSharesMilestones();
-            const sendLogs = { logs };
-            try {
-                fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
-            } catch (err) {
-                console.log(err);
-            }
-        }
+    let logs = getAllLogObjects();
+    if (!logs[day - 1].shared) {
+        logs[day - 1].shared = true;
+        incrementSummaryShare();
+        checkSharesMilestones();
+        writeToLogsJson(logs);
     }
 }
 
@@ -610,121 +496,92 @@ export async function editLogEntry(
     links: Array<string>,
     editedHours: number
 ) {
-    const exists = checkLogsJson();
-    if (exists) {
-        const filepath = getLogsJson();
-        const rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
-        let log = logs[dayNumber - 1];
-        log.title = title;
-        log.description = description;
-        log.links = links;
-        const currentLoggedHours = log.codetime_metrics.hours;
-        if (editedHours >= 0 && editedHours <= 12) {
-            log.codetime_metrics.hours = editedHours;
-        } else if (editedHours < 0) {
-            log.codetime_metrics.hours = 0;
-        } else {
-            log.codetime_metrics.hours = 12;
-        }
-        let summaryTotalHours = getSummaryTotalHours();
-        if (dayNumber === logs.length) {
-            setSummaryCurrentHours(editedHours);
-        } else {
-            summaryTotalHours -= currentLoggedHours;
-            summaryTotalHours += editedHours;
-            setSummaryTotalHours(summaryTotalHours);
-        }
-        const sendLogs = { logs };
-        try {
-            fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
-        } catch (err) {
-            console.log(err);
-            return;
-        }
-        await pushUpdatedLogs(true, dayNumber);
+    let logs = getAllLogObjects();
+    let log = logs[dayNumber - 1];
+    log.title = title;
+    log.description = description;
+    log.links = links;
+    const currentLoggedHours = log.codetime_metrics.hours;
+    if (editedHours >= 0 && editedHours <= 12) {
+        log.codetime_metrics.hours = editedHours;
+    } else if (editedHours < 0) {
+        log.codetime_metrics.hours = 0;
+    } else {
+        log.codetime_metrics.hours = 12;
     }
+    let summaryTotalHours = getSummaryTotalHours();
+    if (dayNumber === logs.length) {
+        setSummaryCurrentHours(editedHours);
+    } else {
+        summaryTotalHours -= currentLoggedHours;
+        summaryTotalHours += editedHours;
+        setSummaryTotalHours(summaryTotalHours);
+    }
+    writeToLogsJson(logs);
+    await pushUpdatedLogs(true, dayNumber);
 }
 
 export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
-    const exists = checkLogsJson();
-    if (exists) {
-        const metrics = getSessionCodetimeMetrics();
-        const logDate = new Date();
-        const filepath = getLogsJson();
-        const rawLogs = fs.readFileSync(filepath).toString();
-        let logs = JSON.parse(rawLogs).logs;
+    const metrics = getSessionCodetimeMetrics();
+    const logDate = new Date();
+    let logs = getAllLogObjects();
 
-        // if date doesn't exist, create a log with just milestones and a date
-        const dateExists = checkIfDateExists();
-        if (!dateExists) {
-            let log = new Log();
-            const dayNum = getLatestLogEntryNumber() + 1;
-            log.date = logDate.valueOf();
-            log.milestones = milestones;
-            log.codetime_metrics.hours = parseFloat((metrics.minutes / 60).toFixed(1));
-            log.codetime_metrics.keystrokes = metrics.keystrokes;
-            log.codetime_metrics.lines_added = metrics.linesAdded;
-            log.day_number = dayNum;
-            log.title = "No Title";
-            log.description = "No Description";
-            log.links = [""];
-            logs.push(log);
+    // if date doesn't exist, create a log with just milestones and a date
+    const dateExists = checkIfDateExists();
+    if (!dateExists) {
+        let log = new Log();
+        const dayNum = getLatestLogEntryNumber() + 1;
+        log.date = logDate.valueOf();
+        log.milestones = milestones;
+        log.codetime_metrics.hours = parseFloat((metrics.minutes / 60).toFixed(1));
+        log.codetime_metrics.keystrokes = metrics.keystrokes;
+        log.codetime_metrics.lines_added = metrics.linesAdded;
+        log.day_number = dayNum;
+        log.title = "No Title";
+        log.description = "No Description";
+        log.links = [""];
+        logs.push(log);
 
-            const sendLogs = { logs };
+        writeToLogsJson(logs);
+        updateSummaryJson();
+        await pushNewLogs(true);
+        return;
+    }
 
-            try {
-                fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
-            } catch (err) {
-                console.log(err);
-                return;
-            }
+    // date exists
+    for (let i = logs.length - 1; i >= 0; i--) {
+        const dateOb = new Date(logs[i].date);
+        // Checking if date matches
+        if (compareDates(dateOb, logDate)) {
+            // If user added extra hours, we don't want to reduce those
+            logs[i].codetime_metrics.hours = Math.max(
+                logs[i].codetime_metrics.hours,
+                parseFloat((metrics.minutes / 60).toFixed(1))
+            );
+            logs[i].codetime_metrics.keystrokes = metrics.keystrokes;
+            logs[i].codetime_metrics.lines_added = metrics.linesAdded;
+
+            logs[i].milestones = logs[i].milestones.concat(milestones);
+
+            writeToLogsJson(logs);
             updateSummaryJson();
-            await pushNewLogs(true);
-            return;
-        }
+            await pushUpdatedLogs(true, logs[i].day_number);
 
-        // date exists
-        for (let i = logs.length - 1; i >= 0; i--) {
-            const dateOb = new Date(logs[i].date);
-            // Checking if date matches
-            if (compareDates(dateOb, logDate)) {
-                // If user added extra hours, we don't want to reduce those
-                logs[i].codetime_metrics.hours = Math.max(
-                    logs[i].codetime_metrics.hours,
-                    parseFloat((metrics.minutes / 60).toFixed(1))
-                );
-                logs[i].codetime_metrics.keystrokes = metrics.keystrokes;
-                logs[i].codetime_metrics.lines_added = metrics.linesAdded;
-
-                logs[i].milestones = logs[i].milestones.concat(milestones);
-                const sendLogs = { logs };
-
-                try {
-                    fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
-                } catch (err) {
-                    console.log(err);
-                    return;
-                }
-                updateSummaryJson();
-                await pushUpdatedLogs(true, logs[i].day_number);
-
-                if (
-                    (!dateLogMessage || !compareDates(dateLogMessage, new Date())) &&
-                    logs[i].codetime_metrics.hours > 0.3 &&
-                    logs[i].title === "No Title"
-                ) {
-                    window
-                        .showInformationMessage("Don't forget to add and share today's log.", "Add Log")
-                        .then(selection => {
-                            dateLogMessage = new Date();
-                            if (selection === "Add Log") {
-                                commands.executeCommand("DoC.addLog");
-                            }
-                        });
-                }
-                return;
+            if (
+                (!dateLogMessage || !compareDates(dateLogMessage, new Date())) &&
+                logs[i].codetime_metrics.hours > 0.3 &&
+                logs[i].title === "No Title"
+            ) {
+                window
+                    .showInformationMessage("Don't forget to add and share today's log.", "Add Log")
+                    .then(selection => {
+                        dateLogMessage = new Date();
+                        if (selection === "Add Log") {
+                            commands.executeCommand("DoC.addLog");
+                        }
+                    });
             }
+            return;
         }
     }
 }

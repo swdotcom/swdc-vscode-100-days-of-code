@@ -18,6 +18,7 @@ function getSummaryJson() {
 }
 
 export function checkSummaryJson() {
+    const date = new Date();
     // checks if summary JSON exists. If not populates it with base values
     const filepath = getSummaryJson();
     try {
@@ -28,7 +29,7 @@ export function checkSummaryJson() {
                 filepath,
                 [
                     `{\n\t"days": 0,`,
-                    `\t"currentDate": 0,`,
+                    `\t"currentDate": ${date.valueOf()},`,
                     `\t"currentHours": 0,`,
                     `\t"currentKeystrokes": 0,`,
                     `\t"currentLines": 0,`,
@@ -85,7 +86,8 @@ export function reevaluateSummary() {
     const totalMilestones = getTotalMilestonesAchieved();
 
     let summary = getSummaryObject();
-    summary.hours = aggregateLogData.totalHours;
+    //aggregate hours has the total hours in the logs, we need to subtract the current day's hours because they are added at the end of the day.
+    summary.hours = aggregateLogData.totalHours - summary.currentHours;
     summary.lines_added = aggregateLogData.totalLinesAdded;
     summary.keystrokes = aggregateLogData.totalKeystrokes;
     summary.days = aggregateLogData.totalDays;
