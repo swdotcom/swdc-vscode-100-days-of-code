@@ -1,4 +1,4 @@
-import { Disposable, commands, window, TreeView, ViewColumn, WebviewPanel, Uri } from "vscode";
+import { Disposable, commands, window, TreeView, ViewColumn, WebviewPanel } from "vscode";
 import { TreeNode } from "../models/TreeNode";
 import { Tree100DoCProvider, connectDoCTreeView } from "../tree/Tree100DoCProvider";
 import { addLogToJson, editLogEntry, updateLogShare } from "./LogsUtil";
@@ -6,15 +6,14 @@ import {
     checkDaysMilestones,
     checkLanguageMilestonesAchieved,
     checkCodeTimeMetricsMilestonesAchieved,
-    updateMilestoneShare
+    updateMilestoneShare,
+    checkSharesMilestones
 } from "./MilestonesUtil";
 import { getUpdatedAddLogHtmlString } from "./addLogUtil";
 import { getUpdatedDashboardHtmlString, getCertificateHtmlString } from "./DashboardUtil";
 import { displayReadmeIfNotExists } from "./Util";
 import { getUpdatedMilestonesHtmlString } from "./MilestonesTemplateUtil";
 import { getUpdatedLogsHtml } from "./LogsTemplateUtil";
-import { reevaluateSummary } from "./SummaryUtil";
-const fs = require("fs");
 
 export function createCommands(): { dispose: () => void } {
     let cmds: any[] = [];
@@ -86,7 +85,6 @@ export function createCommands(): { dispose: () => void } {
                                 dayUpdate.links,
                                 dayUpdate.hours
                             );
-                            reevaluateSummary();
                             break;
                         case "addLog":
                             if (currentPanel) {
@@ -96,6 +94,7 @@ export function createCommands(): { dispose: () => void } {
                             break;
                         case "incrementShare":
                             updateLogShare(message.value);
+                            checkSharesMilestones();
                             break;
                     }
                 });
@@ -216,6 +215,7 @@ export function createCommands(): { dispose: () => void } {
                     switch (message.command) {
                         case "incrementShare":
                             updateMilestoneShare(message.value);
+                            checkSharesMilestones();
                             break;
                     }
                 });
@@ -280,7 +280,6 @@ export function createCommands(): { dispose: () => void } {
                                 checkDaysMilestones();
                                 currentPanel.dispose();
                                 commands.executeCommand("DoC.viewLogs");
-                                reevaluateSummary();
                             }
                             break;
                     }

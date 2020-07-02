@@ -23,7 +23,6 @@ import {
     toUpdateLogsPush
 } from "./LogsDbUtils";
 import { pushSummaryToDb } from "./SummaryDbUtil";
-
 let dateLogMessage: Date | any = undefined;
 
 export function getLogsJson(): string {
@@ -484,7 +483,6 @@ export function updateLogShare(day: number) {
     if (!logs[day - 1].shared) {
         logs[day - 1].shared = true;
         incrementSummaryShare();
-        checkSharesMilestones();
         writeToLogsJson(logs);
     }
 }
@@ -511,10 +509,10 @@ export async function editLogEntry(
     }
     let summaryTotalHours = getSummaryTotalHours();
     if (dayNumber === logs.length) {
-        setSummaryCurrentHours(editedHours);
+        setSummaryCurrentHours(log.codetime_metrics.hours);
     } else {
         summaryTotalHours -= currentLoggedHours;
-        summaryTotalHours += editedHours;
+        summaryTotalHours += log.codetime_metrics.hours;
         setSummaryTotalHours(summaryTotalHours);
     }
     writeToLogsJson(logs);

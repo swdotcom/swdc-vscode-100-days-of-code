@@ -127,15 +127,8 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
     let achievedMilestones = [];
     const summary: Summary = getSummaryObject();
 
-    // metrics of form [minutes, keystrokes, lines]
-    const codeTimeMetrics = getSessionCodetimeMetrics();
-
-    // prev code time users already have some metrics that
-    // need to be taken into account for the day
-    const onboarding = summary.days <= 1;
-
     // check for aggregate codetime
-    const aggHours = summary.hours + codeTimeMetrics.minutes / 60;
+    const aggHours = summary.hours + summary.currentHours;
     if (aggHours >= 200) {
         achievedMilestones.push(6, 5, 4, 3, 2, 1);
     } else if (aggHours >= 120) {
@@ -151,7 +144,7 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
     }
 
     // check for daily codetime. These will be given out daily
-    const dayHours = codeTimeMetrics.minutes / 60;
+    const dayHours = summary.currentHours;
     if (dayHours >= 10) {
         achievedMilestones.push(24, 23, 22, 21, 20, 19);
     } else if (dayHours >= 8) {
@@ -167,7 +160,7 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
     }
 
     // check for lines added
-    const lines = summary.lines_added + codeTimeMetrics.linesAdded;
+    const lines = summary.lines_added + summary.currentLines;
     if (lines >= 10000) {
         achievedMilestones.push(30, 29, 28, 27, 26, 25);
     } else if (lines >= 1000) {
@@ -183,7 +176,7 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
     }
 
     // check for keystrokes
-    const keystrokes = summary.keystrokes + codeTimeMetrics.keystrokes;
+    const keystrokes = summary.keystrokes + summary.currentKeystrokes;
     if (keystrokes >= 42195) {
         achievedMilestones.push(42, 41, 40, 39, 38, 37);
     } else if (keystrokes >= 21097) {
@@ -451,7 +444,6 @@ export function updateMilestoneShare(id: number): void {
         milestones[id - 1].shared = true;
         writeToMilestoneJson(milestones);
         incrementSummaryShare();
-        checkSharesMilestones();
     }
 }
 
