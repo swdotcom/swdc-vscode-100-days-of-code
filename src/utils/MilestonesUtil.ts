@@ -14,6 +14,7 @@ import { getSessionCodetimeMetrics } from "./MetricUtil";
 import { getLanguages } from "./LanguageUtil";
 import { pushMilestonesToDb } from "./MilestonesDbUtil";
 import { HOURS_THRESHOLD } from "./Constants";
+import { Milestone } from "../models/Milestone";
 
 function getMilestonesJson(): string {
     let file = getSoftwareDir();
@@ -355,7 +356,7 @@ function checkIdRange(id: number): boolean {
     return false;
 }
 
-export function getMilestoneById(id: number) {
+export function getMilestoneById(id: number): Milestone | any {
     if (!checkIdRange(id)) {
         return {};
     }
@@ -439,7 +440,7 @@ function achievedMilestonesJson(ids: Array<number>): void {
     }
 }
 
-export function updateMilestoneShare(id: number) {
+export function updateMilestoneShare(id: number): void {
     if (!checkIdRange(id)) {
         return;
     }
@@ -466,7 +467,7 @@ export function getTotalMilestonesAchieved(): number {
     return totalMilestonesAchieved;
 }
 
-export function getAllMilestones(): Array<any> {
+export function getAllMilestones(): Array<Milestone> {
     // Checks if the file exists and if not, creates a new file
     const exists = checkMilestonesJson();
     if (!exists) {
@@ -475,7 +476,7 @@ export function getAllMilestones(): Array<any> {
     }
     const filepath = getMilestonesJson();
     let rawMilestones = fs.readFileSync(filepath).toString();
-    let milestones = JSON.parse(rawMilestones).milestones;
+    let milestones: Array<Milestone> = JSON.parse(rawMilestones).milestones;
     return milestones;
 }
 
