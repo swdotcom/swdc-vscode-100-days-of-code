@@ -41,11 +41,6 @@ export function checkMilestonesJson(): boolean {
 }
 
 export function getMilestonesByDate(date: number): Array<number> {
-    const exists = checkMilestonesJson();
-    if (!exists) {
-        window.showErrorMessage("Cannot access Milestone file! Please contact cody@software.com for help.");
-    }
-
     // checks if date is sent is in the future
     const dateOb = new Date(date);
     const dateNowOb = new Date();
@@ -56,9 +51,7 @@ export function getMilestonesByDate(date: number): Array<number> {
 
     // finds milestones achieved on date give and returns them
     const sendMilestones: Array<number> = [];
-    const filepath = getMilestonesJson();
-    let rawMilestones = fs.readFileSync(filepath).toString();
-    let milestones = JSON.parse(rawMilestones).milestones;
+    let milestones = getAllMilestones();
     for (let i = 0; i < milestones.length; i++) {
         if (milestones[i].achieved && compareDates(new Date(milestones[i].date_achieved), dateOb)) {
             sendMilestones.push(milestones[i].id);
@@ -69,13 +62,7 @@ export function getMilestonesByDate(date: number): Array<number> {
 
 export function compareWithLocalMilestones(dbMilestones: any) {
     // goes through each milestone and updates based on db data
-    const exists = checkMilestonesJson();
-    if (!exists) {
-        return;
-    }
-    const filepath = getMilestonesJson();
-    let rawMilestones = fs.readFileSync(filepath).toString();
-    let milestones = JSON.parse(rawMilestones).milestones;
+    let milestones = getAllMilestones();
     let dates = [];
     for (let i = 0; i < dbMilestones.length; i++) {
         const dbMilestonesLocalDate = dbMilestones[i].local_date * 1000;
@@ -112,12 +99,7 @@ export function compareWithLocalMilestones(dbMilestones: any) {
     }
 
     if (dates.length > 0) {
-        const sendMilestones = { milestones };
-        try {
-            fs.writeFileSync(filepath, JSON.stringify(sendMilestones, null, 4));
-        } catch (err) {
-            console.log(err);
-        }
+        writeToMilestoneJson(milestones);
 
         // updates logs milestones
         updateLogMilestonesByDates(dates);
@@ -125,14 +107,8 @@ export function compareWithLocalMilestones(dbMilestones: any) {
 }
 
 export function checkIfMilestonesAchievedOnDate(date: number): boolean {
-    const exists = checkMilestonesJson();
-    if (!exists) {
-        return false;
-    }
     const dateData = new Date(date);
-    const filepath = getMilestonesJson();
-    let rawMilestones = fs.readFileSync(filepath).toString();
-    let milestones = JSON.parse(rawMilestones).milestones;
+    let milestones = getAllMilestones();
     let count = 0;
     for (let i = 0; i < milestones.length; i++) {
         if (milestones[i].achieved && compareDates(new Date(milestones[i].date_achieved), dateData)) {
@@ -375,41 +351,27 @@ function checkIdRange(id: number): boolean {
     if (id >= MIN_ID && id <= MAX_ID) {
         return true;
     }
+    window.showErrorMessage("Incorrect Milestone Id! Please contact cody@software.com for help.");
     return false;
 }
 
 export function getMilestoneById(id: number) {
-    const exists = checkMilestonesJson();
-    if (!exists) {
-        window.showErrorMessage("Cannot access Milestones file!");
-    }
     if (!checkIdRange(id)) {
-        window.showErrorMessage("Incorrect Milestone Id!");
         return {};
     }
-    const filepath = getMilestonesJson();
-    let rawMilestones = fs.readFileSync(filepath).toString();
-    let milestones = JSON.parse(rawMilestones).milestones;
+    let milestones = getAllMilestones();
     return milestones[id - 1];
 }
 
 function achievedMilestonesJson(ids: Array<number>): void {
-    const exists = checkMilestonesJson();
-    if (!exists) {
-        window.showErrorMessage("Cannot access Milestones file!");
-    }
-
     let updatedIds = [];
-    const filepath = getMilestonesJson();
-    let rawMilestones = fs.readFileSync(filepath).toString();
-    let milestones = JSON.parse(rawMilestones).milestones;
+    let milestones = getAllMilestones();
     const dateNow = new Date();
     for (let i = 0; i < ids.length; i++) {
         const id = ids[i];
 
         // Usually would never be triggered
         if (!checkIdRange(id)) {
-            window.showErrorMessage("Incorrect Milestone Id!");
             continue;
         }
 
@@ -449,8 +411,6 @@ function achievedMilestonesJson(ids: Array<number>): void {
     }
 
     if (updatedIds.length > 0) {
-        let sendMilestones = { milestones };
-
         // updates logs
         updateLogsMilestonesAndMetrics(updatedIds);
 
@@ -463,12 +423,8 @@ function achievedMilestonesJson(ids: Array<number>): void {
         }
         updateSummaryMilestones(updatedIds, totalMilestonesAchieved);
 
-        // update milestones file
-        try {
-            fs.writeFileSync(filepath, JSON.stringify(sendMilestones, null, 4));
-        } catch (err) {
-            console.log(err);
-        }
+        // write to milestones file
+        writeToMilestoneJson(milestones);
 
         // updates db
         pushMilestonesToDb(dateNow.valueOf(), updatedIds);
@@ -484,40 +440,22 @@ function achievedMilestonesJson(ids: Array<number>): void {
 }
 
 export function updateMilestoneShare(id: number) {
-    const exists = checkMilestonesJson();
-    if (!exists) {
-        window.showErrorMessage("Cannot access Milestones file!");
-    }
     if (!checkIdRange(id)) {
-        window.showErrorMessage("Incorrect Milestone Id!");
         return;
     }
-    const filepath = getMilestonesJson();
-    let rawMilestones = fs.readFileSync(filepath).toString();
-    let milestones = JSON.parse(rawMilestones).milestones;
+    let milestones = getAllMilestones();
 
     // check and update milestones if not shared
     if (!milestones[id - 1].shared) {
         milestones[id - 1].shared = true;
-        let sendMilestones = { milestones };
-        try {
-            fs.writeFileSync(filepath, JSON.stringify(sendMilestones, null, 4));
-        } catch (err) {
-            console.log(err);
-        }
+        writeToMilestoneJson(milestones);
         incrementSummaryShare();
         checkSharesMilestones();
     }
 }
 
 export function getTotalMilestonesAchieved(): number {
-    const exists = checkMilestonesJson();
-    if (!exists) {
-        return -1;
-    }
-    const filepath = getMilestonesJson();
-    const rawMilestones = fs.readFileSync(filepath).toString();
-    const milestones = JSON.parse(rawMilestones).milestones;
+    const milestones = getAllMilestones();
 
     let totalMilestonesAchieved = 0;
     for (let milestone of milestones) {
@@ -563,4 +501,14 @@ export function getThreeMostRecentMilestones(): Array<number> {
         }
     });
     return sendMilestones;
+}
+
+function writeToMilestoneJson(milestones: Array<any>) {
+    const filepath = getMilestonesJson();
+    let sendMilestones = { milestones };
+    try {
+        fs.writeFileSync(filepath, JSON.stringify(sendMilestones, null, 4));
+    } catch (err) {
+        console.log(err);
+    }
 }
