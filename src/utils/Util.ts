@@ -69,7 +69,7 @@ export function displayReadmeIfNotExists(override = false) {
     if (logsEmpty || override) {
         const readmeUri = Uri.file(getLocalREADMEFile());
 
-        commands.executeCommand("markdown.showPreview", readmeUri, ViewColumn.One);
+        commands.executeCommand("markdown.showPreview", readmeUri, ViewColumn.One, { locked: true });
     }
 }
 
@@ -109,7 +109,7 @@ export function displayLoginPromptIfNotLoggedIn() {
     if (!isLoggedIn()) {
         window
             .showInformationMessage(
-                "Please login with one of the following options to use the plugin ",
+                "Please login to use the 100 Days of Code plugin ",
                 {
                     modal: true
                 },

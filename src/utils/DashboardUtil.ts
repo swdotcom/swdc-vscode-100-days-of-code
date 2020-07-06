@@ -319,8 +319,10 @@ export function getUpdatedDashboardHtmlString(): string {
         if (streaks === currStreak) {
             streaks--;
         }
-        if (days === 0) {
+        if (days <= 0) {
             avgHours = 0;
+            days = 0;
+            streaks = 0;
         }
     }
 

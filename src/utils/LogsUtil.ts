@@ -415,7 +415,10 @@ export function getAllCodetimeHours(): Array<number> {
 export function getLastSevenLoggedDays(): Array<Log> {
     const logs = getAllLogObjects();
 
-    let sendLogs = [];
+    let sendLogs: Array<Log> = [];
+    if (logs.length === 0) {
+        return sendLogs;
+    }
     if (logs[logs.length - 1].title !== "No Title") {
         sendLogs.push(logs[logs.length - 1]);
     }
