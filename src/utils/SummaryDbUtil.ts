@@ -45,7 +45,7 @@ async function pushNewSummary() {
     }
 }
 
-async function pushUpdatedSummary() {
+export async function pushUpdatedSummary() {
     const summary: Summary = getSummaryObject();
 
     const toCreateSummary = {

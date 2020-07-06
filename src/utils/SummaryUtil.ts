@@ -6,6 +6,7 @@ import { getLanguages } from "./LanguageUtil";
 import { Summary } from "../models/Summary";
 import { Log } from "../models/Log";
 import { getTotalMilestonesAchieved, getThreeMostRecentMilestones } from "./MilestonesUtil";
+import { pushUpdatedSummary } from "./SummaryDbUtil";
 
 function getSummaryJson() {
     let file = getSoftwareDir();
@@ -76,6 +77,7 @@ export function compareLocalSummary(dbSummary: any) {
 
         writeToSummaryJson(summary);
     }
+    reevaluateSummary();
 }
 
 export function reevaluateSummary() {
@@ -99,6 +101,7 @@ export function reevaluateSummary() {
     summary.recent_milestones = getThreeMostRecentMilestones();
 
     writeToSummaryJson(summary);
+    pushUpdatedSummary();
 }
 
 export function updateSummaryJson() {
