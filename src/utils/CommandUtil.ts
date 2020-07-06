@@ -88,10 +88,12 @@ export function createCommands(): { dispose: () => void } {
                             );
                             break;
                         case "addLog":
-                            if (currentPanel) {
+                            if (currentPanel && isLoggedIn()) {
                                 currentPanel.dispose();
+                                commands.executeCommand("DoC.addLog");
+                            } else if (!isLoggedIn()) {
+                                displayLoginPromptIfNotLoggedIn();
                             }
-                            commands.executeCommand("DoC.addLog");
                             break;
                         case "incrementShare":
                             updateLogShare(message.value);
