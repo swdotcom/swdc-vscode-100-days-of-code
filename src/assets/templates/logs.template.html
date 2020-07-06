@@ -130,12 +130,12 @@
         		position: absolute;
         		background-color: rgba(0,0,0,0);
         		border-color: rgba(0,0,0,0);
-        		transform: translate(40px, -15px);
+        		transform: translate(40px, -20px);
         		margin: 5px;
         	}
         	.cardHeaderShareButtonIcon {
-        		width: 18px;
-        		height: 18px;
+        		width: 24px;
+        		height: 24px;
         	}
         	.cardHeaderDropDownButton {
         		cursor: pointer;
@@ -456,12 +456,12 @@
                     content.style.maxHeight = null;
                     dropDownIcon.style.transform = "rotate(180deg)";
                     editButton.style.visibility = "hidden";
-                    shareButton.style.transform = "translate(40px, -15px)";
+                    shareButton.style.transform = "translate(40px, -20px)";
                 } else {
                     content.style.maxHeight = content.scrollHeight + "px";
                     dropDownIcon.style.transform = "rotate(0deg)";
                     editButton.style.visibility = "visible";
-                    shareButton.style.transform = "translate(-48px, -15px)";
+                    shareButton.style.transform = "translate(-48px, -20px)";
                 }
             });
         }
@@ -523,10 +523,8 @@
                 let metricsText = document.getElementById("metricsText");
                 metricsText.innerHTML =
                     "You’ve logged " +
-                    hours +
-                    " hours, " +
                     keystrokes +
-                    " keystrokes, and " +
+                    " keystrokes and " +
                     linesAdded +
                     " lines of code based on our Code Time plugin.";
             });

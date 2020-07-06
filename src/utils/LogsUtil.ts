@@ -182,12 +182,26 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
     while (i < logs.length - 1) {
         if (compareDates(new Date(logs[i].date), new Date(logs[i + 1].date))) {
             if (logs[i].title !== logs[i + 1].title) {
-                logs[i].title += " OR ";
-                logs[i].title += logs[i + 1].title;
+                // Case: i is No Title, we replace it with i+1 (which might be No Title, so No Title will stay)
+                // Case: i+1 is No Title, we keep title form i
+                // Case: Neither is No Title, we replace it with i "OR" i+1
+                if (logs[i].title === "No Title") {
+                    logs[i].title = logs[i + 1].title;
+                } else if (logs[i + 1].title !== "No Title") {
+                    logs[i].title += " OR ";
+                    logs[i].title += logs[i + 1].title;
+                }
             }
             if (logs[i].description !== logs[i + 1].description) {
-                logs[i].description += "\nOR\n";
-                logs[i].description += logs[i + 1].description;
+                // Case: i is No Description, we replace it with i+1 (which might be No Description, so No Description will stay)
+                // Case: i+1 is No Description, we keep title form i
+                // Case: Neither is No Description, we replace it with i "OR" i+1
+                if (logs[i].description === "No Description") {
+                    logs[i].description = logs[i + 1].description;
+                } else if (logs[i + 1].title !== "No Description") {
+                    logs[i].description += " OR ";
+                    logs[i].description += logs[i + 1].description;
+                }
             }
             const newLinks = logs[i].links.concat(logs[i + 1].links);
             logs[i].links = Array.from(new Set(newLinks));

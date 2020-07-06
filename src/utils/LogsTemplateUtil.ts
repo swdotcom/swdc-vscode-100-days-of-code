@@ -238,7 +238,7 @@ function getLogCard(
         `\t\t\t\t<br>`,
         `\t\t\t\t<div class='cardMetricGrid'>`,
         `\t\t\t\t\t<div class="cardMetric">`,
-        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 16px; margin-bottom: 5px;">Active Code Time</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 16px; margin-bottom: 5px;">Code Time</div>`,
         `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 20px; margin-bottom: 20px;">${day.codetime_metrics.hours}</div>`,
         `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; font-weight: normal; margin-bottom: 5px;">${percentHours}% of Average</div>`,
         `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; font-weight: normal; margin-bottom: 20px;">Average: ${avgHours} Hours</div>`,

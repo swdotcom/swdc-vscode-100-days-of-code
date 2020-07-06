@@ -12,6 +12,8 @@
 
 <br />
 
+<p align="center"><b>100 Days of Code is in open beta. If you find any issues or have any feedback, please log a bug on our <a href="https://github.com/swdotcom/swdc-vscode-100-days-of-code/tree/develop">GitHub repo</a> or reach out to us at <a href="mailto:cody@software.com">cody@software.com</a>.</b></p>
+
 <p align="center"><a href="https://www.software.com/100-days-of-code">100 Days of Code</a> is a VS Code extension that helps you reach your goals and complete the #100DaysOfCode Challenge.
 </p>
 
@@ -60,7 +62,15 @@ The 100 Days of Code plugin is built on [Code Time](https://www.software.com/cod
 
 ## Getting started
 
-### **1. Create a log entry**
+### **1. Create your web account**
+
+100 Days of Code requires that you're logged in via Google, Github or Software account. This allows your data to be accessible and synced across multiple devices.
+
+<p align="center" style="margin: 0 10%">
+  <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/login-prompt.png" alt="Code Time for VS Code login prompt" />
+</p>
+
+### **2. Create a log entry**
 
 Logs are journal entries for your 100 Days of Code challenge to help you stay on track and remember all of your accomplishments. Each log entry includes a title, description, and set of links that you can add if you want to link to your projects and resources. Logs are also automatically populated with your code time, number of keystrokes, and lines added for that day of coding.
 
@@ -80,7 +90,7 @@ Logging your daily progress is important to get the most out of the 100 Days of 
 
 <br>
 
-### **2. View Logs**
+### **3. View Logs**
 
 <p align="center" style="margin: 0 10%">
     <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/View+Log+Page.png" alt="View log for 100 Days of Code" />
@@ -92,7 +102,7 @@ If you forget to create a log for a day that you worked, don’t worry! We will 
 
 <br>
 
-### **3. View Milestones**
+### **4. View Milestones**
 
 Milestones are fun, shareable badges that you can earn during the #100DaysOfCode challenge. For example, you can earn badges by coding for 10 hours, coding in a new language, or coding for 30 days in a row.
 
@@ -106,7 +116,7 @@ Milestones are divided into six levels of difficulty. You should complete the le
 
 <br>
 
-### **4. View Dashboard**
+### **5. View Dashboard**
 
 The **Dashboard** helps you visualize your progress during the challenge. You can view your aggregated code metrics for the challenge, your most recent Logs and Milestones, and a graph of your code time throughout the challenge.
 
@@ -118,7 +128,7 @@ To navigate to the dashboard, click the **View Dashboard** button in the 100 Day
 
 <br>
 
-### **5. Share your progress**
+### **6. Share your progress**
 
 To be a part of the community, it's important to share your progress during the 100 Days of Code challenge. Even minor progress is progress, and we encourage you to share something every day.
 
