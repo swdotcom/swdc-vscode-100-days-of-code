@@ -29,7 +29,6 @@ export function getLanguages() {
             return [];
         }
     } catch (err) {
-        console.log(err);
         return [];
     }
     const fileJson = JSON.parse(filesString);

@@ -1,7 +1,7 @@
 import { getSummaryObject, compareLocalSummary } from "./SummaryUtil";
 import { Summary } from "../models/Summary";
 import { serverIsAvailable, softwarePost, softwarePut, softwareGet, isResponseOk } from "../managers/HttpManager";
-import { getSoftwareSessionAsJson } from "./Util";
+import { getItem } from "./Util";
 
 export async function pushSummaryToDb() {
     // checks if summary exists and updates/creates it
@@ -31,7 +31,7 @@ async function pushNewSummary() {
         shares: summary.shares,
         languages: summary.languages
     };
-    const jwt = getSoftwareSessionAsJson()["jwt"];
+    const jwt = getItem("jwt");
     if (jwt) {
         let available = false;
         try {
@@ -60,7 +60,7 @@ async function pushUpdatedSummary() {
         languages: summary.languages
     };
 
-    const jwt = getSoftwareSessionAsJson()["jwt"];
+    const jwt = getItem("jwt");
     if (jwt) {
         let available = false;
 
@@ -76,7 +76,7 @@ async function pushUpdatedSummary() {
 }
 
 export async function fetchSummary(): Promise<boolean> {
-    const jwt = getSoftwareSessionAsJson()["jwt"];
+    const jwt = getItem("jwt");
     if (jwt) {
         let available = false;
         try {

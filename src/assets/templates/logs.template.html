@@ -445,7 +445,7 @@
         }
 
         var dropDownButtons = document.getElementsByClassName("cardHeaderDropDownButton");
-        \n;
+
         for (let i = 0; i < dropDownButtons.length; i++) {
             dropDownButtons[i].addEventListener("click", function () {
                 var shareButton = this.parentNode.getElementsByClassName("cardHeaderShareButton")[0];
@@ -624,7 +624,6 @@
                     .split(" ")[1]
                     .slice(0, -1);
                 this.firstChild.src = "${this.shareCheckedPath}";
-                console.log(this.firstChild);
                 vscode.postMessage({ command: "incrementShare", value: dayNumberValue });
             });
         }

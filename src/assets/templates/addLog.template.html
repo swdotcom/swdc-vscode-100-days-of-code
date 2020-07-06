@@ -135,11 +135,7 @@
         let submit;
         let cancel;
         window.addEventListener("load", () => {
-            try {
-                vscode = acquireVsCodeApi();
-            } catch (err) {
-                console.log(err);
-            }
+            vscode = acquireVsCodeApi();
 
             cancel = document.getElementById("cancel");
             submit = document.getElementById("submit");

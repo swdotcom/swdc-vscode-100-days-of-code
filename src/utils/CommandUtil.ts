@@ -11,7 +11,7 @@ import {
 } from "./MilestonesUtil";
 import { getUpdatedAddLogHtmlString } from "./addLogUtil";
 import { getUpdatedDashboardHtmlString, getCertificateHtmlString } from "./DashboardUtil";
-import { displayReadmeIfNotExists } from "./Util";
+import { displayReadmeIfNotExists, displayLoginPromptIfNotLoggedIn, isLoggedIn } from "./Util";
 import { getUpdatedMilestonesHtmlString } from "./MilestonesTemplateUtil";
 import { getUpdatedLogsHtml } from "./LogsTemplateUtil";
 
@@ -60,6 +60,7 @@ export function createCommands(): { dispose: () => void } {
 
                 if (currentPanel) {
                     currentPanel.webview.html = getUpdatedLogsHtml();
+                    displayLoginPromptIfNotLoggedIn();
                 }
 
                 const logInterval = setInterval(() => {
@@ -126,6 +127,7 @@ export function createCommands(): { dispose: () => void } {
 
                 if (currentPanel) {
                     currentPanel.webview.html = getUpdatedDashboardHtmlString();
+                    displayLoginPromptIfNotLoggedIn();
                 }
 
                 const dashboardInterval = setInterval(() => {
@@ -202,6 +204,7 @@ export function createCommands(): { dispose: () => void } {
                 // have to implement this check for worst case scenario
                 if (currentPanel) {
                     currentPanel.webview.html = getUpdatedMilestonesHtmlString();
+                    displayLoginPromptIfNotLoggedIn();
                 }
 
                 const milestoneInterval = setInterval(() => {
@@ -266,7 +269,7 @@ export function createCommands(): { dispose: () => void } {
                             break;
 
                         case "log":
-                            if (currentPanel) {
+                            if (currentPanel && isLoggedIn()) {
                                 log = message.value;
                                 addLogToJson(
                                     log.title,
@@ -278,6 +281,10 @@ export function createCommands(): { dispose: () => void } {
                                 );
                                 checkLanguageMilestonesAchieved();
                                 checkDaysMilestones();
+                                currentPanel.dispose();
+                                commands.executeCommand("DoC.viewLogs");
+                            } else if (currentPanel) {
+                                displayLoginPromptIfNotLoggedIn();
                                 currentPanel.dispose();
                                 commands.executeCommand("DoC.viewLogs");
                             }

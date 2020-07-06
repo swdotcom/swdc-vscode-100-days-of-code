@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows, compareDates, getSoftwareSessionAsJson } from "./Util";
+import { getSoftwareDir, isWindows, compareDates } from "./Util";
 import fs = require("fs");
 import { window } from "vscode";
 import { getMostRecentLogObject, checkIfOnStreak, getLogsSummary } from "./LogsUtil";

@@ -1,5 +1,5 @@
 import { serverIsAvailable, softwareGet, isResponseOk, softwarePost, softwarePut } from "../managers/HttpManager";
-import { getSoftwareSessionAsJson, getSoftwareDir, isWindows } from "./Util";
+import { getSoftwareDir, isWindows, getItem } from "./Util";
 import { compareWithLocalMilestones, getMilestonesByDate, checkIfMilestonesAchievedOnDate } from "./MilestonesUtil";
 import { getDayNumberFromDate } from "./LogsUtil";
 import fs = require("fs");
@@ -52,7 +52,7 @@ export function checkMilestonesPayload() {
 }
 
 export async function fetchMilestonesByDate(date: number): Promise<Array<number>> {
-    const jwt = getSoftwareSessionAsJson()["jwt"];
+    const jwt = getItem("jwt");
     if (jwt) {
         // End Date Time is 11:59:59 pm
         let endDate = new Date(date);
@@ -92,7 +92,7 @@ export async function fetchMilestonesByDate(date: number): Promise<Array<number>
 }
 
 export async function fetchMilestonesForYesterdayAndToday() {
-    const jwt = getSoftwareSessionAsJson()["jwt"];
+    const jwt = getItem("jwt");
     if (jwt) {
         // End Date is 11:59:59 pm today
         let endDate = new Date();
@@ -126,7 +126,7 @@ export async function fetchMilestonesForYesterdayAndToday() {
 }
 
 export async function fetchAllMilestones() {
-    const jwt = getSoftwareSessionAsJson()["jwt"];
+    const jwt = getItem("jwt");
     if (jwt) {
         let available = false;
         try {
@@ -176,7 +176,7 @@ export function pushMilestonesToDb(date: number, milestones: Array<number>) {
 }
 
 export async function pushNewMilestones() {
-    const jwt = getSoftwareSessionAsJson()["jwt"];
+    const jwt = getItem("jwt");
     if (jwt) {
         let available = false;
         try {
@@ -203,7 +203,7 @@ export async function pushNewMilestones() {
 }
 
 export async function pushUpdatedMilestones() {
-    const jwt = getSoftwareSessionAsJson()["jwt"];
+    const jwt = getItem("jwt");
     if (jwt) {
         // try to post new milestones before sending updated
         // milestones as the edits might be on the non posted milestones

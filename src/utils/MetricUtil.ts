@@ -18,7 +18,6 @@ export function getSessionCodetimeMetrics(): any {
         minutes: 0,
         keystrokes: 0,
         linesAdded: 0
-
     };
 
     // try to get codetime metrics from session summary file
@@ -38,7 +37,6 @@ export function getSessionCodetimeMetrics(): any {
             return metricsOut;
         }
     } catch (err) {
-        console.log(err);
         return metricsOut;
     }
 

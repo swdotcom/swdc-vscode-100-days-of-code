@@ -15,7 +15,6 @@ import {
     getDoCLogsButon,
     getDashboardButton
 } from "./TreeButtonManager";
-import { launchUrl } from "../utils/Util";
 
 const docCollapsedStateMap: any = {};
 

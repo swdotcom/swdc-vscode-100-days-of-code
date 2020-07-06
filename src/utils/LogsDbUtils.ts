@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows, getSoftwareSessionAsJson } from "./Util";
+import { getSoftwareDir, isWindows, getItem } from "./Util";
 import { serverIsAvailable, softwareGet, isResponseOk, softwarePost, softwarePut } from "../managers/HttpManager";
 import { Log } from "../models/Log";
 import { compareWithLocalLogs, getMostRecentLogObject, checkLogsJson, getLogsJson } from "./LogsUtil";
@@ -30,7 +30,6 @@ export function createLogsPayloadJson() {
     };
     try {
         fs.writeFileSync(filepath, JSON.stringify(fileData, null, 4));
-        console.log("Created file");
     } catch (err) {
         console.log(err);
     }
@@ -52,7 +51,7 @@ export function checkLogsPayload() {
 }
 
 export async function fetchLogs() {
-    const jwt = getSoftwareSessionAsJson()["jwt"];
+    const jwt = getItem("jwt");
     if (jwt) {
         let available = false;
         try {
@@ -113,7 +112,7 @@ export async function pushNewLogs(addNew: boolean) {
         };
         toCreateLogs.push(sendLog);
     }
-    const jwt = getSoftwareSessionAsJson()["jwt"];
+    const jwt = getItem("jwt");
     if (jwt) {
         let available = false;
         try {
@@ -171,7 +170,7 @@ export async function pushUpdatedLogs(addNew: boolean, dayNumber: number) {
             updatedLogsDb = false;
         }
     }
-    const jwt = getSoftwareSessionAsJson()["jwt"];
+    const jwt = getItem("jwt");
     if (jwt) {
         let available = false;
         try {

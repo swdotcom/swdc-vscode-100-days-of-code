@@ -30,7 +30,7 @@ import {
     createLogsPayloadJson
 } from "./utils/LogsDbUtils";
 import { pushSummaryToDb } from "./utils/SummaryDbUtil";
-import { displayReadmeIfNotExists } from "./utils/Util";
+import { displayReadmeIfNotExists, isLoggedIn } from "./utils/Util";
 import { commands } from "vscode";
 
 let one_minute_interval: NodeJS.Timeout;
@@ -69,57 +69,9 @@ export async function initializePlugin() {
     // try to send payloads that weren't sent
     // and fetch data from the db as well
 
-    // logs
-    checkLogsPayload();
-    if (!sentLogsDb) {
-        pushNewLogs(false);
-    }
-    if (!updatedLogsDb) {
-        pushUpdatedLogs(false, 0);
-    }
-    fetchLogs();
-
-    // milestones
-    checkMilestonesPayload();
-    if (!sentMilestonesDb) {
-        pushNewMilestones();
-    }
-    if (!updatedMilestonesDb) {
-        pushUpdatedMilestones();
-    }
-    fetchAllMilestones();
-
-    // fetches and updates the user summary in the db
-    pushSummaryToDb();
-
-    // updates logs and milestones
-    updateLogsMilestonesAndMetrics([]);
-    checkCodeTimeMetricsMilestonesAchieved();
-    checkLanguageMilestonesAchieved();
-    checkDaysMilestones();
-    reevaluateSummary();
-
-    // sets interval jobs
-    initializeIntervalJobs();
-}
-
-export function initializeIntervalJobs() {
-    one_minute_interval = setInterval(async () => {
-        const currDate = new Date();
-        if (currDate.getHours() !== 0 || currDate.getMinutes() > 3) {
-            // updates logs with latest metrics and checks for milestones
-            updateLogsMilestonesAndMetrics([]);
-            checkCodeTimeMetricsMilestonesAchieved();
-            checkLanguageMilestonesAchieved();
-            checkDaysMilestones();
-        }
-    }, one_min_millis);
-
-    five_minute_interval = setInterval(async () => {
-        // try to send payloads that weren't sent
-        // and fetch data from the db as well every 5 minutes
-
+    if (isLoggedIn()) {
         // logs
+        checkLogsPayload();
         if (!sentLogsDb) {
             pushNewLogs(false);
         }
@@ -129,26 +81,82 @@ export function initializeIntervalJobs() {
         fetchLogs();
 
         // milestones
+        checkMilestonesPayload();
         if (!sentMilestonesDb) {
             pushNewMilestones();
         }
         if (!updatedMilestonesDb) {
             pushUpdatedMilestones();
         }
-        fetchMilestonesForYesterdayAndToday();
+        fetchAllMilestones();
 
-        // summary
+        // fetches and updates the user summary in the db
         pushSummaryToDb();
+
+        // updates logs and milestones
+        updateLogsMilestonesAndMetrics([]);
+        checkCodeTimeMetricsMilestonesAchieved();
+        checkLanguageMilestonesAchieved();
+        checkDaysMilestones();
+        reevaluateSummary();
+    }
+
+    // sets interval jobs
+    initializeIntervalJobs();
+}
+
+export function initializeIntervalJobs() {
+    one_minute_interval = setInterval(async () => {
+        if (isLoggedIn()) {
+            const currDate = new Date();
+            if (currDate.getHours() !== 0 || currDate.getMinutes() > 3) {
+                // updates logs with latest metrics and checks for milestones
+                updateLogsMilestonesAndMetrics([]);
+                checkCodeTimeMetricsMilestonesAchieved();
+                checkLanguageMilestonesAchieved();
+                checkDaysMilestones();
+            }
+        }
+    }, one_min_millis);
+
+    five_minute_interval = setInterval(async () => {
+        if (isLoggedIn()) {
+            // try to send payloads that weren't sent
+            // and fetch data from the db as well every 5 minutes
+
+            // logs
+            if (!sentLogsDb) {
+                pushNewLogs(false);
+            }
+            if (!updatedLogsDb) {
+                pushUpdatedLogs(false, 0);
+            }
+            fetchLogs();
+
+            // milestones
+            if (!sentMilestonesDb) {
+                pushNewMilestones();
+            }
+            if (!updatedMilestonesDb) {
+                pushUpdatedMilestones();
+            }
+            fetchMilestonesForYesterdayAndToday();
+
+            // summary
+            pushSummaryToDb();
+        }
     }, one_min_millis * 1);
 
     one_hour_interval = setInterval(async () => {
-        // fetch all milestones for keeping them updated
-        if (updatedMilestonesDb && sentMilestonesDb) {
-            fetchAllMilestones();
-        } else if (!sentMilestonesDb) {
-            pushNewMilestones();
-        } else {
-            pushUpdatedMilestones();
+        if (isLoggedIn()) {
+            // fetch all milestones for keeping them updated
+            if (updatedMilestonesDb && sentMilestonesDb) {
+                fetchAllMilestones();
+            } else if (!sentMilestonesDb) {
+                pushNewMilestones();
+            } else {
+                pushUpdatedMilestones();
+            }
         }
     }, one_min_millis * 60);
 }

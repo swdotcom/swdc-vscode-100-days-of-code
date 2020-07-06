@@ -1,8 +1,8 @@
-import { getSoftwareDir, isWindows, compareDates, getSoftwareSessionAsJson } from "./Util";
+import { getSoftwareDir, isWindows, compareDates } from "./Util";
 import fs = require("fs");
 import { CodetimeMetrics } from "../models/CodetimeMetrics";
 import { Log } from "../models/Log";
-import { checkSharesMilestones, getMilestonesByDate, checkIfDaily } from "./MilestonesUtil";
+import { getMilestonesByDate, checkIfDaily } from "./MilestonesUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import {
     incrementSummaryShare,
