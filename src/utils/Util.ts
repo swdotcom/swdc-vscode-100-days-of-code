@@ -127,12 +127,30 @@ export function displayLoginPromptIfNotLoggedIn() {
                     switch (selection?.label) {
                         case "Login with Google":
                             commands.executeCommand("codetime.googleLogin");
+                            window.showInformationMessage(
+                                "It may take a few minutes to pull all of your data if it exists",
+                                {
+                                    modal: true
+                                }
+                            );
                             break;
                         case "Login with GitHub":
                             commands.executeCommand("codetime.githubLogin");
+                            window.showInformationMessage(
+                                "It may take a few minutes to pull all your of data if it exists",
+                                {
+                                    modal: true
+                                }
+                            );
                             break;
                         case "Login with Email":
                             commands.executeCommand("codetime.codeTimeLogin");
+                            window.showInformationMessage(
+                                "It may take a few minutes to pull all your of data if it exists",
+                                {
+                                    modal: true
+                                }
+                            );
                             break;
                         default:
                             break;
