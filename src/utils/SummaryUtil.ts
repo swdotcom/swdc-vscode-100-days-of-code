@@ -57,6 +57,7 @@ export function compareLocalSummary(dbSummary: any) {
 
     // updates local summary if and only if db is as updated
     if (dbSummary.days >= summary.days) {
+        const currentLog = getMostRecentLogObject();
         summary.days = dbSummary.days;
         summary.hours = dbSummary.hours > summary.hours ? dbSummary.hours : summary.hours;
         summary.keystrokes = dbSummary.keystrokes > summary.keystrokes ? dbSummary.keystrokes : summary.keystrokes;
@@ -67,6 +68,11 @@ export function compareLocalSummary(dbSummary: any) {
         summary.shares = dbSummary.shares > summary.shares ? dbSummary.shares : summary.shares;
         summary.languages =
             dbSummary.languages.length > summary.languages.length ? dbSummary.languages : summary.languages;
+        if (currentLog && compareDates(new Date(currentLog.date), new Date())) {
+            summary.currentHours = currentLog.codetime_metrics.hours;
+            summary.currentKeystrokes = currentLog.codetime_metrics.keystrokes;
+            summary.currentLines = currentLog.codetime_metrics.lines_added;
+        }
 
         writeToSummaryJson(summary);
     }
@@ -84,9 +90,11 @@ export function reevaluateSummary() {
     summary.hours = aggregateLogData.totalHours - summary.currentHours;
     summary.lines_added = aggregateLogData.totalLinesAdded - summary.currentLines;
     summary.keystrokes = aggregateLogData.totalKeystrokes - summary.currentKeystrokes;
+
     summary.days = aggregateLogData.totalDays;
     summary.longest_streak = aggregateLogData.longest_streak;
     summary.current_streak = aggregateLogData.current_streak;
+
     summary.milestones = totalMilestones;
     summary.recent_milestones = getThreeMostRecentMilestones();
 
