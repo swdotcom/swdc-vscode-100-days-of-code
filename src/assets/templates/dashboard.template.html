@@ -1,371 +1,417 @@
 <html>
     <style>
-             body {
-             	font-family: sans-serif;
-             	width: 800px;
-             	border-radius: 3px;
-             	border-width: 2px;
-             	border-color: ${this.cardBackgroundColor};
-             	border-style: solid;
-             	color: ${this.cardTextColor};
-             	margin: 10px;
-             }
-             h1 {
-             	font-size: 24px;
-             	font-weight: 600;
-             }
-             #head {
-             	margin-top: 15px;
-             }
-             .inline {
-             	display: inline;
-             	color: ${this.cardTextColor};
-             }
-             #shareProgress {
-             	font-size: 16px;
-             	line-height: 24px;
-             	color: #ffffff;
-             	float: right;
-             	background-color: #00b4ee;
-             	border-color: #00b4ee;
-             	border-radius: 3px;
-             	cursor: pointer;
-             }
-             #certificate {
-             	visibility: ${this.certificateVisibility};
-             	font-size: 16px;
-             	line-height: 24px;
-             	padding: 2px;
-             	width: 150px;
-             	color: ${this.cardTextColor};
-             	float: right;
-             	margin-right: 10px;
-             	border-color: rgba(0, 0, 0, 0);
-             	border-radius: 3px;
-             	cursor: pointer;
-             }
-             .level0 {
-             	background: ${this.cardBackgroundColor};
-             }
-             .level1 {
-             	background: linear-gradient(180deg,
-             	rgba(251, 0, 0, 0.35) 0%,
-             	rgba(255, 151, 213, 0.35) 100%);
-             }
-             .level2 {
-             	background: linear-gradient(180deg,
-             	rgba(255, 245, 0, 0.35) 0%,
-             	rgba(133, 250, 56, 0.35) 70.3%,
-             	rgba(0, 140, 39, 0.35) 100%);
-             }
-             .level3 {
-             	background: linear-gradient(180deg,
-             	rgba(214, 126, 255, 0.35) 0%,
-             	rgba(86, 113, 255, 0.35) 67.71%,
-             	rgba(0, 224, 255, 0.35) 100%);
-             }
-             .level4 {
-             	background: linear-gradient(180deg,
-             	rgba(255, 0, 0, 0.35) 2.05%,
-             	rgba(255, 168, 0, 0.35) 73.44%,
-             	rgba(255, 245, 0, 0.35) 100%);
-             }
-             .level5 {
-             	background: linear-gradient(180deg,
-             	rgba(0, 224, 255, 0.35) 0%,
-             	rgba(219, 0, 255, 0.35) 49.6%,
-             	rgba(253, 106, 0, 0.35) 100%);
-             }
-             .level6 {
-             	background: linear-gradient(180deg,
-             	rgba(219, 0, 255, 0.35) 3.41%,
-             	rgba(103, 115, 255, 0.35) 18.6%,
-             	rgba(13, 208, 255, 0.35) 32.96%,
-             	rgba(88, 213, 51, 0.35) 51.83%,
-             	rgba(255, 237, 1, 0.35) 75.22%,
-             	rgba(255, 97, 1, 0.35) 86.71%,
-             	rgba(255, 10, 1, 0.35) 100%);
-             }
-             #topMetrics {
-             	display: flex;
-             	justify-content: space-between;
-             	width: inherit;
-             	margin-top: 20px;
-             }
-             .metricsCard {
-             	display: inline-block;
-             	border-radius: 3px;
-             	color: ${this.cardTextColor};
-             	width: 150px;
-             	height: 90px;
-             }
-             .metricsHead {
-             	padding-top: 15px;
-             	padding-left: 10px;
-             	font-size: 21px;
-             	font-weight: 600;
-             }
-             .metricsBody {
-             	padding-top: 10px;
-             	padding-left: 10px;
-             	padding-right: 10px;
-             	height: 40px;
-             	font-size: 14px;
-             	font-weight: 400;
-             	word-wrap: break-word;
-             }
-             #bigGrid {
-             	display: grid;
-             	grid-template-columns: 450px 350px;
-             }
-             #logs {
-             	margin-top: 10px;
-             	padding-left: 16px;
-             	padding-top: 5px;
-             	padding-right: 5px;
-             	width: 430px;
-             	min-height: 285px;
-             	background-color: ${this.cardBackgroundColor};
-             	color: ${this.cardTextColor};
-             	border-radius: 3px;
-             }
-             #logTitle {
-             	margin-top: 5px;
-             	display: inline-block;
-             	color: ${this.cardTextColor};
-             	font-size: 16px;
-             }
-             #viewLogs {
-             	margin-right: 5px;
-             	float: right;
-             	font-size: 14px;
-             	line-height: 25px;
-             	border-radius: 3px;
-             	border-color: rgba(0, 0, 0, 0);
-             	background-color: ${this.cardBackgroundColor};
-             	color: ${this.cardTextColor};
-             	cursor: pointer;
-             }
-             #logHeadings {
-             	display: grid;
-             	width: 435px;
-             	margin-left: -15px;
-             	padding-left: 15px;
-             	grid-template-columns: 50px 160px 220px;
-             	font-size: 14px;
-             	line-height: 25px;
-             	font-weight: 400;
-             	background-color: ${this.cardBackgroundColor};
-             	color: ${this.cardTextColor};
-             	margin-top: 15px;
-             	height: 25px;
-             	vertical-align: middle;
-             }
-             .logBody {
-             	margin-top: 10px;
-             	display: grid;
-             	padding: 2px;
-             	width: 100%;
-             	grid-template-columns: 50px 160px 220px;
-             	font-size: 14px;
-             	color: ${this.cardTextColor};
-             	word-wrap: break-word;
-             }
-             #chart {
-             	position: relative;
-             	width: 750px;
-             	height: 325px;
-             	background-color: ${this.datagramBackground};
-             	border-color: ${this.cardBackgroundColor};
-             	color: ${this.cardTextColor};
-             	border-width: 1px;
-             	border-style: solid;
-             	border-radius: 3px;
-             	margin-top: 20px;
-             	margin-bottom: 20px;
-             	padding: 20px;
-             }
-             #chartXMin {
-             	position: absolute;
-             	background-color: ${this.datagramXMinColor};
-             	width: 720px;
-             	height: 2px;
-             	bottom: 50px;
-             	left: 40px;
-             	z-index: 1;
-             }
-             #chartXMid {
-             	position: absolute;
-             	background-color: ${this.cardBackgroundColor};
-             	width: 720px;
-             	height: 1px;
-             	bottom: 175px;
-             	left: 40px;
-             }
-             #chartXMax {
-             	position: absolute;
-             	background-color: ${this.cardBackgroundColor};
-             	width: 720px;
-             	height: 1px;
-             	bottom: 300px;
-             	left: 40px;
-             }
-             #chartTitle {
-             	text-align: center;
-             	font-size: 20px;
-             }
-             #chartBarContainer {
-             	width: 700px;
-             	height: 250px;
-             	position: absolute;
-             	display: flex;
-             	bottom: 50px;
-             	left: 60px;
-             	justify-content: space-around;
-             }
-             .chartBar {
-             	position: relative;
-             	background-color: #00b4ee;
-             	border-top-left-radius: 5px;
-             	border-top-right-radius: 5px;
-             	width: 10%;
-             	height: 10px;
-             	margin-left: 2px;
-             	margin-right: 2px;
-             	bottom: 0px;
-             }
-             .chartYLabel {
-             	position: absolute;
-             	text-align: center;
-             	width: 40px;
-             	left: 0px;
-        padding-left: 5px;
-             }
-             #chartDateBar {
-             	position: absolute;
-             	display: inline-flex;
-             	width: 700px;
-             	left: 60px;
-             	bottom: 20px;
-             	justify-content: ${this.dateJustifyContent};
-             }
-             .chartDateText {
-             	font-size: 12px;
-             }
-             /* milestones */
-             #milestones {
-             	margin-top: 10px;
-             	margin-left: 13px;
-             	padding-left: 16px;
-             	padding-top: 5px;
-             	padding-right: 5px;
-             	width: 315px;
-             	min-height: 285px;
-             	background-color: ${this.cardBackgroundColor};
-             	border-radius: 3px;
-             }
-             #milestoneTitle {
-             	display: inline-block;
-             	margin-top: 5px;
-             	font-size: 16px;
-             	padding-bottom: 5px;
-             	color: ${this.cardTextColor};
-             }
-             #viewMilestones {
-             	margin-right: 5px;
-             	float: right;
-             	font-size: 14px;
-             	line-height: 25px;
-             	border-radius: 3px;
-             	border-color: rgba(0, 0, 0, 0);
-             	background-color: ${this.cardBackgroundColor};
-             	color: ${this.cardTextColor};
-             	cursor: pointer;
-             }
-             .milestoneCard {
-             	margin: 10px;
-             	margin-top: 20px;
-             	width: 270px;
-             	display: inline-block;
-             	color: ${this.cardTextColor};
-             }
-             .logo {
-             	height: 50px;
-             	width: 50px;
-             	display: inline-block;
-             }
-             .milestoneData {
-             	display: inline-block;
-             	width: 200px;
-             	height: 50px;
-             	vertical-align: top;
-             	margin-left: 10px;
-             }
-             .milestoneTitle {
-             	font-size: 14px;
-             	line-height: 25px;
-             	word-wrap: break-word;
-             }
-             .milestoneDesc {
-             	font-size: 14px;
-             	line-height: 20px;
-             	color: #919EAB;
-             	word-wrap: break-word;
-             }
-             .metricsCard .tooltiptext {
-             	position: relative;
-             	visibility: hidden;
-             	width: 130px;
-             	left: 5px;
-             	border-radius: 3px;
-             	background-color: ${this.cardToolTipColor};
-             	background-blend-mode: darken;
-             	color: ${this.cardTextColor};
-             	text-align: center;
-             	padding: 5px;
-             	z-index: 1;
-             }
-             .metricsCard:hover .tooltiptext {
-             	visibility: visible;
-             }
-             .inf {
-             	font-size: larger;
-             }
+                       body {
+                       	font-family: sans-serif;
+                       	width: 800px;
+                       	border-radius: 2px;
+                       	border-width: 2px;
+                       	border-color: ${this.cardBackgroundColor};
+                       	border-style: solid;
+                       	color: ${this.cardTextColor};
+                       	margin: 10px;
+                       }
+                       h1 {
+                       	font-size: 24px;
+                       	font-weight: 600;
+                       }
+                       #head {
+                       	margin-top: 15px;
+                       }
+                       .inline {
+                       	display: inline;
+                       	color: ${this.cardTextColor};
+                       }
+                       #shareProgress {
+                       	font-size: 12px;
+						font-weight: 600;
+                       	line-height: 18px;
+                       	color: #ffffff;
+                       	float: right;
+                       	background-color: #00b4ee;
+                       	border-color: #00b4ee;
+                       	border-radius: 2px;
+						margin-top: 8px;
+						margin-right: 2px;
+                       	cursor: pointer;
+                       }
+                       #certificate {
+                       	visibility: ${this.certificateVisibility};
+                       	font-size: 16px;
+                       	line-height: 24px;
+                       	padding: 2px;
+                       	width: 150px;
+                       	color: ${this.cardTextColor};
+                       	float: right;
+                       	margin-right: 10px;
+                       	border-color: rgba(0, 0, 0, 0);
+                       	border-radius: 2px;
+                       	cursor: pointer;
+                       }
+                       #topMetrics {
+                       	display: flex;
+                       	justify-content: space-between;
+                       	width: inherit;
+                       	margin-top: 20px;
+                       }
+                       .metricsCard {
+                       	display: inline-block;
+                       	border-radius: 2px;
+                       	background: ${this.cardBackgroundColor};
+                       	color: ${this.cardTextColor};
+                       	width: 150px;
+                       	height: 90px;
+                       }
+                       .metricsHead {
+                       	padding-top: 12px;
+                       	padding-left: 16px;
+        				padding-right: 16px;
+                       	font-size: 21px;
+                       	font-weight: 600;
+                       }
+                       .metricsBody {
+                       	padding-top: 8px;
+                       	padding-left: 16px;
+                       	padding-right: 16px;
+                       	height: 40px;
+                       	font-size: 14px;
+                       	font-weight: 600;
+						color: #919eab;
+                       	word-wrap: break-word;
+                       }
+                       #bigGrid {
+						margin-top: 2px;
+                       	display: grid;
+                       	grid-template-columns: 450px 350px;
+                       }
+                       #logs {
+                       	margin-top: 10px;
+                       	padding-left: 16px;
+                       	padding-top: 5px;
+                       	padding-right: 5px;
+                       	width: 454px;
+                       	min-height: 285px;
+                       	background-color: ${this.cardBackgroundColor};
+                       	color: ${this.cardTextColor};
+                       	border-radius: 2px;
+                       }
+                       #logTitle {
+                       	margin-top: 10px;
+                       	display: inline-block;
+                       	color: ${this.cardTextColor};
+                       	font-size: 16px;
+						font-weight: 600;
+						margin-bottom: 8px;
+                       }
+                       #viewLogs {
+						margin-top: 8px;
+                       	margin-right: 8px;
+                       	float: right;
+                       	font-size: 12px;
+						font-weight: 600;
+                       	line-height: 18px;
+                       	border-radius: 2px;
+                       	border-color: rgba(0, 0, 0, 0);
+                       	background-color: ${this.cardBackgroundColor};
+                       	color: ${this.cardTextColor};
+                       	cursor: pointer;
+                       }
+                       #logHeadings {
+                       	display: grid;
+                       	width: 458px;
+                       	margin-left: -15px;
+                       	padding-left: 15px;
+                       	grid-template-columns: 50px 160px 220px;
+                       	font-size: 14px;
+                       	line-height: 25px;
+                       	font-weight: 600;
+                       	background-color: ${this.cardBackgroundColor};
+                       	color: #919eab;
+                       	margin-top: 15px;
+                       	height: 25px;
+                       	vertical-align: middle;
+                       }
+                       .logBody {
+                       	margin-top: 10px;
+                       	display: grid;
+                       	padding: 2px;
+                       	width: 100%;
+                       	grid-template-columns: 50px 160px 220px;
+                       	font-size: 14px;
+                       	color: ${this.cardTextColor};
+                       	word-wrap: break-word;
+                       }
+                       #chart {
+                       	position: relative;
+                       	width: 758px;
+                       	height: 325px;
+                       	background-color: ${this.cardBackgroundColor};
+                       	border-color: rgba(0,0,0,0);
+                       	color: ${this.cardTextColor};
+                       	border-width: 1px;
+                       	border-style: solid;
+                       	border-radius: 2px;
+                       	margin-top: 13px;
+                       	margin-bottom: 20px;
+                       	padding: 20px;
+                       }
+                       #chartXMin {
+                       	position: absolute;
+                       	background-color: rgba(145, 158, 171, 0.5);
+                       	width: 705px;
+                       	height: 2px;
+                       	bottom: 50px;
+                       	left: 55px;
+                       	z-index: 1;
+                       }
+                       #chartXMid {
+                       	position: absolute;
+                       	background-color: rgba(145, 158, 171, 0.35);
+                       	width: 705px;
+                       	height: 1px;
+                       	bottom: 175px;
+                       	left: 55px;
+                       }
+                       #chartXMax {
+                       	position: absolute;
+                       	background-color: rgba(145, 158, 171, 0.35);
+                       	width: 705px;
+                       	height: 1px;
+                       	bottom: 300px;
+                       	left: 55px;
+                       }
+                       #chartTitle {
+                       	display: inline-block;
+                       	color: ${this.cardTextColor};
+                       	font-size: 16px;
+						font-weight: 600;
+						margin-left: -4px;
+                       }
+                       #chartBarContainer {
+                       	width: 700px;
+                       	height: 250px;
+                       	position: absolute;
+                       	display: flex;
+                       	bottom: 50px;
+                       	left: 60px;
+                       	justify-content: space-around;
+                       }
+                       .chartBar {
+                       	position: relative;
+                       	background-color: #00b4ee;
+                       	border-top-left-radius: 2px;
+                       	border-top-right-radius: 2px;
+                       	width: 10%;
+                       	height: 10px;
+                       	margin-left: 2px;
+                       	margin-right: 2px;
+                       	bottom: 0px;
+                       }
+                       .chartYLabel {
+                       	position: absolute;
+                       	text-align: left;
+                       	width: 50px;
+                       	left: 0px;
+                  		padding-left: 16px;
+						color: #919eab;
+                       }
+                       #chartDateBar {
+                       	position: absolute;
+                       	display: inline-flex;
+                       	width: 700px;
+                       	left: 60px;
+                       	bottom: 20px;
+                       	justify-content: ${this.dateJustifyContent};
+                       }
+                       .chartDateText {
+                    		font-size: 12px;
+							color: #919eab;
+                       }
+                       /* milestones */
+                       #milestones {
+                       	margin-top: 10px;
+                       	margin-left: 37px;
+                       	padding-left: 16px;
+                       	padding-top: 5px;
+                       	padding-right: 5px;
+                       	width: 292px;
+                       	min-height: 285px;
+                       	background-color: ${this.cardBackgroundColor};
+                       	border-radius: 2px;
+                       }
+                       #milestoneTitle {
+                       	display: inline-block;
+                       	margin-top: 10px;
+                       	font-size: 16px;
+						font-weight: 600;
+						margin-bottom: 8px;
+                       	color: ${this.cardTextColor};
+                       }
+                       #viewMilestones {
+						margin-top: 8px;
+                       	margin-right: 8px;
+                       	float: right;
+                       	font-size: 12px;
+						font-weight: 600;
+                       	line-height: 18px;
+                       	border-radius: 2px;
+                       	border-color: rgba(0, 0, 0, 0);
+                       	background-color: ${this.cardBackgroundColor};
+                       	color: ${this.cardTextColor};
+                       	cursor: pointer;
+                       }
+					   .milestoneCardGroup{
+						display: flex;
+						flex-direction: column;
+						justify-content: space-evenly;
+						height: 250px;
+					   }
+                       .milestoneCard {
+                       	width: 270px;
+                       	display: inline-block;
+                       	color: ${this.cardTextColor};
+                       }
+                       .logo {
+                       	height: 48px;
+                       	width: 48px;
+                       	display: inline-block;
+                       }
+                       .milestoneData {
+                       	display: inline-block;
+                       	width: 200px;
+                       	height: 50px;
+                       	vertical-align: top;
+                       	margin-left: 10px;
+                       }
+                       .milestoneTitle {
+                       	font-size: 14px;
+                       	line-height: 20px;
+						font-weight: 600;
+                       	word-wrap: break-word;
+                       }
+                       .milestoneDesc {
+                       	font-size: 14px;
+                       	line-height: 20px;
+                       	color: #919EAB;
+                       	word-wrap: break-word;
+                       }
+                       .metricsCard .tooltiptext {
+                       	position: relative;
+                       	visibility: hidden;
+                       	width: 130px;
+                       	left: 5px;
+                       	border-radius: 2px;
+                       	background-color: ${this.cardToolTipColor};
+                       	background-blend-mode: darken;
+                       	color: ${this.cardTextColor};
+                       	text-align: center;
+                       	padding: 5px;
+                       	z-index: 1;
+                       }
+           .metricsCardProgressBarGroup{
+          	position: relative;
+          	margin-left: 15px;
+          	bottom: 10px;
+          	width: 120px;
+          	height: 4px;
+           }
+          .metricsCardProgressBarBack{
+          	position: absolute;
+          	top: 0px;
+          	left: 0px;
+          	width: 100%;
+          	height: 100%;
+          	border-radius: 2px;
+          	border-width: 0px;
+          	border-style: solid;
+          	background-color: rgba(0, 180, 238, 0.25);
+          }
+          .metricsCardProgressBar{
+          	position: absolute;
+          	top: 0px;
+          	left: 0px;
+          	width: 50%;
+          	height: 100%;
+          	border-radius: 2px;
+          	border-width: 0px;
+          	border-style: solid;
+          	background-color: #00b4ee;
+          }
+		.metricsCard:hover .tooltiptext {
+		visibility: visible;
+		}
+		.inf {
+		font-size: larger;
+		}
     </style>
     <body>
         <div id="head">
             <h1 class="inline">100 Days of Code Dashboard</h1>
             <a href="${this.twitterShareUrl}"
                 ><button id="shareProgress" title="Share dashboard metrics on Twitter">
-                    Share Progress
+                    Share progress
                 </button></a
             >
-            <button id="certificate" class="level6">Get your Certificate</button>
+            <button id="certificate">Get your Certificate</button>
         </div>
         <div id="topMetrics">
-            <div class="metricsCard level${this.daysLevel}">
+            <div class="metricsCard">
                 <div class="metricsHead">${this.days}</div>
                 <div class="metricsBody">days complete</div>
+                <div class="metricsCardProgressBarGroup">
+                    <div class="metricsCardProgressBarBack"></div>
+                    <div
+                        class="metricsCardProgressBar"
+                        style="width: ${this.dayProgressPx}px; background-color: ${this.dayProgressColor};"
+                    ></div>
+                </div>
                 <div class="tooltiptext">${this.daysLevelTooltip}</div>
             </div>
-            <div class="metricsCard level${this.hoursLevel}">
+            <div class="metricsCard">
                 <div class="metricsHead">${this.hours}</div>
                 <div class="metricsBody">hours coded</div>
+                <div class="metricsCardProgressBarGroup">
+                    <div class="metricsCardProgressBarBack"></div>
+                    <div
+                        class="metricsCardProgressBar"
+                        style="width: ${this.hoursProgressPx}px; background-color: ${this.hoursProgressColor};"
+                    ></div>
+                </div>
                 <div class="tooltiptext">${this.hoursLevelTooltip}</div>
             </div>
-            <div class="metricsCard level${this.streaksLevel}">
+            <div class="metricsCard">
                 <div class="metricsHead">${this.streaks}</div>
                 <div class="metricsBody">longest streaks</div>
+                <div class="metricsCardProgressBarGroup">
+                    <div class="metricsCardProgressBarBack"></div>
+                    <div
+                        class="metricsCardProgressBar"
+                        style="width: ${this.streakProgressPx}px; background-color: ${this.streakProgressColor};"
+                    ></div>
+                </div>
                 <div class="tooltiptext">${this.streaksLevelTooltip}</div>
             </div>
-            <div class="metricsCard level${this.milestonesLevel}">
-                <div class="metricsHead">${this.milestones}</div>
-                <div class="metricsBody">milestones earned</div>
-                <div class="tooltiptext">${this.milestonesLevelTooltip}</div>
+            <div class="metricsCard">
+                <div class="metricsHead">${this.linesAdded}</div>
+                <div class="metricsBody">lines added</div>
+                <div class="metricsCardProgressBarGroup">
+                    <div class="metricsCardProgressBarBack"></div>
+                    <div
+                        class="metricsCardProgressBar"
+                        style="width: ${this.lineAddedProgressPx}px; background-color: ${this.lineAddedProgressColor};"
+                    ></div>
+                </div>
+                <div class="tooltiptext">${this.linesAddedLevelTooltip}</div>
             </div>
-            <div class="metricsCard level${this.avgHoursLevel}">
+            <div class="metricsCard">
                 <div class="metricsHead">${this.avgHours}</div>
-                <div class="metricsBody">average hours/day</div>
+                <div class="metricsBody">avg hours/day</div>
+                <div class="metricsCardProgressBarGroup">
+                    <div class="metricsCardProgressBarBack"></div>
+                    <div
+                        class="metricsCardProgressBar"
+                        style="width: ${this.avgHoursProgressPx}px; background-color: ${this.avgHoursProgressColor};"
+                    ></div>
+                </div>
                 <div class="tooltiptext">${this.avgHoursLevelTooltip}</div>
             </div>
         </div>
@@ -373,7 +419,7 @@
             <div id="left">
                 <div id="logs">
                     <div id="logTitle">Logs</div>
-                    <button id="viewLogs">View Logs</button>
+                    <button id="viewLogs">View logs</button>
                     <div id="logHeadings">
                         <span>Day</span>
                         <span>Date</span>
@@ -385,12 +431,14 @@
             <div id="right">
                 <div id="milestones">
                     <div id="milestoneTitle">Recent Milestones</div>
-                    <button id="viewMilestones">View Milestones</button>
-                    ${this.milestoneHtml}
+					<button id="viewMilestones">View milestones</button>
+					<div class="milestoneCardGroup">
+						${this.milestoneHtml}
+					</div>
                 </div>
             </div>
             <div id="chart">
-                <div id="chartTitle">Code Time: ${this.days} Days</div>
+                <div id="chartTitle">Days Coded: ${this.days} days</div>
                 <div id="chartXMin"></div>
                 <div class="chartYLabel" style="bottom: 45px;">${this.min} hr</div>
                 <div id="chartXMid"></div>

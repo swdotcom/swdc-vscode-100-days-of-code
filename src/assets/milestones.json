@@ -3,150 +3,150 @@
         {
             "id": 1,
             "title": "First Hour",
-            "description": "Completed 1 hr of coding",
+            "description": "1 hour of coding",
             "level": 1,
             "category": "time",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/time/1.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/time/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 2,
             "title": "Perfect Timing",
-            "description": "Completed 30 hr of coding",
+            "description": "30 hours of coding",
             "level": 2,
             "category": "time",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/time/2.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/time/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 3,
             "title": "Minutes == Hours",
-            "description": "Completed 60 hr of coding",
+            "description": "60 hours of coding",
             "level": 3,
             "category": "time",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/time/3.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/time/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 4,
             "title": "That's 324,000 seconds!",
-            "description": "Completed 90 hr of coding",
+            "description": "90 hours of coding",
             "level": 4,
             "category": "time",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/time/4.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/time/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 5,
             "title": "11111000, F8, ...",
-            "description": "Completed 120 hr of coding",
+            "description": "120 hours of coding",
             "level": 5,
             "category": "time",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/time/5.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/time/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 6,
             "title": "Double Time",
-            "description": "Completed 200 hr of coding",
+            "description": "200 hours of coding",
             "level": 6,
             "category": "time",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/time/6.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/time/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 7,
             "title": "Day One of Many",
-            "description": "Completed 1 day of coding",
+            "description": "1 day of coding",
             "level": 1,
             "category": "days",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/days/1.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/days/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 8,
             "title": "It's a Dime",
-            "description": "Completed 10 days of coding",
+            "description": "10 days of coding",
             "level": 2,
             "category": "days",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/days/2.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/days/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 9,
             "title": "Half Way",
-            "description": "Completed 50 days of coding",
+            "description": "50 days of coding",
             "level": 3,
             "category": "days",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/days/3.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/days/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 10,
             "title": "Can't Stop Now",
-            "description": "Completed 75 days of coding",
+            "description": "75 days of coding",
             "level": 4,
             "category": "days",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/days/4.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/days/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 11,
             "title": "A Historic Achievement",
-            "description": "Completed 100 days of coding",
+            "description": "100 days of coding",
             "level": 5,
             "category": "days",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/days/5.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/days/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 12,
             "title": "Victory Lap",
-            "description": "Completed 110 days of coding",
+            "description": "110 days of coding",
             "level": 6,
             "category": "days",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/days/6.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/days/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 13,
-            "title": "Off to a Great Start",
+            "title": "Lift Off",
             "description": "2 day streak",
             "level": 1,
             "category": "streaks",
@@ -154,11 +154,11 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/streaks/1.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/streaks/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 14,
-            "title": "A Perfect Week",
+            "title": "Apollo and Artemis",
             "description": "7 day streak",
             "level": 2,
             "category": "streaks",
@@ -166,11 +166,11 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/streaks/2.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/streaks/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 15,
-            "title": "Good Commitment",
+            "title": "Curiosity",
             "description": "14 day streak",
             "level": 3,
             "category": "streaks",
@@ -178,11 +178,11 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/streaks/3.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/streaks/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 16,
-            "title": "A Perfect Month",
+            "title": "Galilean Prospects",
             "description": "30 day streak",
             "level": 4,
             "category": "streaks",
@@ -190,11 +190,11 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/streaks/4.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/streaks/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 17,
-            "title": "Whoa There!",
+            "title": "Titan Of Coding",
             "description": "60 day streak",
             "level": 5,
             "category": "streaks",
@@ -202,11 +202,11 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/streaks/5.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/streaks/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 18,
-            "title": "Perfect Execution",
+            "title": "Voyager",
             "description": "100 day streak",
             "level": 6,
             "category": "streaks",
@@ -214,79 +214,79 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/streaks/6.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/streaks/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 19,
             "title": "Goal Accomplished",
-            "description": "Coded 1 hour in one day",
+            "description": "1 hour in one day",
             "level": 1,
             "category": "dailyTime",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/dailyTime/1.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/dailyTime/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 20,
             "title": "Overachiever",
-            "description": "Coded 2 hours in one day",
+            "description": "2 hours in one day",
             "level": 2,
             "category": "dailyTime",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/dailyTime/2.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/dailyTime/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 21,
             "title": "Is it Lunch Time Yet?",
-            "description": "Coded 3 hours in one day",
+            "description": "3 hours in one day",
             "level": 3,
             "category": "dailyTime",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/dailyTime/3.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/dailyTime/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 22,
             "title": "Full-Time Coder",
-            "description": "Coded 5 hours in one day",
+            "description": "5 hours in one day",
             "level": 4,
             "category": "dailyTime",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/dailyTime/4.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/dailyTime/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 23,
             "title": "Out of Caffeine",
-            "description": "Coded 8 hours in one day",
+            "description": "8 hours in one day",
             "level": 5,
             "category": "dailyTime",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/dailyTime/5.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/dailyTime/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 24,
             "title": "Please, Get Some Sleep",
-            "description": "Coded 10 hours in one day",
+            "description": "10 hours in one day",
             "level": 6,
             "category": "dailyTime",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/dailyTime/6.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/dailyTime/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 25,
@@ -298,7 +298,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/lines/1.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/lines/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 26,
@@ -310,7 +310,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/lines/2.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/lines/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 27,
@@ -322,7 +322,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/lines/3.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/lines/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 28,
@@ -334,7 +334,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/lines/4.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/lines/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 29,
@@ -346,11 +346,11 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/lines/5.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/lines/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 30,
-            "title": "A lot of Code",
+            "title": "A Lot of Code",
             "description": "10,000 lines of code",
             "level": 6,
             "category": "lines",
@@ -358,7 +358,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/lines/6.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/lines/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 31,
@@ -370,7 +370,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shares/1.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shares/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 32,
@@ -382,7 +382,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shares/2.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shares/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 33,
@@ -394,7 +394,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shares/3.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shares/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 34,
@@ -406,7 +406,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shares/4.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shares/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 35,
@@ -418,7 +418,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shares/5.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shares/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 36,
@@ -430,7 +430,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shares/6.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shares/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 37,
@@ -442,7 +442,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/keystrokes/1.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/keystrokes/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 38,
@@ -454,7 +454,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/keystrokes/2.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/keystrokes/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 39,
@@ -466,7 +466,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/keystrokes/3.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/keystrokes/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 40,
@@ -478,7 +478,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/keystrokes/4.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/keystrokes/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 41,
@@ -490,7 +490,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/keystrokes/5.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/keystrokes/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 42,
@@ -502,79 +502,79 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/keystrokes/6.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/keystrokes/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 43,
-            "title": "Mono-linguist",
-            "description": "Use 1 programming language",
+            "title": "Native",
+            "description": "1 programming language",
             "level": 1,
             "category": "languagesMulti",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languagesMulti/1.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languagesMulti/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 44,
             "title": "Bi-linguist",
-            "description": "Use 2 programming languages",
+            "description": "2 programming languages",
             "level": 2,
             "category": "languageMulti",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languagesMulti/2.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languagesMulti/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 45,
             "title": "More Than I Can Speak",
-            "description": "Use 3 programming languages",
+            "description": "3 programming languages",
             "level": 3,
             "category": "languagesMutli",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languagesMulti/3.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languagesMulti/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 46,
-            "title": "Quad-Coder",
-            "description": "Use 4 programming languages",
+            "title": "Backpacker",
+            "description": "4 programming languages",
             "level": 4,
             "category": "languagesMulti",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languagesMulti/4.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languagesMulti/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 47,
             "title": "Diplomat",
-            "description": "Use 5 programming languages",
+            "description": "5 programming languages",
             "level": 5,
             "category": "languagesMulti",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languagesMulti/5.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languagesMulti/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 48,
-            "title": "Hexcode (0..F)",
-            "description": "Use 6 programming languages",
+            "title": "Traveler",
+            "description": "6 programming languages",
             "level": 6,
             "category": "languageMulti",
             "achieved": false,
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languagesMulti/6.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languagesMulti/grayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 49,
@@ -586,7 +586,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/java.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/javaGrayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 50,
@@ -597,8 +597,8 @@
             "achieved": false,
             "date_achieved": null,
             "shared": false,
-            "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/pyhton.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/pythonGrayed.svg"
+            "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/python.svg",
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 51,
@@ -610,7 +610,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/cpp.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/cppGrayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 52,
@@ -622,7 +622,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/js.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/jsGrayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 53,
@@ -634,7 +634,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/plaintext.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/plaintextGrayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 54,
@@ -646,7 +646,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/html.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/htmlGrayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 55,
@@ -658,7 +658,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/json.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/jsonGrayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         },
         {
             "id": 56,
@@ -670,7 +670,7 @@
             "date_achieved": null,
             "shared": false,
             "icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/ts.svg",
-            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/languages/tsGrayed.svg"
+            "gray_icon": "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/grayMilestone.svg"
         }
     ]
 }

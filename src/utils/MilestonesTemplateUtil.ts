@@ -3,6 +3,7 @@ import path = require("path");
 import fs = require("fs");
 import { getAllMilestones } from "./MilestonesUtil";
 import { compareDates } from "./Util";
+import { monthNames } from "./Constants";
 
 function getMilestonesTemplate(): string {
     return path.join(__dirname, "../assets/templates/milestones.template.html");
@@ -23,27 +24,19 @@ function getStyleColorsBasedOnMode(): any {
 
     let cardTextColor = "#FFFFFF";
     let cardBackgroundColor = "rgba(255,255,255,0.05)";
-    let cardGrayedLevel = "#474747";
-    let sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
-    let shareCheckedPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/checkedShare.svg";
+    let cardGrayedLevel = "#606060";
+    let cardGrayedLevelFont = "#A2A2A2";
     if (tempWindow.activeColorTheme.kind === 1) {
         cardTextColor = "#444444";
         cardBackgroundColor = "rgba(0,0,0,0.10)";
-        cardGrayedLevel = "#B5B5B5";
-        sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shareLight.svg";
-        shareCheckedPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/checkedShareLight.svg";
+        cardGrayedLevel = "#A2A2A2";
+        cardGrayedLevelFont = "#606060";
     }
-    return { cardTextColor, cardBackgroundColor, cardGrayedLevel, sharePath, shareCheckedPath };
+    return { cardTextColor, cardBackgroundColor, cardGrayedLevel, cardGrayedLevelFont };
 }
 
 export function getUpdatedMilestonesHtmlString(): string {
-    const {
-        cardTextColor,
-        cardBackgroundColor,
-        cardGrayedLevel,
-        sharePath,
-        shareCheckedPath
-    } = getStyleColorsBasedOnMode();
+    const { cardTextColor, cardBackgroundColor, cardGrayedLevel, cardGrayedLevelFont } = getStyleColorsBasedOnMode();
 
     const milestones = getAllMilestones();
 
@@ -59,7 +52,7 @@ export function getUpdatedMilestonesHtmlString(): string {
         const description: string = milestone.description;
         const level: number = milestone.level;
         const achieved: boolean = milestone.achieved;
-        const shareIcon: string = milestone.shared ? shareCheckedPath : sharePath;
+        const shareIcon: string = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
 
         let icon: string;
         let dateAchieved: number = 0;
@@ -86,10 +79,10 @@ export function getUpdatedMilestonesHtmlString(): string {
             let dateOb = new Date(dateAchieved);
 
             const dayNum = dateOb.getDate();
-            const month = dateOb.getMonth() + 1; // Month is 0 indexed
+            const month = monthNames[dateOb.getMonth()];
             const year = dateOb.getFullYear();
 
-            dateHtml = `\t\t\t<div class="date">${month}/${dayNum}/${year}</div>`;
+            dateHtml = `\t\t\t<div class="date">${month} ${dayNum}, ${year}</div>`;
         } else {
             icon = milestone.gray_icon;
             grayedCard = "grayed";
@@ -100,9 +93,9 @@ export function getUpdatedMilestonesHtmlString(): string {
         // if level 6, replace it with ∞
         let levelHtml: string = "";
         if (level > 0 && level < 6) {
-            levelHtml = `\t\t\t<div class="level${level} milestoneCardLevel ${grayedLevel}">Level ${level}</div>`;
+            levelHtml = `\t\t\t<div class="milestoneCardLevel ${grayedLevel}">Level ${level}</div>`;
         } else if (level === 6) {
-            levelHtml = `\t\t\t<div class="level${level} milestoneCardLevel ${grayedLevel}">Level <span class="inf">∞</span></div>`;
+            levelHtml = `\t\t\t<div class="milestoneCardLevel ${grayedLevel}">Level <span class="inf">∞</span></div>`;
         }
 
         const milestoneCardHtml: string = [
@@ -140,8 +133,7 @@ export function getUpdatedMilestonesHtmlString(): string {
         cardTextColor,
         cardBackgroundColor,
         cardGrayedLevel,
-        sharePath,
-        shareCheckedPath,
+        cardGrayedLevelFont,
         recents,
         allMilestones
     };

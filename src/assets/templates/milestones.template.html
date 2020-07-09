@@ -18,65 +18,6 @@
             color: rgba(255, 255, 255, 0.05);
             background-color: ${this.cardBackgroundColor};
         }
-
-        /* levels */
-        .keys {
-            display: inline-block;
-            vertical-align: middle;
-            font-size: 18px;
-            margin-right: 5px;
-        }
-        .level1 {
-            background: linear-gradient(
-                180deg,
-                rgba(251, 0, 0, 0.5) 0%,
-                rgba(255, 151, 213, 0.5) 100%
-            );
-        }
-        .level2 {
-            background: linear-gradient(
-                180deg,
-                rgba(255, 245, 0, 0.5) 0%,
-                rgba(133, 250, 56, 0.5) 70.3%,
-                rgba(0, 140, 39, 0.5) 100%
-            );
-        }
-        .level3 {
-            background: linear-gradient(
-                180deg,
-                rgba(214, 126, 255, 0.5) 0%,
-                rgba(86, 113, 255, 0.5) 67.71%,
-                rgba(0, 224, 255, 0.5) 100%
-            );
-        }
-        .level4 {
-            background: linear-gradient(
-                180deg,
-                rgba(255, 0, 0, 0.5) 2.05%,
-                rgba(255, 168, 0, 0.5) 73.44%,
-                rgba(255, 245, 0, 0.5) 100%
-            );
-        }
-        .level5 {
-            background: linear-gradient(
-                180deg,
-                rgba(0, 224, 255, 0.5) 0%,
-                rgba(219, 0, 255, 0.5) 49.6%,
-                rgba(253, 106, 0, 0.5) 100%
-            );
-        }
-        .level6 {
-            background: linear-gradient(
-                180deg,
-                rgba(219, 0, 255, 0.5) 3.41%,
-                rgba(103, 115, 255, 0.5) 18.6%,
-                rgba(13, 208, 255, 0.5) 32.96%,
-                rgba(88, 213, 51, 0.5) 51.83%,
-                rgba(255, 237, 1, 0.5) 75.22%,
-                rgba(255, 97, 1, 0.5) 86.71%,
-                rgba(255, 10, 1, 0.5) 100%
-            );
-        }
         .inf {
             font-size: larger;
         }
@@ -94,18 +35,22 @@
 
         /* Milestone card */
         .milestoneCard {
-            background-color: ${this.cardBackgroundColor};
-            display: inline-block;
+            display: flex;
+        	display: inline-flex;
+        	align-items: center;
+        	flex-direction: column;
             margin: 10px;
+            padding: 8px 12px 12px 12px;
             position: relative;
-            height: 235px;
+            height: 250px;
             width: 200px;
-            border-radius: 3px;
+            border-radius: 2px;
+            background-color: ${this.cardBackgroundColor};
         }
         .milestoneShare {
             position: absolute;
-            right: 10px;
-            top: 10px;
+            right: 16px;
+            top: 14px;
             height: auto;
             width: 20px;
             transform: translate(5px, -3px);
@@ -114,48 +59,40 @@
             position: absolute;
             width: 50px;
             height: 18px;
-            left: 7px;
-            top: 7px;
+            left: 12px;
+            top: 11px;
             line-height: 18px;
             font-size: 12px;
             font-weight: 250;
             border-radius: 3px;
             text-align: center;
             vertical-align: middle;
+            background: rgba(145, 158, 171, 0.5);
         }
         .milestoneTitle {
-            position: absolute;
-            top: 27px;
             text-align: center;
-            width: inherit;
-            font-size: 18px;
-            font-weight: 350;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 16px;
+            line-height: 20px;
             color: ${this.cardTextColor};
-            margin-top: 10px;
         }
         .logo {
-            height: 100px;
-            width: 100px;
-            position: absolute;
-            top: 70px;
-            left: 50px;
+            height: 120px;
+            width: 120px;
+            margin-top: 16px;
         }
         .milestoneDesc {
-            position: absolute;
-            width: inherit;
             text-align: center;
+            margin-top: 20px;
             font-size: 14px;
-            bottom: 40px;
             color: ${this.cardTextColor};
         }
         .date {
-            position: absolute;
-            width: inherit;
             text-align: center;
-            font-size: 14px;
-            font-weight: 350;
-            bottom: 10px;
+            font-size: 12px;
             color: #919eab;
+            margin-top: 8px;
         }
 
         /* Grayed */
@@ -165,6 +102,7 @@
         }
         .grayedLevel {
             background: ${this.cardGrayedLevel};
+            color: ${this.cardGrayedLevelFont};
         }
         .noMilestones {
             font-size: 18px;
@@ -177,13 +115,6 @@
     </style>
     <body>
         <h1>Milestones</h1>
-        <div class="keys">Levels:</div>
-        <div class="circle level1">1</div>
-        <div class="circle level2">2</div>
-        <div class="circle level3">3</div>
-        <div class="circle level4">4</div>
-        <div class="circle level5">5</div>
-        <div class="circle level6"><span class="inf">∞</span></div>
         ${this.recents} ${this.allMilestones}
     </body>
     <script>
@@ -193,7 +124,6 @@
         for (let i = 0; i < shareButtons.length; i++) {
             shareButtons[i].addEventListener("click", function () {
                 var hiddenId = this.parentNode.parentNode.getElementsByClassName("hiddenId")[0].textContent;
-                this.src = "${this.shareCheckedPath}";
                 vscode.postMessage({ command: "incrementShare", value: hiddenId });
             });
         }

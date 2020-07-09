@@ -1,13 +1,6 @@
 import path = require("path");
 import fs = require("fs");
-import {
-    getSummaryObject,
-    getDaysLevel,
-    getHoursLevel,
-    getLongStreakLevel,
-    getMilestonesEarnedLevel,
-    getAverageHoursLevel
-} from "./SummaryUtil";
+import { getSummaryObject, getDaysLevel, getHoursLevel, getLongStreakLevel, getLinesAddedLevel } from "./SummaryUtil";
 import { Summary } from "../models/Summary";
 import { getLastSevenLoggedDays, getAllCodetimeHours, getLogDateRange } from "./LogsUtil";
 import { getMilestoneById } from "./MilestonesUtil";
@@ -113,55 +106,34 @@ function getStreaksLevelTooltipText(level: number): string {
     }
 }
 
-function getMilestonesLevelTooltipText(level: number): string {
+function getLinesAddedLevelTooltipText(level: number): string {
     switch (level) {
         case 0:
-            return "Achieve 1 Milestone to reach Level 1 of Milestones";
+            return "Code 1 Line to reach Level 1 of Lines Added";
         case 1:
-            return `You're at Level 1 of Milestones. Achieve 10 Milestones to reach Level 2.`;
+            return `You're at Level 1 of Lines Addded. Code 16 Lines to reach Level 2.`;
         case 2:
-            return `You're at Level 2 of Milestones. Achieve 20 Milestones to reach Level 3.`;
+            return `You're at Level 2 of Lines Addded. Code 50 Lines to reach Level 3.`;
         case 3:
-            return `You're at Level 3 of Milestones. Achieve 30 Milestones to reach Level 4.`;
+            return `You're at Level 3 of Lines Addded. Code 100 Lines to reach Level 4.`;
         case 4:
-            return `You're at Level 4 of Milestones. Achieve 40 Milestones to reach Level 5.`;
+            return `You're at Level 4 of Lines Addded. Code 1,000 Lines to reach Level 5.`;
         case 5:
-            return `You're at Level 5 of Milestones. Achieve 50 Milestones to reach Level <span class="inf">∞</span>.`;
+            return `You're at Level 5 of Lines Addded. Code 10,000 Lines to reach Level <span class="inf">∞</span>.`;
         case 6:
-            return `Congratulations, you're at Level <span class="inf">∞</span> of Milestones!`;
+            return `Congratulations, you're at Level <span class="inf">∞</span> of Lines!`;
         default:
             return "";
     }
 }
 
-function getAvgHoursLevelTooltipText(level: number): string {
-    switch (level) {
-        case 0:
-            return "Achieve a 0.5 hour average to reach Level 1 of Average Hours";
-        case 1:
-            return `You're at Level 1 of Average Hours. Achieve a 1.0 hour average to reach Level 2.`;
-        case 2:
-            return `You're at Level 2 of Average Hours. Achieve a 1.5 hour average to reach Level 3.`;
-        case 3:
-            return `You're at Level 3 of Average Hours. Achieve a 2.0 hour average to reach Level 4.`;
-        case 4:
-            return `You're at Level 4 of Average Hours. Achieve a 2.5 hour average to reach Level 5.`;
-        case 5:
-            return `You're at Level 5 of Average Hours. Achieve a 3.0 hour average to reach Level <span class="inf">∞</span>.`;
-        case 6:
-            return `Congratulations, you're at Level <span class="inf">∞</span> of Average Hours!`;
-        default:
-            return "";
-    }
-}
-
-function generateShareUrl(days: number, hours: number, streaks: number, milestones: number, avgHours: number): string {
+function generateShareUrl(days: number, hours: number, streaks: number, linesAdded: number, avgHours: number): string {
     const hashtagURI = "%23";
     const shareText = [
         `\nDays: ${days}`,
         `Total Hours Coded: ${hours} hrs`,
         `Longest Streak: ${streaks} days`,
-        `Milestones Earned: ${milestones}`,
+        `Total Lines Added: ${linesAdded}`,
         `Avg Hours/Day: ${avgHours} hrs\n`
     ].join("\n");
     const shareURI = encodeURI(shareText);
@@ -176,12 +148,14 @@ function getStyleColorsBasedOnMode(): any {
     let datagramXMinColor = "rgba(170,170,170,1)";
     let datagramBackground = "rgba(0,0,0,0);";
     let cardToolTipColor = "rgba(109,109,109,0.9)";
+    let progressbarbackColor = "rgba(0, 180, 238, 0.)";
     if (tempWindow.activeColorTheme.kind === 1) {
         cardTextColor = "#444444";
         cardBackgroundColor = "rgba(0,0,0,0.10)";
         datagramXMinColor = "#444444";
         datagramBackground = "rgba(0,0,0,0.10);";
         cardToolTipColor = "rgba(165,165,165,0.9)";
+        progressbarbackColor = "rgba(0, 180, 238, 0.15)";
     }
     return { cardTextColor, cardBackgroundColor, datagramXMinColor, datagramBackground, cardToolTipColor };
 }
@@ -197,7 +171,9 @@ function getDatagramHtmlComponents(): any {
     let xAxisDates = "";
     if (codeTimeHours.length > 0) {
         max = Math.max(...codeTimeHours);
+        max = parseFloat(max.toFixed(1));
         mid = (max - min) / 2;
+        mid = parseFloat(mid.toFixed(1));
         for (let i = 0; i < codeTimeHours.length; i++) {
             let size = (codeTimeHours[i] * 250) / max;
             let transform = 250 - size;
@@ -258,7 +234,7 @@ function getLogsHtml(): string {
 
     const d = new Date();
     if (logs.length === 0) {
-        logsHtml = `<div style="text-align: center; padding-top: 75px; font-size: 14px; font-weight: bolder;">Excited for you to start your 1st day in #100DaysOfCode Challenge!</div>`;
+        logsHtml = `<div style="text-align: center; padding-top: 75px; font-size: 14px;">Excited for you to start your 1st day in #100DaysOfCode Challenge!</div>`;
     } else {
         for (let i = 0; i < logs.length; i++) {
             logsHtml += `\t\t\t<div class="logBody">\n\t\t\t\t<span>${logs[i].day_number}</span>\n`;
@@ -297,7 +273,7 @@ function getMilestonesHtml(recent_milestones: Array<number>): string {
             }
         }
     } else {
-        milestoneHtml = `<div style="text-align: center; padding-top: 75px; font-size: 14px; font-weight: bolder; padding-right: 10px;">Excited for you to achieve your 1st Milestone!</div>`;
+        milestoneHtml = `<div style="text-align: center; padding-top: 75px; font-size: 14px; padding-right: 10px;">Excited for you to achieve your 1st Milestone!</div>`;
     }
     return milestoneHtml;
 }
@@ -311,7 +287,7 @@ export function getUpdatedDashboardHtmlString(): string {
     let days = summary.days;
     let streaks = summary.longest_streak;
     const currStreak = summary.current_streak;
-    const milestones = summary.milestones;
+    const linesAdded = summary.lines_added + summary.currentLines;
     let avgHours = parseFloat((hours / days).toFixed(2));
 
     if (summary.currentHours < HOURS_THRESHOLD) {
@@ -332,19 +308,18 @@ export function getUpdatedDashboardHtmlString(): string {
         certificateVisibility = "visible";
     }
 
-    const daysLevel = getDaysLevel(days);
-    const hoursLevel = getHoursLevel(hours);
-    const streaksLevel = getLongStreakLevel(streaks);
-    const milestonesLevel = getMilestonesEarnedLevel(milestones);
-    const avgHoursLevel = getAverageHoursLevel(avgHours);
+    const { daysLevel, daysProgressPercentage } = getDaysLevel(days);
+    const { hoursLevel, hoursProgressPercentage } = getHoursLevel(hours);
+    const { streaksLevel, streaksProgressPercentage } = getLongStreakLevel(streaks);
+    const { linesAddedLevel, linesAddedProgressPercentage } = getLinesAddedLevel(linesAdded);
 
     const daysLevelTooltip = getDaysLevelTooltipText(daysLevel);
     const hoursLevelTooltip = getHoursLevelTooltipText(hoursLevel);
     const streaksLevelTooltip = getStreaksLevelTooltipText(streaksLevel);
-    const milestonesLevelTooltip = getMilestonesLevelTooltipText(milestonesLevel);
-    const avgHoursLevelTooltip = getAvgHoursLevelTooltipText(avgHoursLevel);
+    const linesAddedLevelTooltip = getLinesAddedLevelTooltipText(linesAddedLevel);
+    const avgHoursLevelTooltip = avgHours >= 1 ? "Good job coding an hour each day!" : "Try to code an hour each day.";
 
-    const twitterShareUrl = generateShareUrl(days, hours, streaks, milestones, avgHours);
+    const twitterShareUrl = generateShareUrl(days, hours, streaks, linesAdded, avgHours);
 
     const {
         cardTextColor,
@@ -360,21 +335,28 @@ export function getUpdatedDashboardHtmlString(): string {
 
     const milestoneHtml = getMilestonesHtml(summary.recent_milestones);
 
+    const dayProgressPx = Math.round(daysProgressPercentage * 1.2);
+    const hoursProgressPx = Math.round(hoursProgressPercentage * 1.2);
+    const streakProgressPx = Math.round(streaksProgressPercentage * 1.2);
+    const lineAddedProgressPx = Math.round(linesAddedProgressPercentage * 1.2);
+    const avgHoursProgressPx = avgHours >= 1 ? 120 : Math.round(avgHours * 120);
+
+    const dayProgressColor = daysLevel === 6 ? "#FD9808" : "#00b4ee";
+    const hoursProgressColor = hoursLevel === 6 ? "#FD9808" : "#00b4ee";
+    const streakProgressColor = streaksLevel === 6 ? "#FD9808" : "#00b4ee";
+    const lineAddedProgressColor = linesAddedLevel === 6 ? "#FD9808" : "#00b4ee";
+    const avgHoursProgressColor = avgHours >= 1 ? "#FD9808" : "#00b4ee";
+
     const templateVars = {
         hours,
         days,
         streaks,
-        milestones,
+        linesAdded,
         avgHours,
-        daysLevel,
-        hoursLevel,
-        streaksLevel,
-        milestonesLevel,
-        avgHoursLevel,
         daysLevelTooltip,
         hoursLevelTooltip,
         streaksLevelTooltip,
-        milestonesLevelTooltip,
+        linesAddedLevelTooltip,
         avgHoursLevelTooltip,
         twitterShareUrl,
         cardTextColor,
@@ -390,7 +372,17 @@ export function getUpdatedDashboardHtmlString(): string {
         dateJustifyContent,
         logsHtml,
         milestoneHtml,
-        certificateVisibility
+        certificateVisibility,
+        dayProgressPx,
+        hoursProgressPx,
+        streakProgressPx,
+        lineAddedProgressPx,
+        avgHoursProgressPx,
+        dayProgressColor,
+        hoursProgressColor,
+        streakProgressColor,
+        lineAddedProgressColor,
+        avgHoursProgressColor
     };
 
     const templateString = fs.readFileSync(getDashboardTemplate()).toString();

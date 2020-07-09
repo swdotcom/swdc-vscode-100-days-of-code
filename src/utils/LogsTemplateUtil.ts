@@ -2,10 +2,11 @@ import { window } from "vscode";
 import { getSummaryObject } from "./SummaryUtil";
 import { getMilestoneById } from "./MilestonesUtil";
 import { Log } from "../models/Log";
-import { checkLogsJson, getAllLogObjects } from "./LogsUtil";
+import { getAllLogObjects } from "./LogsUtil";
 import { compareDates } from "./Util";
 import path = require("path");
 import fs = require("fs");
+import { monthNames } from "./Constants";
 
 function getLogsTemplate() {
     return path.join(__dirname, "../assets/templates/logs.template.html");
@@ -17,30 +18,29 @@ function getStyleColorsBasedOnMode(): any {
     let cardTextColor = "#FFFFFF";
     let cardBackgroundColor = "rgba(255,255,255,0.05)";
     let cardMetricBarSidesColor = "rgba(255,255,255,0.20)";
+    let editButtonColor = "rgba(255,255,255,0.10)";
     let cardToolTipColor = "rgba(109, 109, 109, .9)";
-    let sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
-    let shareCheckedPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/checkedShare.svg";
     let dropDownPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Logs/dropDown.svg";
     let editLogCardColor = "#292929";
+    let lightGrayColor = "#919eab";
     if (tempWindow.activeColorTheme.kind === 1) {
         cardTextColor = "#444444";
         cardBackgroundColor = "rgba(0,0,0,0.10)";
         cardMetricBarSidesColor = "rgba(0,0,0,0.20)";
+        editButtonColor = "rgba(0,0,0,0.10)";
         cardToolTipColor = "rgba(165, 165, 165, .9)";
-        sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shareLight.svg";
-        shareCheckedPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/checkedShareLight.svg";
-        dropDownPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Logs/dropDownLight.svg";
         editLogCardColor = "#E5E5E5";
+        lightGrayColor = "#596673";
     }
     return {
         cardTextColor,
         cardBackgroundColor,
         cardMetricBarSidesColor,
         cardToolTipColor,
-        sharePath,
-        shareCheckedPath,
         dropDownPath,
-        editLogCardColor
+        editLogCardColor,
+        editButtonColor,
+        lightGrayColor
     };
 }
 
@@ -67,9 +67,9 @@ function generateShareUrl(
 function getFormattedDate(timestamp: number): string {
     const date = new Date(timestamp);
     const dayOfMonth = date.getDate();
-    const month = date.getMonth() + 1;
+    const month = monthNames[date.getMonth()];
     const year = date.getFullYear();
-    return month + "/" + dayOfMonth + "/" + year;
+    return month + " " + dayOfMonth + ", " + year;
 }
 
 function getLogsCardSummaryVariables(dayHours: number, dayKeystrokes: number, dayLinesAdded: number) {
@@ -101,23 +101,29 @@ function getLogsCardSummaryVariables(dayHours: number, dayKeystrokes: number, da
         avgLines = 0;
     }
 
-    let barPxHours = Math.round(percentHours);
+    let barPxHours = Math.round(percentHours * 1.3);
     let barColorHours = "00b4ee";
-    if (barPxHours >= 100) {
-        barPxHours = 100;
+    if (barPxHours >= 130) {
+        barPxHours = 130;
         barColorHours = "FD9808";
+    } else if (barPxHours < 20 && barPxHours > 0) {
+        barPxHours = 20;
     }
-    let barPxKeystrokes = Math.round(percentKeystrokes);
+    let barPxKeystrokes = Math.round(percentKeystrokes * 1.3);
     let barColorKeystrokes = "00b4ee";
-    if (barPxKeystrokes >= 100) {
-        barPxKeystrokes = 100;
+    if (barPxKeystrokes >= 130) {
+        barPxKeystrokes = 130;
         barColorKeystrokes = "FD9808";
+    } else if (barPxKeystrokes < 20 && barPxKeystrokes > 0) {
+        barPxKeystrokes = 20;
     }
-    let barPxLines = Math.round(percentLines);
+    let barPxLines = Math.round(percentLines * 1.3);
     let barColorLines = "00b4ee";
-    if (barPxLines >= 100) {
-        barPxLines = 100;
+    if (barPxLines >= 130) {
+        barPxLines = 130;
         barColorLines = "FD9808";
+    } else if (barPxLines < 20 && barPxLines > 0) {
+        barPxLines = 20;
     }
 
     return {
@@ -204,6 +210,7 @@ function getLogCard(
         day.codetime_metrics.keystrokes,
         day.codetime_metrics.lines_added
     );
+    const { lightGrayColor } = getStyleColorsBasedOnMode();
     const linksText = getLinksText(day.links);
     const milestonesText = getMilestonesText(day.milestones);
     return [
@@ -218,7 +225,7 @@ function getLogCard(
         `\t\t\t<div class="cardHeaderButtonSection">`,
         `\t\t\t\t<a href="${twitterShareUrl}" title="Share this on Twitter"><button class="cardHeaderShareButton"><img class="cardHeaderShareButtonIcon" src=${shareIconLink} alt="Share"></button></a>`,
         `\t\t\t\t<button class="cardHeaderEditLogButton">Edit Log</button>`,
-        `\t\t\t\t<button class="cardHeaderDropDownButton"><img class="cardHeaderShareButtonIcon" src=${dropDownPath} alt="Drop Down"></button>`,
+        `\t\t\t\t<button class="cardHeaderDropDownButton"><img class="cardHeaderDropDownButtonIcon" src=${dropDownPath} alt="Drop Down"></button>`,
         `\t\t\t</div>`,
         `\t\t</div>`,
         `\t\t<div class="cardContent">`,
@@ -238,22 +245,20 @@ function getLogCard(
         `\t\t\t\t<br>`,
         `\t\t\t\t<div class='cardMetricGrid'>`,
         `\t\t\t\t\t<div class="cardMetric">`,
-        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 16px; margin-bottom: 5px;">Code Time</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 14px; margin-bottom: 5px;">Code Time</div>`,
         `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 20px; margin-bottom: 20px;">${day.codetime_metrics.hours}</div>`,
-        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; font-weight: normal; margin-bottom: 5px;">${percentHours}% of Average</div>`,
-        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; font-weight: normal; margin-bottom: 20px;">Average: ${avgHours} Hours</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; font-weight: normal; color: ${lightGrayColor}; margin-bottom: 5px;">${percentHours}% of average</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; font-weight: normal; color: ${lightGrayColor}; margin-bottom: 20px;">Average: ${avgHours} Hours</div>`,
         `\t\t\t\t\t\t<div class="cardMetricBarGroup">`,
-        `\t\t\t\t\t\t\t<div class="cardMetricBarRight"></div>`,
         `\t\t\t\t\t\t\t<div class="cardMetricBarMiddle"></div>`,
         `\t\t\t\t\t\t\t<div class="cardMetricBarMiddle" style="width: ${barPxHours}px; background-color: #${barColorHours};"></div>`,
-        `\t\t\t\t\t\t\t<div class="cardMetricBarLeft"></div>`,
         `\t\t\t\t\t\t</div>`,
         `\t\t\t\t\t</div>`,
         `\t\t\t\t\t<div class="cardMetric">`,
-        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 16px; margin-bottom: 5px;">Keystrokes</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 14px; margin-bottom: 5px;">Keystrokes</div>`,
         `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 20px; margin-bottom: 20px;">${day.codetime_metrics.keystrokes}</div>`,
-        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; font-weight: normal; margin-bottom: 5px;">${percentKeystrokes}% of Average</div>`,
-        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; font-weight: normal; margin-bottom: 20px;">Average: ${avgKeystrokes}</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; font-weight: normal; color: ${lightGrayColor}; margin-bottom: 5px;">${percentKeystrokes}% of average</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; font-weight: normal; color: ${lightGrayColor}; margin-bottom: 20px;">Average: ${avgKeystrokes}</div>`,
         `\t\t\t\t\t\t<div class="cardMetricBarGroup">`,
         `\t\t\t\t\t\t\t<div class="cardMetricBarRight"></div>`,
         `\t\t\t\t\t\t\t<div class="cardMetricBarMiddle"></div>`,
@@ -262,10 +267,10 @@ function getLogCard(
         `\t\t\t\t\t\t</div>`,
         `\t\t\t\t\t</div>`,
         `\t\t\t\t\t<div class="cardMetric">`,
-        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 16px; margin-bottom: 5px;">Lines Added</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 14px; margin-bottom: 5px;">Lines Added</div>`,
         `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 20px; margin-bottom: 20px;">${day.codetime_metrics.lines_added}</div>`,
-        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; font-weight: normal; margin-bottom: 5px;">${percentLines}% of Average</div>`,
-        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; font-weight: normal; margin-bottom: 20px;">Average: ${avgLines}</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; font-weight: normal; color: ${lightGrayColor}; margin-bottom: 5px;">${percentLines}% of average</div>`,
+        `\t\t\t\t\t\t<div class="cardMetricText" style="font-size: 12px; font-weight: normal; color: ${lightGrayColor}; margin-bottom: 20px;">Average: ${avgLines}</div>`,
         `\t\t\t\t\t\t<div class="cardMetricBarGroup">`,
         `\t\t\t\t\t\t\t<div class="cardMetricBarRight"></div>`,
         `\t\t\t\t\t\t\t<div class="cardMetricBarMiddle"></div>`,
@@ -297,18 +302,19 @@ export function getUpdatedLogsHtml(): string {
         cardBackgroundColor,
         cardMetricBarSidesColor,
         cardToolTipColor,
-        sharePath,
-        shareCheckedPath,
         dropDownPath,
-        editLogCardColor
+        editLogCardColor,
+        editButtonColor
     } = getStyleColorsBasedOnMode();
 
     // CSS
     let logsHtml = "";
+    let addLogVisibility = "hidden";
 
     let submittedLogToday: boolean;
     if (logs.length < 1 || (logs.length === 1 && !logs[0].day_number)) {
-        logsHtml = `\t\t<h2 id='noLogs'>Log Daily Progress to see it here! --> <a id="addLog" href="Add Log">Add log</a></h2>`;
+        logsHtml = `\t\t<h2 id='noLogs'>Log Daily Progress to see it here!</h2>`;
+        addLogVisibility = "visible";
     } else {
         let mostRecentLog = logs[logs.length - 1];
         let logDate = new Date(mostRecentLog.date);
@@ -316,7 +322,7 @@ export function getUpdatedLogsHtml(): string {
         submittedLogToday = compareDates(dateNow, logDate) && mostRecentLog.title !== "No Title";
 
         if (!submittedLogToday) {
-            logsHtml += `\t\t<h2>Don't forget to submit your log today! --> <a id="addLog" href="Add Log">Add log</a></h2>\n`;
+            addLogVisibility = "visible";
         }
 
         for (let i = logs.length - 1; i >= 0; i--) {
@@ -336,7 +342,7 @@ export function getUpdatedLogsHtml(): string {
 
             const formattedDate = getFormattedDate(day.date);
 
-            const shareIconLink = day.shared ? shareCheckedPath : sharePath;
+            const shareIconLink = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
 
             logsHtml += getLogCard(day, formattedDate, twitterShareUrl, shareIconLink, dropDownPath);
         }
@@ -348,10 +354,10 @@ export function getUpdatedLogsHtml(): string {
         cardBackgroundColor,
         cardMetricBarSidesColor,
         cardToolTipColor,
-        sharePath,
-        shareCheckedPath,
         dropDownPath,
-        editLogCardColor
+        editLogCardColor,
+        editButtonColor,
+        addLogVisibility
     };
 
     const templateString = fs.readFileSync(getLogsTemplate()).toString();

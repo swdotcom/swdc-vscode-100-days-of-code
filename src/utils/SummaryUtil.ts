@@ -204,80 +204,120 @@ export function getSummaryObject() {
     return JSON.parse(rawSummary);
 }
 
-export function getDaysLevel(daysComplete: number): number {
+export function getDaysLevel(daysComplete: number): any {
     // based on days milestones
+    let daysLevel = 0;
+    let daysProgressPercentage = 0;
     if (daysComplete >= 110) {
-        return 6;
+        daysLevel = 6;
+        daysProgressPercentage = 100;
     } else if (daysComplete >= 100) {
-        return 5;
+        daysLevel = 5;
+        daysProgressPercentage = ((daysComplete - 100) * 100) / (110 - 100);
     } else if (daysComplete >= 75) {
-        return 4;
+        daysLevel = 4;
+        daysProgressPercentage = ((daysComplete - 75) * 100) / (100 - 75);
     } else if (daysComplete >= 50) {
-        return 3;
+        daysLevel = 3;
+        daysProgressPercentage = ((daysComplete - 50) * 100) / (75 - 50);
     } else if (daysComplete >= 10) {
-        return 2;
+        daysLevel = 2;
+        daysProgressPercentage = ((daysComplete - 10) * 100) / (50 - 10);
     } else if (daysComplete >= 1) {
-        return 1;
+        daysLevel = 1;
+        daysProgressPercentage = ((daysComplete - 1) * 100) / (10 - 1);
     } else {
-        return 0;
+        daysLevel = 0;
+        daysProgressPercentage = (daysComplete * 100) / (1 - 0);
     }
+    return { daysLevel, daysProgressPercentage };
 }
 
-export function getHoursLevel(hoursCoded: number): number {
+export function getHoursLevel(hoursCoded: number): any {
     // based on hours milestones
+    let hoursLevel = 0;
+    let hoursProgressPercentage = 0;
     if (hoursCoded >= 200) {
-        return 6;
+        hoursLevel = 6;
+        hoursProgressPercentage = 100;
     } else if (hoursCoded >= 120) {
-        return 5;
+        hoursLevel = 5;
+        hoursProgressPercentage = ((hoursCoded - 120) * 100) / (200 - 120);
     } else if (hoursCoded >= 90) {
-        return 4;
+        hoursLevel = 4;
+        hoursProgressPercentage = ((hoursCoded - 90) * 100) / (120 - 90);
     } else if (hoursCoded >= 60) {
-        return 3;
+        hoursLevel = 3;
+        hoursProgressPercentage = ((hoursCoded - 60) * 100) / (90 - 60);
     } else if (hoursCoded >= 30) {
-        return 2;
+        hoursLevel = 2;
+        hoursProgressPercentage = ((hoursCoded - 30) * 100) / (60 - 30);
     } else if (hoursCoded >= 1) {
-        return 1;
+        hoursLevel = 1;
+        hoursProgressPercentage = ((hoursCoded - 1) * 100) / (30 - 1);
     } else {
-        return 0;
+        hoursLevel = 0;
+        hoursProgressPercentage = (hoursCoded * 100) / (1 - 0);
     }
+    return { hoursLevel, hoursProgressPercentage };
 }
 
-export function getLongStreakLevel(longestStreak: number): number {
+export function getLongStreakLevel(longestStreak: number): any {
     // based on streaks milestones
+    let streaksLevel = 0;
+    let streaksProgressPercentage = 0;
     if (longestStreak >= 100) {
-        return 6;
+        streaksLevel = 6;
+        streaksProgressPercentage = 100;
     } else if (longestStreak >= 60) {
-        return 5;
+        streaksLevel = 5;
+        streaksProgressPercentage = ((longestStreak - 60) * 100) / (100 - 60);
     } else if (longestStreak >= 30) {
-        return 4;
+        streaksLevel = 4;
+        streaksProgressPercentage = ((longestStreak - 30) * 100) / (60 - 30);
     } else if (longestStreak >= 14) {
-        return 3;
+        streaksLevel = 3;
+        streaksProgressPercentage = ((longestStreak - 14) * 100) / (30 - 14);
     } else if (longestStreak >= 7) {
-        return 2;
+        streaksLevel = 2;
+        streaksProgressPercentage = ((longestStreak - 7) * 100) / (14 - 7);
     } else if (longestStreak >= 2) {
-        return 1;
+        streaksLevel = 1;
+        streaksProgressPercentage = ((longestStreak - 2) * 100) / (7 - 2);
     } else {
-        return 0;
+        streaksLevel = 0;
+        streaksProgressPercentage = (longestStreak * 100) / (2 - 0);
     }
+    return { streaksLevel, streaksProgressPercentage };
 }
 
-export function getMilestonesEarnedLevel(milestones: number): number {
-    // based on number of milestones
-    if (milestones >= 50) {
-        return 6;
-    } else if (milestones >= 40) {
-        return 5;
-    } else if (milestones >= 30) {
-        return 4;
-    } else if (milestones >= 20) {
-        return 3;
-    } else if (milestones >= 10) {
-        return 2;
-    } else if (milestones >= 1) {
-        return 1;
+export function getLinesAddedLevel(linesAdded: number): any {
+    // based on number of lines added milestones
+    let linesAddedLevel = 0;
+    let linesAddedProgressPercentage = 0;
+    if (linesAdded >= 10000) {
+        linesAddedLevel = 6;
+        linesAddedProgressPercentage = 100;
+    } else if (linesAdded >= 1000) {
+        linesAddedLevel = 5;
+        linesAddedProgressPercentage = ((linesAdded - 1000) * 100) / (10000 - 1000);
+    } else if (linesAdded >= 100) {
+        linesAddedLevel = 4;
+        linesAddedProgressPercentage = ((linesAdded - 100) * 100) / (1000 - 100);
+    } else if (linesAdded >= 50) {
+        linesAddedLevel = 3;
+        linesAddedProgressPercentage = ((linesAdded - 50) * 100) / (100 - 50);
+    } else if (linesAdded >= 16) {
+        linesAddedLevel = 2;
+        linesAddedProgressPercentage = ((linesAdded - 16) * 100) / (50 - 16);
+    } else if (linesAdded >= 1) {
+        linesAddedLevel = 1;
+        linesAddedProgressPercentage = ((linesAdded - 1) * 100) / (16 - 1);
     } else {
-        return 0;
+        linesAddedLevel = 0;
+        linesAddedProgressPercentage = (linesAdded * 100) / (1 - 0);
     }
+    return { linesAddedLevel, linesAddedProgressPercentage };
 }
 
 export function getAverageHoursLevel(avgHour: number): number {
