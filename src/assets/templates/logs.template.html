@@ -5,388 +5,387 @@
         </title>
     </head>
     <style>
-                               body{
-                               	font-family: sans-serif;
-                               	color: ${this.cardTextColor};
-                               	width: 830px;
-                               }
-                               .logCard {
-                               	display: inline-block;
-                               	background: ${this.cardBackgroundColor};
-                               	width: 830px;
-                               	box-sizing: border-box;
-                               	border-radius: 2px;
-                               	padding: 10px;
-                               	margin-bottom: 20px;
-                               }
-                               .cardText {
-                               	max-width: 100%;
-                               	font-style: normal;
-                               	font-weight: normal;
-                               	font-size: 14px;
-                               	line-height: 128.91%;
-                               	display: flex;
-                               	padding-left: 10px;
-                               	align-items: center;
-                               	color: ${this.cardTextColor};
-                               }
-                               .cardLinkText {
-                               	font-style: normal;
-                               	font-weight: normal;
-                               	font-size: 14px;
-                               	line-height: 128.91%;
-                               	display: flex;
-                               	padding-left: 10px;
-                               	align-items: center;
-                               	margin-bottom: 8px;
-                               	color: ${this.cardTextColor};
-                               }
-                               .cardTextEditInput {
-                               	position: absolute;
-                               	top: 0px;
-                               	font-size: 14px;
-                               	border-radius: 2px;
-                               	padding-left: 5px;
-                               	padding-right: 5px;
-                               	border-color: rgba(0, 0, 0, 0);
-                               	background-color: ${this.cardBackgroundColor};
-                               	color: ${this.cardTextColor};
-                               	transform: translate(8px, 30px);
-                               	visibility: hidden;
-                               	resize: none;
-                               }
-                               .cardTextTitleEditInput{
-                               	position: absolute;
-                               	top: 0px;
-                               	font-size: 14px;
-                               	border-radius: 2px;
-                               	padding-left: 5px;
-                               	padding-right: 5px;
-                               	border-color: rgba(0, 0, 0, 0);
-                               	background-color: ${this.cardBackgroundColor};
-                               	color: ${this.cardTextColor};
-                               	transform: translate(50px, -20px);
-                               	visibility: hidden;
-                               	resize: none;
-                               }
-                               .cardSubject {
-                               	font-style: normal;
-                               	font-weight: bold;
-                               	font-size: 16px;
-                               	line-height: 128.91%;
-                               	padding-left: 10px;
-                               	display: flex;
-                               	color: ${this.cardTextColor};
-                               }
-                               .cardDateText {
-                               	margin-top: 5px;
-                               	font-size: 14px;
-                               	font-weight: 600;
-                               	line-height: 16px;
-                               	display: flex;
-                               	align-items: center;
-                               	padding-left: 10px;
-                               	color: #919eab;
-                               	visibility: visible;
-                               }
-                               .cardTextGroup {
-                               	width: 100%;
-                               	position: relative;
-                               	vertical-align: top;
-                               }
-                               .cardHeader {
-                               	position: relative;
-                               	width: 100%;
-                               	height: 40px;
-                               	display: inline-flex;
-                               }
-                               .cardHeaderTextSection {
-                               	position: absolute;
-                               	left: 0px;
-                               }
-                               .cardHeaderButtonSection {
-                               	position: absolute;
-                               	display: inline-flex;
-                               	height: 100%;
-                               	right: 3px;
-                               	vertical-align: middle;
-                               	align-items: center;
-                               }
-                               .cardHeaderEditLogButton {
-                               	cursor: pointer;
-                               	font-size: 12px;
-                               	font-weight: 600;
-                               	line-height: 18px;
-                               	border-radius: 2px;
-                               	text-align: center;
-                               	color: ${this.cardTextColor};
-                               	background-color: ${this.editButtonColor};
-                               	border-color: rgba(0,0,0,0);
-                               	vertical-align: middle;
-                               	visibility: hidden;
-                               	margin: 5px;
-                               }
-                               .cardHeaderShareButton {
-                               	cursor: pointer;
-                               	position: absolute;
-                               	background-color: rgba(0,0,0,0);
-                               	border-color: rgba(0,0,0,0);
-                               	transform: translate(40px, -18px);
-                               	margin: 5px;
-                               }
-                               .cardHeaderShareButtonIcon {
-                               	width: 20px;
-                               	height: 20px;
-                               }
-                               .cardHeaderDropDownButton {
-                               	cursor: pointer;
-                               	background-color: rgba(0,0,0,0);
-                               	border-color: rgba(0,0,0,0);
-                               	transform: rotate(180deg);
-                               	margin: 5px;
-                               }
-                               .cardHeaderDropDownButtonIcon {
-                               	width: 16px;
-                               	height: 16px;
-                               }
-                               button:focus {outline:0;}
-                               .cardContent {
-                               	max-height: 0;
-                               	overflow: hidden;
-                               	transition: max-height 0.2s ease-out;
-                               }
-                               .cardTextSection {
-                               	width: 800px;
-                               	display: inline-block;
-                               	vertical-align: top;
-                               	margin-bottom: 20px;
-                               	margin-top: 20px;
-                               }
-                               .cardMetricsSection {
-                               	display: inline-block;
-                               	vertical-align: top;
-                               	margin-top: 20px;
-                               }
-                               .cardMetricsTitle {
-                               	width: 100%;
-                               	text-align: left;
-                               	font-weight: 600;
-                               	font-size: 14px;
-                               	line-height: 128.91%;
-                               	color: #919eab;
-                               	padding-left: 10px;
-                               	margin-bottom: 3px;
-                               }
-                               .cardMetricGrid {
-                               	width: 600px;
-                               	justify-content: space-around;
-                               	display: flex;
-                               }
-                               .cardMetric {
-                               	width: 30%;
-                               	display: inline-flex;
-                               	align-items: center;
-                               	background: ${this.cardBackgroundColor};
-                               	border-radius: 2px;
-                               	display: flex;
-                               	flex-direction: column;
-                               	justify-content: space-around;
-                               	padding-top: 26px;
-                               	padding-bottom: 6px;
-                               }
-                               .cardMetricText {
-                               	width: 100%;
-                               	font-style: normal;
-                               	font-weight: bold;
-                               	font-size: 12px;
-                               	line-height: 128.91%;
-                               	text-align: center;
-                               	color: ${this.cardTextColor};
-                               }
-                               .cardMetricBarGroup{
-                               	position: relative;
-                               	width: 130px;
-                               	height: 40px;
-                               }
-                               .cardMetricBarMiddle{
-                               	position: absolute;
-                               	width: 130px;
-                               	height: 6px;
-                               	border-radius: 3px;
-                               	top: 10px;
-                               	background-color: rgba(0, 180, 238, 0.25);
-                               }
-                               .cardMilestoneSection {
-                               	display: inline-block;
-                               	vertical-align: top;
-                               	width: 200px;
-                               	height: 230px;
-                               	margin-top: 20px;
-                               }
-                               .cardMilestoneTitle {
-                               	width: 200px;
-                               	font-weight: 600;
-                               	font-size: 14px;
-                               	line-height: 128.91%;
-                               	text-align: left;
-                               	padding-left: 8px;
-                               	color: #919eab;
-                               }
-                               .cardMilestoneGrid {
-                               	width: 200px;
-                               	height: 200px;
-                               	display: flex;
-                               	flex-direction: column;
-                               	justify-content: space-around;
-                               }
-                               .cardMilestoneRow {
-                               	width: 100%;
-                               	justify-content: space-around;
-                               	display: flex;
-                               }
-                               .cardMilestone {
-                               	position: relative;
-                               	width: 61px;
-                               	height: 61px;
-                               	background: ${this.cardBackgroundColor};
-                               	border-radius: 2px;
-                               	display: inline-flex;
-                               	align-items: center;
-                               }
-                               .cardMilestoneIcon{
-                               	width: 40px;
-                               	height: 40px;
-                               	position: absolute;
-                               	top: 50%;
-                               	left: 50%;
-                               	transform: translate(-50%, -50%);
-                               }
-                               .cardMilestone .tooltiptext {
-                               	visibility: hidden;
-                               	top: 8px;
-                               	right: 105%;
-                               	background-color: ${this.cardToolTipColor};
-                               	background-blend-mode: darken;
-                               	border-radius: 2px;
-                               	color: ${this.cardTextColor};
-                               	text-align: center;
-                               	white-space: nowrap;
-                               	padding: 5px;
-                               	position: absolute;
-                               	z-index: 1;
-                               }
-                               .cardMilestone:hover .tooltiptext {
-                               	visibility: visible;
-                               }
-                               #editLogCard {
-                               	position: fixed;
-                               	z-index: 1;
-                               	left: 0;
-                               	top: 0;
-                               	width: 100%;
-                               	height: 100%;
-                               	overflow: auto;
-                               	background-color: rgba(0,0,0,0.2);
-                               	visibility: hidden;
-                               }
-                               #editLogCardContent {
-                               	position: absolute;
-                               	padding: 16px;
-                               	width: 450px;
-                               	top: 50%;
-                               	margin-top: -260px;
-                               	left: 50%;
-                               	margin-left: -225px;
-                               	background: ${this.editLogCardColor};
-                               	border-radius: 2px;
-                               }
-                               /* Headings */
-                               #head1 {
-                               	font-size: 18px;
-                               	line-height: 20px;
-                               	font-weight: 600;
-                               	color: ${this.cardTextColor}
-                               }
-                               .head2 {
-                               	margin-top: 5px;
-                               	font-size: 14px;
-                               	color: #919eab;
-                               	font-weight: 500;
-                               }
-                               .date{
-                               	margin-bottom: 15px;
-                               }
-                               /* Textboxes */
-                               .text {
-                               	margin-top: 5px;
-                               	margin-bottom: 5px;
-                               	width: 430px;
-                               	font-size: 16px;
-                               	border-radius: 2px;
-                               	padding-left: 5px;
-                               	padding-right: 5px;
-                               	border-color: rgba(0, 0, 0, 0);
-                               	background-color: ${this.cardBackgroundColor};
-                               	color: ${this.cardTextColor};
-                               	resize: none;
-                               }
-                               #editLogsHoursSelect {
-                               	width: 40px;
-                               }
-                               .hoursText {
-                               	margin-left: 0px;
-                               	font-size: 16px;
-                               	line-height: 20px;
-                               	color: ${this.cardTextColor};
-                               }
-                               .metricsText {
-                               	margin-top: 5px;
-                               	font-size: 12px;
-                               	color: #919eab;
-                               	font-weight: 500;
-                               }
-                               /* Buttons */
-                               .buttons {
-                               	margin-top: 20px;
-                               }
-                               #editLogCancelButton {
-                               	cursor: pointer;
-                               	font-size: 16px;
-                               	line-height: 25px;
-                               	color: ${this.cardTextColor};
-                               	background-color: rgba(0, 0, 0, 0);
-                               	border-color: rgba(0, 0, 0, 0);
-                               	border-radius: 2px;
-                               }
-                               #editLogSubmitButton {
-                               	cursor: pointer;
-                               	font-size: 16px;
-                               	line-height: 25px;
-                               	color: ${this.cardTextColor};
-                               	background: #00b4ee;
-                               	border: 3px solid #00b4ee;
-                               	box-sizing: border-box;
-                               	border-radius: 2px;
-                               }
-
-                         #top{
-                         	display: flex;
-                 			width: 100%;
-        	align-items: center;
-                         }
-                   #addLog{
-                   	order: 2;
-        margin-left: auto;
-        font-size: 14px;
-        font-weight: 600;
-        height: 20px;
-        color: #ffffff;
-        background-color: #00b4ee;
-        border-color: #00b4ee;
-        border-radius: 2px;
-        cursor: pointer;
-        visibility: ${this.addLogVisibility};
-                   }
+        body{
+            font-family: sans-serif;
+            color: ${this.cardTextColor};
+            width: 830px;
+        }
+        #top{
+            display: flex;
+            width: 100%;
+            align-items: center;
+        }
+        #addLog{
+            order: 2;
+            margin-left: auto;
+            font-size: 14px;
+            font-weight: 600;
+            height: 20px;
+            color: #ffffff;
+            background-color: #00b4ee;
+            border-color: #00b4ee;
+            border-radius: 2px;
+            cursor: pointer;
+            visibility: ${this.addLogVisibility};
+        }
+        .logCard {
+            display: inline-block;
+            background: ${this.cardBackgroundColor};
+            width: 830px;
+            box-sizing: border-box;
+            border-radius: 2px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        .cardText {
+            max-width: 100%;
+            font-style: normal;
+            font-weight: normal;
+            font-size: 14px;
+            line-height: 128.91%;
+            display: flex;
+            padding-left: 10px;
+            align-items: center;
+            color: ${this.cardTextColor};
+        }
+        .cardLinkText {
+            font-style: normal;
+            font-weight: normal;
+            font-size: 14px;
+            line-height: 128.91%;
+            display: flex;
+            padding-left: 10px;
+            align-items: center;
+            margin-bottom: 8px;
+            color: ${this.cardTextColor};
+        }
+        .cardTextEditInput {
+            position: absolute;
+            top: 0px;
+            font-size: 14px;
+            border-radius: 2px;
+            padding-left: 5px;
+            padding-right: 5px;
+            border-color: rgba(0, 0, 0, 0);
+            background-color: ${this.cardBackgroundColor};
+            color: ${this.cardTextColor};
+            transform: translate(8px, 30px);
+            visibility: hidden;
+            resize: none;
+        }
+        .cardTextTitleEditInput{
+            position: absolute;
+            top: 0px;
+            font-size: 14px;
+            border-radius: 2px;
+            padding-left: 5px;
+            padding-right: 5px;
+            border-color: rgba(0, 0, 0, 0);
+            background-color: ${this.cardBackgroundColor};
+            color: ${this.cardTextColor};
+            transform: translate(50px, -20px);
+            visibility: hidden;
+            resize: none;
+        }
+        .cardSubject {
+            font-style: normal;
+            font-weight: bold;
+            font-size: 16px;
+            line-height: 128.91%;
+            padding-left: 10px;
+            display: flex;
+            color: ${this.cardTextColor};
+        }
+        .cardDateText {
+            margin-top: 5px;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 16px;
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+            color: #919eab;
+            visibility: visible;
+        }
+        .cardTextGroup {
+            width: 100%;
+            position: relative;
+            vertical-align: top;
+        }
+        .cardHeader {
+            position: relative;
+            width: 100%;
+            height: 40px;
+            display: inline-flex;
+        }
+        .cardHeaderTextSection {
+            position: absolute;
+            left: 0px;
+        }
+        .cardHeaderButtonSection {
+            position: absolute;
+            display: inline-flex;
+            height: 100%;
+            right: 3px;
+            vertical-align: middle;
+            align-items: center;
+        }
+        .cardHeaderEditLogButton {
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 18px;
+            border-radius: 2px;
+            text-align: center;
+            color: ${this.cardTextColor};
+            background-color: ${this.editButtonColor};
+            border-color: rgba(0,0,0,0);
+            vertical-align: middle;
+            visibility: hidden;
+            margin: 5px;
+        }
+        .cardHeaderShareButton {
+            cursor: pointer;
+            position: absolute;
+            background-color: rgba(0,0,0,0);
+            border-color: rgba(0,0,0,0);
+            transform: translate(40px, -18px);
+            margin: 5px;
+        }
+        .cardHeaderShareButtonIcon {
+            width: 20px;
+            height: 20px;
+        }
+        .cardHeaderDropDownButton {
+            cursor: pointer;
+            background-color: rgba(0,0,0,0);
+            border-color: rgba(0,0,0,0);
+            transform: rotate(180deg);
+            margin: 5px;
+        }
+        .cardHeaderDropDownButtonIcon {
+            width: 16px;
+            height: 16px;
+        }
+        button:focus {outline:0;}
+        .cardContent {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+        }
+        .cardTextSection {
+            width: 800px;
+            display: inline-block;
+            vertical-align: top;
+            margin-bottom: 20px;
+            margin-top: 20px;
+        }
+        .cardMetricsSection {
+            display: inline-block;
+            vertical-align: top;
+            margin-top: 20px;
+        }
+        .cardMetricsTitle {
+            width: 100%;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 128.91%;
+            color: #919eab;
+            padding-left: 10px;
+            margin-bottom: 3px;
+        }
+        .cardMetricGrid {
+            width: 600px;
+            justify-content: space-around;
+            display: flex;
+        }
+        .cardMetric {
+            width: 30%;
+            display: inline-flex;
+            align-items: center;
+            background: ${this.cardBackgroundColor};
+            border-radius: 2px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            padding-top: 26px;
+            padding-bottom: 6px;
+        }
+        .cardMetricText {
+            width: 100%;
+            font-style: normal;
+            font-weight: bold;
+            font-size: 12px;
+            line-height: 128.91%;
+            text-align: center;
+            color: ${this.cardTextColor};
+        }
+        .cardMetricBarGroup{
+            position: relative;
+            width: 130px;
+            height: 40px;
+        }
+        .cardMetricBarMiddle{
+            position: absolute;
+            width: 130px;
+            height: 6px;
+            border-radius: 3px;
+            top: 10px;
+            background-color: rgba(0, 180, 238, 0.25);
+        }
+        .cardMilestoneSection {
+            display: inline-block;
+            vertical-align: top;
+            width: 200px;
+            height: 230px;
+            margin-top: 20px;
+        }
+        .cardMilestoneTitle {
+            width: 200px;
+            font-weight: 600;
+            font-size: 14px;
+            line-height: 128.91%;
+            text-align: left;
+            padding-left: 8px;
+            color: #919eab;
+        }
+        .cardMilestoneGrid {
+            width: 200px;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+        .cardMilestoneRow {
+            width: 100%;
+            justify-content: space-around;
+            display: flex;
+        }
+        .cardMilestone {
+            position: relative;
+            width: 61px;
+            height: 61px;
+            background: ${this.cardBackgroundColor};
+            border-radius: 2px;
+            display: inline-flex;
+            align-items: center;
+        }
+        .cardMilestoneIcon{
+            width: 40px;
+            height: 40px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .cardMilestone .tooltiptext {
+            visibility: hidden;
+            top: 8px;
+            right: 105%;
+            background-color: ${this.cardToolTipColor};
+            background-blend-mode: darken;
+            border-radius: 2px;
+            color: ${this.cardTextColor};
+            text-align: center;
+            white-space: nowrap;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+        }
+        .cardMilestone:hover .tooltiptext {
+            visibility: visible;
+        }
+        #editLogCard {
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.2);
+            visibility: hidden;
+        }
+        #editLogCardContent {
+            position: absolute;
+            padding: 16px;
+            width: 450px;
+            top: 50%;
+            margin-top: -260px;
+            left: 50%;
+            margin-left: -225px;
+            background: ${this.editLogCardColor};
+            border-radius: 2px;
+        }
+        /* Headings */
+        #head1 {
+            font-size: 18px;
+            line-height: 20px;
+            font-weight: 600;
+            color: ${this.cardTextColor}
+        }
+        .head2 {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #919eab;
+            font-weight: 500;
+        }
+        .date{
+            margin-bottom: 15px;
+        }
+        /* Textboxes */
+        .text {
+            margin-top: 5px;
+            margin-bottom: 5px;
+            width: 430px;
+            font-size: 16px;
+            border-radius: 2px;
+            padding-left: 5px;
+            padding-right: 5px;
+            border-color: rgba(0, 0, 0, 0);
+            background-color: ${this.cardBackgroundColor};
+            color: ${this.cardTextColor};
+            resize: none;
+        }
+        #editLogsHoursSelect {
+            width: 40px;
+        }
+        .hoursText {
+            margin-left: 0px;
+            font-size: 16px;
+            line-height: 20px;
+            color: ${this.cardTextColor};
+        }
+        .metricsText {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #919eab;
+            font-weight: 500;
+        }
+        /* Buttons */
+        .buttons {
+            margin-top: 20px;
+        }
+        #editLogCancelButton {
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 25px;
+            color: ${this.cardTextColor};
+            background-color: rgba(0, 0, 0, 0);
+            border-color: rgba(0, 0, 0, 0);
+            border-radius: 2px;
+        }
+        #editLogSubmitButton {
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 25px;
+            color: ${this.cardTextColor};
+            background: #00b4ee;
+            border: 3px solid #00b4ee;
+            box-sizing: border-box;
+            border-radius: 2px;
+        }
     </style>
     <body>
         <div id="top">
