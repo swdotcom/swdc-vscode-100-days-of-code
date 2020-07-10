@@ -575,10 +575,10 @@
                 percentHours = 100;
                 cardAverageHoursMetric = 0;
             }
-            let barPxHours = Math.round(percentHours);
+            let barPxHours = Math.round(percentHours * 1.3);
             let barColorHours = "#00b4ee";
-            if (barPxHours >= 100) {
-                barPxHours = 100;
+            if (barPxHours >= 130) {
+                barPxHours = 130;
                 barColorHours = "#FD9808";
             }
             cardHoursAveragePercent.innerHTML = percentHours + "% of Average";
