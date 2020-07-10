@@ -30,7 +30,7 @@ export function checkSummaryJson() {
                 filepath,
                 [
                     `{\n\t"days": 0,`,
-                    `\t"currentDate": ${date.valueOf()},`,
+                    `\t"currentDate": 0,`,
                     `\t"currentHours": 0,`,
                     `\t"currentKeystrokes": 0,`,
                     `\t"currentLines": 0,`,

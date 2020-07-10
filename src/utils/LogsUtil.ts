@@ -372,7 +372,7 @@ export async function addLogToJson(
     codetimeMetrics.lines_added = parseInt(lines);
     codetimeMetrics.keystrokes = parseInt(keystrokes);
 
-    const log = new Log();
+    let log = new Log();
     log.title = title;
     log.description = description;
     log.links = links;
@@ -489,6 +489,7 @@ export async function updateLogByDate(log: Log) {
             logs[i].codetime_metrics.hours = Math.max(logs[i].codetime_metrics.hours, log.codetime_metrics.hours);
 
             writeToLogsJson(logs);
+            updateSummaryJson();
             await pushUpdatedLogs(true, logs[i].day_number);
             return;
         }

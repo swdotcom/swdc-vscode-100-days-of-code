@@ -29,7 +29,7 @@
 </p> -->
 
 <p align="center" style="margin: 0 10%">
-    <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/Landing+Image.png" alt="100 Days of Code Landing Image" />
+    <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/Landing+Page.png" alt="100 Days of Code Landing Image" />
 </p>
 
 ## The 100 Days Of Code Challenge
@@ -83,7 +83,7 @@ Open the Code Time view in the sidebar and navigate to 100 Days of Code section.
 You can only add one log entry per day. Any coding metrics (like code time) recorded after you submit your log entry will be automatically updated in the log. The title, description, and links for any log entry can be edited at any time.
 
 <p align="center" style="margin: 0 10%">
-    <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/Add+log+Form.png" alt="Add log for 100 Days of Code" />
+    <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/Add+Log+Form.png" alt="Add log for 100 Days of Code" />
 </p>
 
 Logging your daily progress is important to get the most out of the 100 Days of Code challenge, so this plugin makes it as easy as possible. Input a title, description, and resource links into the Add Log form and we will generate a log for you that includes your code metrics and milestones earned that day.
@@ -133,7 +133,7 @@ To navigate to the dashboard, click the **View Dashboard** button in the 100 Day
 To be a part of the community, it's important to share your progress during the 100 Days of Code challenge. Even minor progress is progress, and we encourage you to share something every day.
 
 <p align="center" style="margin: 0 10%">
-  <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/First+Day+Full+Tweet.png" alt="Share log to Twitter for 100 Days of Code" />
+  <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/Log+Tweet.png" alt="Share log to Twitter for 100 Days of Code" />
 </p>
 
 Each log entry has a share button that will allow you to directly tweet your progress along with your daily code time metrics. You can also share any of your milestones right from your code editor.
