@@ -6,7 +6,7 @@ const os = require("os");
 const open = require("open");
 const { exec } = require("child_process");
 
-export let justLoggedIn: boolean = false;
+let _name = "";
 
 export function getExtensionName() {
     return "100doc";
@@ -110,41 +110,29 @@ export function displayLoginPromptIfNotLoggedIn() {
     if (!isLoggedIn()) {
         window
             .showInformationMessage(
-                "Please login to use the 100 Days of Code plugin ",
+                "Please log in to use the 100 Days of Code plugin ",
                 {
                     modal: true
                 },
-                "Login"
+                "Log in"
             )
             .then(async selection => {
-                if (selection === "Login") {
+                if (selection === "Log in") {
                     const items = [
-                        { label: "Login with Google" },
-                        { label: "Login with GitHub" },
-                        { label: "Login with Email" }
+                        { label: "Log in with Google" },
+                        { label: "Log in with GitHub" },
+                        { label: "Log in with Email" }
                     ];
                     const selection = await window.showQuickPick(items);
                     switch (selection?.label) {
-                        case "Login with Google":
+                        case "Log in with Google":
                             commands.executeCommand("codetime.googleLogin");
-                            window.showInformationMessage(
-                                "It may take a few minutes to pull all of your data if it exists"
-                            );
-                            justLoggedIn = true;
                             break;
-                        case "Login with GitHub":
+                        case "Log in with GitHub":
                             commands.executeCommand("codetime.githubLogin");
-                            window.showInformationMessage(
-                                "It may take a few minutes to pull all your of data if it exists"
-                            );
-                            justLoggedIn = true;
                             break;
-                        case "Login with Email":
+                        case "Log in with Email":
                             commands.executeCommand("codetime.codeTimeLogin");
-                            window.showInformationMessage(
-                                "It may take a few minutes to pull all your of data if it exists"
-                            );
-                            justLoggedIn = true;
                             break;
                         default:
                             break;
@@ -154,6 +142,18 @@ export function displayLoginPromptIfNotLoggedIn() {
     }
 }
 
-export function setJustLoggedIn(value: boolean) {
-    justLoggedIn = value;
+export function setName() {
+    const name = getItem("name");
+    if (name && name !== "") {
+        _name = name;
+    }
+}
+
+export function checkIfNameChanged() {
+    const name = getItem("name");
+    if (_name !== name) {
+        return true;
+    } else {
+        return false;
+    }
 }

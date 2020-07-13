@@ -49,6 +49,14 @@ export function checkLogsJson(): boolean {
     }
 }
 
+export function deleteLogsJson() {
+    const filepath = getLogsJson();
+    const fileExists = fs.existsSync(filepath);
+    if (fileExists) {
+        fs.unlinkSync(filepath);
+    }
+}
+
 export function getAllLogObjects(): Array<Log> {
     const exists = checkLogsJson();
     if (exists) {

@@ -46,19 +46,19 @@ export function getCertificateHtmlString(name: string): string {
 function getDaysLevelTooltipText(level: number): string {
     switch (level) {
         case 0:
-            return "Complete 1 more day to reach Level 1 of Days Milestones";
+            return `Complete 1 day to reach Level 1.`;
         case 1:
-            return `You're at Level 1 of Days Milestones. Complete 10 days to reach Level 2.`;
+            return `Complete 10 days to reach Level 2.`;
         case 2:
-            return `You're at Level 2 of Days Milestones. Complete 50 days to reach Level 3.`;
+            return `Complete 50 days to reach Level 3.`;
         case 3:
-            return `You're at Level 3 of Days Milestones. Complete 75 days to reach Level 4.`;
+            return `Complete 75 days to reach Level 4.`;
         case 4:
-            return `You're at Level 4 of Days Milestones. Complete 100 days to reach Level 5.`;
+            return `Complete 100 days to reach Level 5.`;
         case 5:
-            return `You're at Level 5 of Days Milestones. Complete 110 days to reach Level <span class="inf">∞</span>.`;
+            return `Complete 110 days to reach Level <span class="inf">∞</span>.`;
         case 6:
-            return `Congratulations, you're at Level <span class="inf">∞</span> of Days Milestones!`;
+            return `Congratulations, you're at Level <span class="inf">∞</span>!`;
         default:
             return "";
     }
@@ -67,19 +67,19 @@ function getDaysLevelTooltipText(level: number): string {
 function getHoursLevelTooltipText(level: number): string {
     switch (level) {
         case 0:
-            return `Complete 1 more hour to reach Level 1 of Hours Milestones`;
+            return `Code 1 hour to reach Level 1.`;
         case 1:
-            return `You're at Level 1 of Hours Milestones. Complete 30 hours to reach Level 2.`;
+            return `Code 30 hours to reach Level 2.`;
         case 2:
-            return `You're at Level 2 of Hours Milestones. Complete 60 hours to reach Level 3.`;
+            return `Code 60 hours to reach Level 3.`;
         case 3:
-            return `You're at Level 3 of Hours Milestones. Complete 90 hours to reach Level 4.`;
+            return `Code 90 hours to reach Level 4.`;
         case 4:
-            return `You're at Level 4 of Hours Milestones. Complete 120 hours to reach Level 5.`;
+            return `Code 120 hours to reach Level 5.`;
         case 5:
-            return `You're at Level 5 of Hours Milestones. Complete 200 hours to reach Level <span class="inf">∞</span>.`;
+            return `Code 200 hours to reach Level <span class="inf">∞</span>.`;
         case 6:
-            return `Congratulations, you're at Level <span class="inf">∞</span> of Hours Milestones!`;
+            return `Congratulations, you're at Level <span class="inf">∞</span>!`;
         default:
             return "";
     }
@@ -88,19 +88,19 @@ function getHoursLevelTooltipText(level: number): string {
 function getStreaksLevelTooltipText(level: number): string {
     switch (level) {
         case 0:
-            return "Complete a 2 day streak to reach Level 1 of Streaks Milestones";
+            return `Complete a 2-day streak to reach Level 1.`;
         case 1:
-            return `You're at Level 1 of Streaks Milestones. Complete a 7 day streak to reach Level 2.`;
+            return `Complete a 7-day streak to reach Level 2.`;
         case 2:
-            return `You're at Level 2 of Streaks Milestones. Complete a 14 day streak to reach Level 3.`;
+            return `Complete a 14-day streak to reach Level 3.`;
         case 3:
-            return `You're at Level 3 of Streaks Milestones. Complete a 30 day streak to reach Level 4.`;
+            return `Complete a 30-day streak to reach Level 4.`;
         case 4:
-            return `You're at Level 4 of Streaks Milestones. Complete a 60 day streak to reach Level 5.`;
+            return `Complete a 60-day streak to reach Level 5.`;
         case 5:
-            return `You're at Level 5 of Streaks Milestones. Complete a 100 day streak to reach Level <span class="inf">∞</span>.`;
+            return `Complete a 100-day streak to reach Level <span class="inf">∞</span>.`;
         case 6:
-            return `Congratulations, you're at Level <span class="inf">∞</span> of Streaks Milestones!`;
+            return `Congratulations, you're at Level <span class="inf">∞</span>!`;
         default:
             return "";
     }
@@ -109,19 +109,19 @@ function getStreaksLevelTooltipText(level: number): string {
 function getLinesAddedLevelTooltipText(level: number): string {
     switch (level) {
         case 0:
-            return "Code 1 Line to reach Level 1 of Lines Added";
+            return `Write 1 line of code to reach Level 1.`;
         case 1:
-            return `You're at Level 1 of Lines Addded. Code 16 Lines to reach Level 2.`;
+            return `Write 16 lines of code to reach Level 2.`;
         case 2:
-            return `You're at Level 2 of Lines Addded. Code 50 Lines to reach Level 3.`;
+            return `Write 50 lines of code to reach Level 3.`;
         case 3:
-            return `You're at Level 3 of Lines Addded. Code 100 Lines to reach Level 4.`;
+            return `Write 100 lines of code to reach Level 4.`;
         case 4:
-            return `You're at Level 4 of Lines Addded. Code 1,000 Lines to reach Level 5.`;
+            return `Write 1,000 lines of code to reach Level 5.`;
         case 5:
-            return `You're at Level 5 of Lines Addded. Code 10,000 Lines to reach Level <span class="inf">∞</span>.`;
+            return `Write 10,000 lines of code to reach Level <span class="inf">∞</span>.`;
         case 6:
-            return `Congratulations, you're at Level <span class="inf">∞</span> of Lines!`;
+            return `Congratulations, you're at Level <span class="inf">∞</span>!`;
         default:
             return "";
     }
@@ -221,7 +221,9 @@ function getDatagramHtmlComponents(): any {
     }
     // no days
     if (barsHtml === "" || max === 0) {
-        barsHtml = `<div style="text-align: center; font-size: 14px; font-weight: bolder; margin-top: 50px; margin-right: 25px;">Waiting for your Code Time data!</div>`;
+        barsHtml = `<div style="text-align: center; font-size: 14px; margin-top: 50px; margin-right: 25px;">No days logged yet.</div>`;
+        max = 1;
+        mid = 0.5;
     }
 
     return { barsHtml, xAxisDates, min, max, mid, dateJustifyContent };
@@ -234,7 +236,7 @@ function getLogsHtml(): string {
 
     const d = new Date();
     if (logs.length === 0) {
-        logsHtml = `<div style="text-align: center; padding-top: 75px; font-size: 14px;">Excited for you to start your 1st day in #100DaysOfCode Challenge!</div>`;
+        logsHtml = `<div style="text-align: center; padding-top: 75px; font-size: 14px;">Complete your first log entry at the end of the day.</div>`;
     } else {
         for (let i = 0; i < logs.length; i++) {
             logsHtml += `\t\t\t<div class="logBody">\n\t\t\t\t<span>${logs[i].day_number}</span>\n`;
@@ -273,7 +275,7 @@ function getMilestonesHtml(recent_milestones: Array<number>): string {
             }
         }
     } else {
-        milestoneHtml = `<div style="text-align: center; padding-top: 75px; font-size: 14px; padding-right: 10px;">Excited for you to achieve your 1st Milestone!</div>`;
+        milestoneHtml = `<div style="text-align: center; font-size: 14px; padding-right: 10px;">Check back later for achieved milestones.</div>`;
     }
     return milestoneHtml;
 }
@@ -317,7 +319,8 @@ export function getUpdatedDashboardHtmlString(): string {
     const hoursLevelTooltip = getHoursLevelTooltipText(hoursLevel);
     const streaksLevelTooltip = getStreaksLevelTooltipText(streaksLevel);
     const linesAddedLevelTooltip = getLinesAddedLevelTooltipText(linesAddedLevel);
-    const avgHoursLevelTooltip = avgHours >= 1 ? "Good job coding an hour each day!" : "Try to code an hour each day.";
+    const avgHoursLevelTooltip =
+        avgHours >= 1 ? "Great job! You're on track to coding one hour every day." : "Try to code an hour each day.";
 
     const twitterShareUrl = generateShareUrl(days, hours, streaks, linesAdded, avgHours);
 

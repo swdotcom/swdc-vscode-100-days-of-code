@@ -6,10 +6,16 @@ import {
     checkCodeTimeMetricsMilestonesAchieved,
     checkMilestonesJson,
     checkLanguageMilestonesAchieved,
-    checkDaysMilestones
+    checkDaysMilestones,
+    deleteMilestoneJson
 } from "./utils/MilestonesUtil";
-import { checkLogsJson, updateLogsMilestonesAndMetrics, getLatestLogEntryNumber } from "./utils/LogsUtil";
-import { checkSummaryJson, reevaluateSummary } from "./utils/SummaryUtil";
+import {
+    checkLogsJson,
+    updateLogsMilestonesAndMetrics,
+    getLatestLogEntryNumber,
+    deleteLogsJson
+} from "./utils/LogsUtil";
+import { checkSummaryJson, reevaluateSummary, deleteSummaryJson } from "./utils/SummaryUtil";
 import {
     checkMilestonesPayload,
     sentMilestonesDb,
@@ -18,7 +24,8 @@ import {
     pushUpdatedMilestones,
     fetchAllMilestones,
     fetchMilestonesForYesterdayAndToday,
-    createMilestonesPayloadJson
+    createMilestonesPayloadJson,
+    deleteMilestonePayloadJson
 } from "./utils/MilestonesDbUtil";
 import {
     checkLogsPayload,
@@ -27,12 +34,12 @@ import {
     updatedLogsDb,
     pushUpdatedLogs,
     fetchLogs,
-    createLogsPayloadJson
+    createLogsPayloadJson,
+    deleteLogsPayloadJson
 } from "./utils/LogsDbUtils";
 import { pushSummaryToDb } from "./utils/SummaryDbUtil";
-import { displayReadmeIfNotExists, isLoggedIn, justLoggedIn, setJustLoggedIn } from "./utils/Util";
+import { displayReadmeIfNotExists, isLoggedIn, setName, checkIfNameChanged } from "./utils/Util";
 import { commands } from "vscode";
-import { serverIsAvailable } from "./managers/HttpManager";
 
 let one_minute_interval: NodeJS.Timeout;
 let five_minute_interval: NodeJS.Timeout;
@@ -72,6 +79,7 @@ export async function initializePlugin() {
     // and fetch data from the db as well
 
     if (isLoggedIn()) {
+        setName();
         // logs
         checkLogsPayload();
         if (!sentLogsDb) {
@@ -111,70 +119,68 @@ export async function initializePlugin() {
 
 function initializeIntervalJobs() {
     one_minute_interval = setInterval(async () => {
-        // if (isLoggedIn() && !justLoggedIn) {
-        const currDate = new Date();
-        if (currDate.getHours() !== 0 || currDate.getMinutes() > 3) {
-            // updates logs with latest metrics and checks for milestones
-            updateLogsMilestonesAndMetrics([]);
-            checkCodeTimeMetricsMilestonesAchieved();
-            checkLanguageMilestonesAchieved();
-            checkDaysMilestones();
+        if (checkIfNameChanged()) {
+            logOut();
+        } else {
+            const currDate = new Date();
+            if (currDate.getHours() !== 0 || currDate.getMinutes() > 3) {
+                // updates logs with latest metrics and checks for milestones
+                updateLogsMilestonesAndMetrics([]);
+                checkCodeTimeMetricsMilestonesAchieved();
+                checkLanguageMilestonesAchieved();
+                checkDaysMilestones();
+            }
         }
-        // }
     }, one_min_millis);
 
     five_minute_interval = setInterval(async () => {
-        // if (isLoggedIn()) {
-        // try to send payloads that weren't sent
-        // and fetch data from the db as well every 5 minutes
+        if (checkIfNameChanged()) {
+            logOut();
+        } else {
+            // logs
+            checkLogsPayload();
+            if (!sentLogsDb) {
+                pushNewLogs(false);
+            }
+            if (!updatedLogsDb) {
+                pushUpdatedLogs(false, 0);
+            }
+            await fetchLogs();
 
-        // logs
-        checkLogsPayload();
-        if (!sentLogsDb) {
-            pushNewLogs(false);
-        }
-        if (!updatedLogsDb) {
-            pushUpdatedLogs(false, 0);
-        }
-        await fetchLogs();
+            // milestones
+            checkMilestonesPayload();
+            if (!sentMilestonesDb) {
+                pushNewMilestones();
+            }
+            if (!updatedMilestonesDb) {
+                pushUpdatedMilestones();
+            }
+            await fetchMilestonesForYesterdayAndToday();
 
-        // milestones
-        checkMilestonesPayload();
-        if (!sentMilestonesDb) {
-            pushNewMilestones();
+            // summary
+            await pushSummaryToDb();
         }
-        if (!updatedMilestonesDb) {
-            pushUpdatedMilestones();
-        }
-        await fetchMilestonesForYesterdayAndToday();
-
-        // summary
-        await pushSummaryToDb();
-
-        if (justLoggedIn && serverIsAvailable()) {
-            fetchAllMilestones();
-            setJustLoggedIn(false);
-        }
-        // }
     }, one_min_millis * 1);
 
     one_hour_interval = setInterval(async () => {
-        // if (isLoggedIn()) {
-        // fetch all milestones for keeping them updated
-        if (updatedMilestonesDb && sentMilestonesDb) {
-            fetchAllMilestones();
-        } else if (!sentMilestonesDb) {
-            pushNewMilestones();
+        if (checkIfNameChanged()) {
+            logOut();
         } else {
-            pushUpdatedMilestones();
+            if (updatedMilestonesDb && sentMilestonesDb) {
+                fetchAllMilestones();
+            } else if (!sentMilestonesDb) {
+                pushNewMilestones();
+            } else {
+                pushUpdatedMilestones();
+            }
         }
-        // }
     }, one_min_millis * 60);
 }
 
 function initializeLogInCheckInterval() {
     init_interval = setInterval(() => {
         if (isLoggedIn()) {
+            setName();
             // logs
             checkLogsPayload();
             if (!sentLogsDb) {
@@ -211,6 +217,24 @@ function initializeLogInCheckInterval() {
             initializeIntervalJobs();
         }
     }, 10000);
+}
+
+function logOut() {
+    // reset updates
+    clearInterval(one_minute_interval);
+    clearInterval(five_minute_interval);
+    clearInterval(one_hour_interval);
+    clearInterval(init_interval);
+
+    // reset files
+    deleteMilestoneJson();
+    deleteMilestonePayloadJson();
+    deleteLogsJson();
+    deleteLogsPayloadJson();
+    deleteSummaryJson();
+
+    // restart init
+    initializeLogInCheckInterval();
 }
 
 export function deactivate(ctx: vscode.ExtensionContext) {

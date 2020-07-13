@@ -51,6 +51,14 @@ export function checkMilestonesPayload() {
     }
 }
 
+export function deleteMilestonePayloadJson() {
+    const filepath = getMilestonesPayloadJson();
+    const fileExists = fs.existsSync(filepath);
+    if (fileExists) {
+        fs.unlinkSync(filepath);
+    }
+}
+
 export async function fetchMilestonesByDate(date: number): Promise<Array<number>> {
     const jwt = getItem("jwt");
     if (jwt) {

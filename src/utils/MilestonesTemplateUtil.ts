@@ -126,7 +126,7 @@ export function getUpdatedMilestonesHtmlString(): string {
     // If no milestones earned today
     if (recents === "") {
         recents += `\n\t\t<h2>Today's Milestones</h2>\n`;
-        recents += `\t\t<div class="noMilestones">No new Milestones today</div>\n`;
+        recents += `\t\t<div class="noMilestones">No milestones earned today</div>\n`;
     }
 
     const templateVars = {

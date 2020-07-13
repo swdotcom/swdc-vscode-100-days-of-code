@@ -183,9 +183,11 @@ export function createCommands(): { dispose: () => void } {
 
     cmds.push(
         commands.registerCommand("DoC.viewMilestones", () => {
-            checkCodeTimeMetricsMilestonesAchieved();
-            checkLanguageMilestonesAchieved();
-            checkDaysMilestones();
+            if (isLoggedIn()) {
+                checkCodeTimeMetricsMilestonesAchieved();
+                checkLanguageMilestonesAchieved();
+                checkDaysMilestones();
+            }
 
             if (currentPanel) {
                 if (currentPanel.title !== "Milestones") {

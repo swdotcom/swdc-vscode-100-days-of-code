@@ -10,7 +10,6 @@ import {
     incrementSummaryShare,
     updateSummaryLanguages
 } from "./SummaryUtil";
-import { getSessionCodetimeMetrics } from "./MetricUtil";
 import { getLanguages } from "./LanguageUtil";
 import { pushMilestonesToDb } from "./MilestonesDbUtil";
 import { HOURS_THRESHOLD } from "./Constants";
@@ -38,6 +37,14 @@ export function checkMilestonesJson(): boolean {
         }
     } catch (err) {
         return false;
+    }
+}
+
+export function deleteMilestoneJson() {
+    const filepath = getMilestonesJson();
+    const fileExists = fs.existsSync(filepath);
+    if (fileExists) {
+        fs.unlinkSync(filepath);
     }
 }
 

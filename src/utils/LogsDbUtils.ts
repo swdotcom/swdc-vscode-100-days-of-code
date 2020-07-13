@@ -50,6 +50,14 @@ export function checkLogsPayload() {
     }
 }
 
+export function deleteLogsPayloadJson() {
+    const filepath = getLogsPayloadJson();
+    const fileExists = fs.existsSync(filepath);
+    if (fileExists) {
+        fs.unlinkSync(filepath);
+    }
+}
+
 export async function fetchLogs() {
     const jwt = getItem("jwt");
     if (jwt) {

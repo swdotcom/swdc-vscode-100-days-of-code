@@ -53,6 +53,14 @@ export function checkSummaryJson() {
     }
 }
 
+export function deleteSummaryJson() {
+    const filepath = getSummaryJson();
+    const fileExists = fs.existsSync(filepath);
+    if (fileExists) {
+        fs.unlinkSync(filepath);
+    }
+}
+
 export function compareLocalSummary(dbSummary: any) {
     let summary: Summary = getSummaryObject();
 
