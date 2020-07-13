@@ -156,6 +156,14 @@ export async function compareWithLocalLogs(logs: Array<Log>) {
             localLogs[i].codetime_metrics.lines_added = logs[i].codetime_metrics.lines_added;
             changed = true;
         }
+        if (
+            localLogs[i].milestones.length === 0 &&
+            (localLogs[i].codetime_metrics.hours > 0.5 ||
+                localLogs[i].codetime_metrics.keystrokes > 100 ||
+                localLogs[i].codetime_metrics.lines_added > 0)
+        ) {
+            localLogs[i].milestones = await fetchMilestonesByDate(localLogs[i].date);
+        }
     }
 
     if (localLogs.length < logs.length) {
