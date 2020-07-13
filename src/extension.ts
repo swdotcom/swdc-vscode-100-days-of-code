@@ -30,12 +30,14 @@ import {
     createLogsPayloadJson
 } from "./utils/LogsDbUtils";
 import { pushSummaryToDb } from "./utils/SummaryDbUtil";
-import { displayReadmeIfNotExists, isLoggedIn } from "./utils/Util";
+import { displayReadmeIfNotExists, isLoggedIn, justLoggedIn, setJustLoggedIn } from "./utils/Util";
 import { commands } from "vscode";
+import { serverIsAvailable } from "./managers/HttpManager";
 
 let one_minute_interval: NodeJS.Timeout;
 let five_minute_interval: NodeJS.Timeout;
 let one_hour_interval: NodeJS.Timeout;
+let init_interval: NodeJS.Timeout;
 
 const one_min_millis = 1000 * 60;
 
@@ -99,32 +101,82 @@ export async function initializePlugin() {
         checkLanguageMilestonesAchieved();
         checkDaysMilestones();
         reevaluateSummary();
-    }
 
-    // sets interval jobs
-    initializeIntervalJobs();
+        // sets interval jobs
+        initializeIntervalJobs();
+    } else {
+        initializeLogInCheckInterval();
+    }
 }
 
-export function initializeIntervalJobs() {
+function initializeIntervalJobs() {
     one_minute_interval = setInterval(async () => {
-        if (isLoggedIn()) {
-            const currDate = new Date();
-            if (currDate.getHours() !== 0 || currDate.getMinutes() > 3) {
-                // updates logs with latest metrics and checks for milestones
-                updateLogsMilestonesAndMetrics([]);
-                checkCodeTimeMetricsMilestonesAchieved();
-                checkLanguageMilestonesAchieved();
-                checkDaysMilestones();
-            }
+        // if (isLoggedIn() && !justLoggedIn) {
+        const currDate = new Date();
+        if (currDate.getHours() !== 0 || currDate.getMinutes() > 3) {
+            // updates logs with latest metrics and checks for milestones
+            updateLogsMilestonesAndMetrics([]);
+            checkCodeTimeMetricsMilestonesAchieved();
+            checkLanguageMilestonesAchieved();
+            checkDaysMilestones();
         }
+        // }
     }, one_min_millis);
 
     five_minute_interval = setInterval(async () => {
-        if (isLoggedIn()) {
-            // try to send payloads that weren't sent
-            // and fetch data from the db as well every 5 minutes
+        // if (isLoggedIn()) {
+        // try to send payloads that weren't sent
+        // and fetch data from the db as well every 5 minutes
 
+        // logs
+        checkLogsPayload();
+        if (!sentLogsDb) {
+            pushNewLogs(false);
+        }
+        if (!updatedLogsDb) {
+            pushUpdatedLogs(false, 0);
+        }
+        await fetchLogs();
+
+        // milestones
+        checkMilestonesPayload();
+        if (!sentMilestonesDb) {
+            pushNewMilestones();
+        }
+        if (!updatedMilestonesDb) {
+            pushUpdatedMilestones();
+        }
+        await fetchMilestonesForYesterdayAndToday();
+
+        // summary
+        await pushSummaryToDb();
+
+        if (justLoggedIn && serverIsAvailable()) {
+            fetchAllMilestones();
+            setJustLoggedIn(false);
+        }
+        // }
+    }, one_min_millis * 1);
+
+    one_hour_interval = setInterval(async () => {
+        // if (isLoggedIn()) {
+        // fetch all milestones for keeping them updated
+        if (updatedMilestonesDb && sentMilestonesDb) {
+            fetchAllMilestones();
+        } else if (!sentMilestonesDb) {
+            pushNewMilestones();
+        } else {
+            pushUpdatedMilestones();
+        }
+        // }
+    }, one_min_millis * 60);
+}
+
+function initializeLogInCheckInterval() {
+    init_interval = setInterval(() => {
+        if (isLoggedIn()) {
             // logs
+            checkLogsPayload();
             if (!sentLogsDb) {
                 pushNewLogs(false);
             }
@@ -134,31 +186,31 @@ export function initializeIntervalJobs() {
             fetchLogs();
 
             // milestones
+            checkMilestonesPayload();
             if (!sentMilestonesDb) {
                 pushNewMilestones();
             }
             if (!updatedMilestonesDb) {
                 pushUpdatedMilestones();
             }
-            fetchMilestonesForYesterdayAndToday();
+            fetchAllMilestones();
 
-            // summary
+            // fetches and updates the user summary in the db
             pushSummaryToDb();
-        }
-    }, one_min_millis * 1);
 
-    one_hour_interval = setInterval(async () => {
-        if (isLoggedIn()) {
-            // fetch all milestones for keeping them updated
-            if (updatedMilestonesDb && sentMilestonesDb) {
-                fetchAllMilestones();
-            } else if (!sentMilestonesDb) {
-                pushNewMilestones();
-            } else {
-                pushUpdatedMilestones();
-            }
+            // updates logs and milestones
+            updateLogsMilestonesAndMetrics([]);
+            checkCodeTimeMetricsMilestonesAchieved();
+            checkLanguageMilestonesAchieved();
+            checkDaysMilestones();
+            reevaluateSummary();
+
+            clearInterval(init_interval);
+
+            // sets interval jobs
+            initializeIntervalJobs();
         }
-    }, one_min_millis * 60);
+    }, 10000);
 }
 
 export function deactivate(ctx: vscode.ExtensionContext) {
@@ -170,4 +222,5 @@ export function deactivate(ctx: vscode.ExtensionContext) {
     clearInterval(one_minute_interval);
     clearInterval(five_minute_interval);
     clearInterval(one_hour_interval);
+    clearInterval(init_interval);
 }

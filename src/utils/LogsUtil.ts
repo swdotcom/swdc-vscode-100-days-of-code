@@ -574,8 +574,8 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
                 logs[i].codetime_metrics.hours,
                 parseFloat((metrics.minutes / 60).toFixed(1))
             );
-            logs[i].codetime_metrics.keystrokes = metrics.keystrokes;
-            logs[i].codetime_metrics.lines_added = metrics.linesAdded;
+            logs[i].codetime_metrics.keystrokes = Math.max(logs[i].codetime_metrics.keystrokes, metrics.keystrokes);
+            logs[i].codetime_metrics.lines_added = Math.max(logs[i].codetime_metrics.lines_added, metrics.linesAdded);
 
             logs[i].milestones = logs[i].milestones.concat(milestones);
 

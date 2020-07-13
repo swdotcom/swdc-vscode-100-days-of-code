@@ -1,11 +1,12 @@
 import { commands, ViewColumn, Uri, window, QuickPick, QuickPickItem } from "vscode";
 import { getLatestLogEntryNumber } from "./LogsUtil";
-// import { api_endpoint } from "./Constants";
 
 const fs = require("fs");
 const os = require("os");
 const open = require("open");
 const { exec } = require("child_process");
+
+export let justLoggedIn: boolean = false;
 
 export function getExtensionName() {
     return "100doc";
@@ -122,35 +123,28 @@ export function displayLoginPromptIfNotLoggedIn() {
                         { label: "Login with GitHub" },
                         { label: "Login with Email" }
                     ];
-
                     const selection = await window.showQuickPick(items);
                     switch (selection?.label) {
                         case "Login with Google":
                             commands.executeCommand("codetime.googleLogin");
                             window.showInformationMessage(
-                                "It may take a few minutes to pull all of your data if it exists",
-                                {
-                                    modal: true
-                                }
+                                "It may take a few minutes to pull all of your data if it exists"
                             );
+                            justLoggedIn = true;
                             break;
                         case "Login with GitHub":
                             commands.executeCommand("codetime.githubLogin");
                             window.showInformationMessage(
-                                "It may take a few minutes to pull all your of data if it exists",
-                                {
-                                    modal: true
-                                }
+                                "It may take a few minutes to pull all your of data if it exists"
                             );
+                            justLoggedIn = true;
                             break;
                         case "Login with Email":
                             commands.executeCommand("codetime.codeTimeLogin");
                             window.showInformationMessage(
-                                "It may take a few minutes to pull all your of data if it exists",
-                                {
-                                    modal: true
-                                }
+                                "It may take a few minutes to pull all your of data if it exists"
                             );
+                            justLoggedIn = true;
                             break;
                         default:
                             break;
@@ -158,4 +152,8 @@ export function displayLoginPromptIfNotLoggedIn() {
                 }
             });
     }
+}
+
+export function setJustLoggedIn(value: boolean) {
+    justLoggedIn = value;
 }
