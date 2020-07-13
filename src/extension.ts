@@ -45,6 +45,7 @@ let one_minute_interval: NodeJS.Timeout;
 let five_minute_interval: NodeJS.Timeout;
 let one_hour_interval: NodeJS.Timeout;
 let init_interval: NodeJS.Timeout;
+let log_out_interval: NodeJS.Timeout;
 
 const one_min_millis = 1000 * 60;
 
@@ -61,7 +62,7 @@ export function activate(ctx: vscode.ExtensionContext) {
     ctx.subscriptions.push(createCommands());
 }
 
-export async function initializePlugin() {
+export function initializePlugin() {
     // checks if all the files exist
     checkLogsJson();
     checkMilestonesJson();
@@ -118,7 +119,9 @@ export async function initializePlugin() {
 }
 
 function initializeIntervalJobs() {
-    one_minute_interval = setInterval(async () => {
+    setLogOutInterval();
+
+    one_minute_interval = setInterval(() => {
         if (checkIfNameChanged()) {
             logOut();
         } else {
@@ -133,7 +136,7 @@ function initializeIntervalJobs() {
         }
     }, one_min_millis);
 
-    five_minute_interval = setInterval(async () => {
+    five_minute_interval = setInterval(() => {
         if (checkIfNameChanged()) {
             logOut();
         } else {
@@ -145,7 +148,7 @@ function initializeIntervalJobs() {
             if (!updatedLogsDb) {
                 pushUpdatedLogs(false, 0);
             }
-            await fetchLogs();
+            fetchLogs();
 
             // milestones
             checkMilestonesPayload();
@@ -155,14 +158,14 @@ function initializeIntervalJobs() {
             if (!updatedMilestonesDb) {
                 pushUpdatedMilestones();
             }
-            await fetchMilestonesForYesterdayAndToday();
+            fetchMilestonesForYesterdayAndToday();
 
             // summary
-            await pushSummaryToDb();
+            pushSummaryToDb();
         }
     }, one_min_millis * 1);
 
-    one_hour_interval = setInterval(async () => {
+    one_hour_interval = setInterval(() => {
         if (checkIfNameChanged()) {
             logOut();
         } else {
@@ -204,17 +207,18 @@ function initializeLogInCheckInterval() {
             // fetches and updates the user summary in the db
             pushSummaryToDb();
 
-            // updates logs and milestones
-            updateLogsMilestonesAndMetrics([]);
-            checkCodeTimeMetricsMilestonesAchieved();
-            checkLanguageMilestonesAchieved();
-            checkDaysMilestones();
-            reevaluateSummary();
-
             clearInterval(init_interval);
 
             // sets interval jobs
             initializeIntervalJobs();
+        }
+    }, 10000);
+}
+
+function setLogOutInterval() {
+    log_out_interval = setInterval(() => {
+        if (checkIfNameChanged()) {
+            logOut();
         }
     }, 10000);
 }
@@ -247,4 +251,5 @@ export function deactivate(ctx: vscode.ExtensionContext) {
     clearInterval(five_minute_interval);
     clearInterval(one_hour_interval);
     clearInterval(init_interval);
+    clearInterval(log_out_interval);
 }

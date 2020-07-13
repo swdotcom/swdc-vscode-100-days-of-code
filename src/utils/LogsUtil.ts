@@ -184,6 +184,7 @@ export async function compareWithLocalLogs(logs: Array<Log>) {
     if (changed) {
         writeToLogsJson(localLogs);
         reevaluateSummary();
+        restoreAllMilestones();
     }
 }
 
@@ -308,7 +309,15 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
     await pushSummaryToDb();
 
     // updates all local milestones and logs
-    await fetchAllMilestones();
+    restoreAllMilestones();
+}
+
+async function restoreAllMilestones() {
+    let logs = getAllLogObjects();
+    for (let i = 0; i < logs.length; i++) {
+        logs[i].milestones = getMilestonesByDate(logs[i].date);
+    }
+    writeToLogsJson(logs);
 }
 
 function checkIfDateExists(): boolean {

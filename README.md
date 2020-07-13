@@ -120,7 +120,7 @@ Milestones are divided into six levels of difficulty. You should complete the le
 
 The **Dashboard** helps you visualize your progress during the challenge. You can view your aggregated code metrics for the challenge, your most recent Logs and Milestones, and a graph of your code time throughout the challenge.
 
-Aggregate metrics at the top of the Dashboard contain progress bars that allow you to see your headway towards key milestones. As the bars fill, you near the completion of a new milestones for that category.
+Aggregated metrics at the top of your Dashboard help you measure your progress toward key milestones. Progress bars show how close you are to achieving each milestone and turn gold when you have reached your goal.
 
 <p align="center" style="margin: 0 10%">
   <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/Dashboard+Page.png" alt="View Dashboard page for 100 Days of Code" />
