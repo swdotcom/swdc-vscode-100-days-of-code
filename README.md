@@ -54,7 +54,7 @@ We want to do our part to make your experience a little easier (and more fun too
 
 -   **Share your progress**: Easily share your logs and milestones to Twitter.
 
--   **Backup your data**: Create a free Software account and we’ll back up your coding activity, logs, and milestones so you can pick up where you left off—even if you take a break or switch computers.
+-   **Backup your data**: Create a free Software account and we’ll back up your logs and milestones so you can pick up where you left off—even if you take a break or switch computers.
 
 The 100 Days of Code plugin is built on [Code Time](https://www.software.com/code-time), our powerful time tracking extension backed by a community of over 70,000 developers.
 
@@ -64,7 +64,7 @@ The 100 Days of Code plugin is built on [Code Time](https://www.software.com/cod
 
 ### **1. Create your web account**
 
-100 Days of Code requires that you're logged in via Google, Github or Software account. This allows your data to be accessible and synced across multiple devices.
+100 Days of Code requires that you're logged in via Google, Github or your Software account. This allows your data to be accessible and synced across multiple devices.
 
 <p align="center" style="margin: 0 10%">
   <img src="https://swdc-vscode.s3-us-west-1.amazonaws.com/login-prompt.png" alt="Code Time for VS Code login prompt" />
@@ -119,6 +119,8 @@ Milestones are divided into six levels of difficulty. You should complete the le
 ### **5. View Dashboard**
 
 The **Dashboard** helps you visualize your progress during the challenge. You can view your aggregated code metrics for the challenge, your most recent Logs and Milestones, and a graph of your code time throughout the challenge.
+
+Aggregate metrics at the top of the Dashboard contain progress bars that allow you to see your headway towards key milestones. As the bars fill, you near the completion of a new milestones for that category.
 
 <p align="center" style="margin: 0 10%">
   <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/Dashboard+Page.png" alt="View Dashboard page for 100 Days of Code" />
