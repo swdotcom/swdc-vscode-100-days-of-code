@@ -292,6 +292,7 @@ export function getUpdatedDashboardHtmlString(): string {
     const linesAdded = summary.lines_added + summary.currentLines;
     let avgHours = parseFloat((hours / days).toFixed(2));
 
+    let daysToolTipInfo: string = "";
     if (summary.currentHours < HOURS_THRESHOLD) {
         days--;
         if (streaks === currStreak) {
@@ -302,6 +303,7 @@ export function getUpdatedDashboardHtmlString(): string {
             days = 0;
             streaks = 0;
         }
+        daysToolTipInfo = `<br>Today will be counted after ${HOURS_THRESHOLD * 60} minutes of coding.`;
     }
 
     // view certificate if coded over HOURS_THRESHOLD on 100th day or over 100 days of coding achieved
@@ -315,7 +317,7 @@ export function getUpdatedDashboardHtmlString(): string {
     const { streaksLevel, streaksProgressPercentage } = getLongStreakLevel(streaks);
     const { linesAddedLevel, linesAddedProgressPercentage } = getLinesAddedLevel(linesAdded);
 
-    const daysLevelTooltip = getDaysLevelTooltipText(daysLevel);
+    const daysLevelTooltip = getDaysLevelTooltipText(daysLevel) + daysToolTipInfo;
     const hoursLevelTooltip = getHoursLevelTooltipText(hoursLevel);
     const streaksLevelTooltip = getStreaksLevelTooltipText(streaksLevel);
     const linesAddedLevelTooltip = getLinesAddedLevelTooltipText(linesAddedLevel);
