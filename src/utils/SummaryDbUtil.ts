@@ -40,7 +40,7 @@ async function pushNewSummary() {
             available = false;
         }
         if (available) {
-            const resp = await softwarePost("100doc/summary", toCreateSummary, jwt);
+            const resp = await softwarePost("/100doc/summary", toCreateSummary, jwt);
         }
     }
 }
@@ -70,7 +70,7 @@ export async function pushUpdatedSummary() {
             available = false;
         }
         if (available) {
-            const resp = await softwarePut("100doc/summary", toCreateSummary, jwt);
+            const resp = await softwarePut("/100doc/summary", toCreateSummary, jwt);
         }
     }
 }
@@ -85,7 +85,7 @@ export async function fetchSummary(): Promise<boolean> {
             available = false;
         }
         if (available) {
-            const summary = await softwareGet("100doc/summary", jwt).then(resp => {
+            const summary = await softwareGet("/100doc/summary", jwt).then(resp => {
                 if (isResponseOk(resp) && resp.data) {
                     const rawSummary = resp.data;
                     let summary = {

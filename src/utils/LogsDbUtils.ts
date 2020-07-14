@@ -129,7 +129,7 @@ export async function pushNewLogs(addNew: boolean) {
             available = false;
         }
         if (available) {
-            const resp = await softwarePost("100doc/logs", toCreateLogs, jwt);
+            const resp = await softwarePost("/100doc/logs", toCreateLogs, jwt);
             const added: boolean = isResponseOk(resp);
             if (!added) {
                 sentLogsDb = false;
@@ -187,7 +187,7 @@ export async function pushUpdatedLogs(addNew: boolean, dayNumber: number) {
             available = false;
         }
         if (available) {
-            const added: boolean = isResponseOk(await softwarePut("100doc/logs", toUpdateLogs, jwt));
+            const added: boolean = isResponseOk(await softwarePut("/100doc/logs", toUpdateLogs, jwt));
             if (!added) {
                 updatedLogsDb = false;
             } else {

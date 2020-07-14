@@ -77,7 +77,7 @@ export async function fetchMilestonesByDate(date: number): Promise<Array<number>
         }
         if (available) {
             const milestones = await softwareGet(
-                `100doc/milestones?start_date=${Math.round(startDate.valueOf() / 1000)}&end_date=${Math.round(
+                `/100doc/milestones?start_date=${Math.round(startDate.valueOf() / 1000)}&end_date=${Math.round(
                     endDate.valueOf() / 1000
                 )}`,
                 jwt
@@ -117,7 +117,7 @@ export async function fetchMilestonesForYesterdayAndToday() {
         }
         if (available) {
             const milestones = await softwareGet(
-                `100doc/milestones?start_date=${Math.round(startDate.valueOf() / 1000)}&end_date=${Math.round(
+                `/100doc/milestones?start_date=${Math.round(startDate.valueOf() / 1000)}&end_date=${Math.round(
                     endDate.valueOf() / 1000
                 )}`,
                 jwt
@@ -143,7 +143,7 @@ export async function fetchAllMilestones() {
             available = false;
         }
         if (available) {
-            const milestones = await softwareGet("100doc/milestones", jwt).then(resp => {
+            const milestones = await softwareGet("/100doc/milestones", jwt).then(resp => {
                 if (isResponseOk(resp)) {
                     return resp.data;
                 }
@@ -193,7 +193,7 @@ export async function pushNewMilestones() {
             available = false;
         }
         if (available) {
-            const resp = await softwarePost("100doc/milestones", toCreateMilestones, jwt);
+            const resp = await softwarePost("/100doc/milestones", toCreateMilestones, jwt);
             const added: boolean = isResponseOk(resp);
             if (!added) {
                 sentMilestonesDb = false;
@@ -225,7 +225,7 @@ export async function pushUpdatedMilestones() {
             available = false;
         }
         if (available) {
-            const resp = await softwarePut("100doc/milestones", toUpdateMilestones, jwt);
+            const resp = await softwarePut("/100doc/milestones", toUpdateMilestones, jwt);
             const added: boolean = isResponseOk(resp);
             if (!added) {
                 updatedMilestonesDb = false;

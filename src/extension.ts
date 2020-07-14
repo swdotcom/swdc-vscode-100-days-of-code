@@ -49,6 +49,12 @@ let log_out_interval: NodeJS.Timeout;
 
 const one_min_millis = 1000 * 60;
 
+let initTimestamp = 0;
+let reevaluateSummaryNeeded = true;
+
+// minutes to wait for code time to update session summary at cold start or midnight
+const waitTimeMins = 3;
+
 // this method is called when the extension is activated
 export function activate(ctx: vscode.ExtensionContext) {
     // Use the console to output diagnostic information (console.log) and errors (console.error)
@@ -101,15 +107,11 @@ export function initializePlugin() {
         }
         fetchAllMilestones();
 
+        const dateOb = new Date();
+        initTimestamp = dateOb.valueOf();
+
         // fetches and updates the user summary in the db
         pushSummaryToDb();
-
-        // updates logs and milestones
-        updateLogsMilestonesAndMetrics([]);
-        checkCodeTimeMetricsMilestonesAchieved();
-        checkLanguageMilestonesAchieved();
-        checkDaysMilestones();
-        reevaluateSummary();
 
         // sets interval jobs
         initializeIntervalJobs();
@@ -126,12 +128,25 @@ function initializeIntervalJobs() {
             logOut();
         } else {
             const currDate = new Date();
-            if (currDate.getHours() !== 0 || currDate.getMinutes() > 3) {
+            // in order to get enough time for code time to update:
+            // it must be wait time greater than the init time
+            // it should update wait time after midnight
+            if (
+                currDate.valueOf() - one_min_millis * waitTimeMins > initTimestamp &&
+                (currDate.getHours() !== 0 || currDate.getMinutes() > waitTimeMins)
+            ) {
                 // updates logs with latest metrics and checks for milestones
                 updateLogsMilestonesAndMetrics([]);
                 checkCodeTimeMetricsMilestonesAchieved();
                 checkLanguageMilestonesAchieved();
                 checkDaysMilestones();
+
+                if (reevaluateSummaryNeeded) {
+                    reevaluateSummary();
+                    reevaluateSummaryNeeded = false;
+                }
+            } else {
+                reevaluateSummaryNeeded = true;
             }
         }
     }, one_min_millis);
