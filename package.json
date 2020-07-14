@@ -34,7 +34,8 @@
         "100 days of code",
         "code time",
         "challenge",
-        "diary"
+        "diary",
+        "time tracking"
     ],
     "activationEvents": [
         "onStartupFinished"
