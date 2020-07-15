@@ -23,6 +23,7 @@ import {
     toUpdateLogsPush
 } from "./LogsDbUtils";
 import { pushSummaryToDb } from "./SummaryDbUtil";
+import { HOURS_THRESHOLD } from "./Constants";
 let dateLogMessage: Date | any = undefined;
 
 export function getLogsJson(): string {
@@ -610,7 +611,8 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
 
             if (
                 (!dateLogMessage || !compareDates(dateLogMessage, new Date())) &&
-                logs[i].codetime_metrics.hours > 0.3 &&
+                logs[i].codetime_metrics.hours > HOURS_THRESHOLD &&
+                logs[i].codetime_metrics.hours < HOURS_THRESHOLD + 0.1 &&
                 logs[i].title === "No Title"
             ) {
                 window

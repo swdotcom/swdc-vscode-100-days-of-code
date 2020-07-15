@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows } from "./Util";
+import { getSoftwareDir, isWindows, compareDates } from "./Util";
 import fs = require("fs");
 
 function getSessionSummaryJson() {
@@ -32,7 +32,13 @@ export function getSessionCodetimeMetrics(): any {
             retries--;
         }
         if (exists) {
-            codeTimeMetricsStr = fs.readFileSync(sessionSummaryFile).toString();
+            const stats = fs.statSync(sessionSummaryFile);
+            // checks if file was updated today
+            if (compareDates(new Date(), stats.mtime)) {
+                codeTimeMetricsStr = fs.readFileSync(sessionSummaryFile).toString();
+            } else {
+                return metricsOut;
+            }
         } else {
             return metricsOut;
         }

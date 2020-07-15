@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows } from "./Util";
+import { getSoftwareDir, isWindows, compareDates } from "./Util";
 import fs = require("fs");
 
 function getFileSummaryJson() {
@@ -33,11 +33,16 @@ export function getLanguages() {
     }
     const fileJson = JSON.parse(filesString);
 
+    const dateNow = new Date();
     let languages: Array<string> = [];
     let key: string;
     for (key in fileJson) {
-        const language = fileJson[key]["syntax"];
-        languages.push(language);
+        const endTime = fileJson[key]["end"] * 1000; // seconds to milliseconds
+        // checks if edited today
+        if (compareDates(dateNow, new Date(endTime))) {
+            const language = fileJson[key]["syntax"];
+            languages.push(language);
+        }
     }
 
     // for no duplicates, we convert array into set and back into array
