@@ -511,8 +511,7 @@ export async function updateLogByDate(log: Log) {
             logs[i].date = log.date;
             logs[i].codetime_metrics.keystrokes = log.codetime_metrics.keystrokes;
             logs[i].codetime_metrics.lines_added = log.codetime_metrics.lines_added;
-            // If user added extra hours, we don't want to reduce those
-            logs[i].codetime_metrics.hours = Math.max(logs[i].codetime_metrics.hours, log.codetime_metrics.hours);
+            logs[i].codetime_metrics.hours = log.codetime_metrics.hours;
 
             writeToLogsJson(logs);
             updateSummaryJson();

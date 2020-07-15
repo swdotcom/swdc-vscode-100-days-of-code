@@ -11,11 +11,59 @@ function getSessionSummaryJson() {
     return file;
 }
 
+function getTimeCounterJson() {
+    let file = getSoftwareDir();
+    if (isWindows()) {
+        file += "\\timeCounter.json";
+    } else {
+        file += "/timeCounter.json";
+    }
+    return file;
+}
+
+function getMinutesCoded(): number {
+    const timeCounterFile = getTimeCounterJson();
+    let minutes = 0;
+    let timeCounterStr = "";
+    try {
+        // retries help when a user downloads Code Time with 100 Days of Code
+        // they allow the file to be created and not throw errors
+        let exists = false;
+        let retries = 5;
+        while (retries > 0 && !exists) {
+            exists = fs.existsSync(timeCounterFile);
+            retries--;
+        }
+        if (exists) {
+            const stats = fs.statSync(timeCounterFile);
+            // checks if file was updated today
+            if (compareDates(new Date(), stats.mtime)) {
+                timeCounterStr = fs.readFileSync(timeCounterFile).toString();
+            } else {
+                return minutes;
+            }
+        } else {
+            return minutes;
+        }
+    } catch (err) {
+        return minutes;
+    }
+
+    const timeCounterMetrics = JSON.parse(timeCounterStr);
+
+    // checks for avoiding null and undefined
+    if (timeCounterMetrics.cumulative_code_time_seconds) {
+        minutes = timeCounterMetrics.cumulative_code_time_seconds / 60;
+    }
+
+    return minutes;
+}
+
 export function getSessionCodetimeMetrics(): any {
     const sessionSummaryFile = getSessionSummaryJson();
 
     let metricsOut = {
-        minutes: 0,
+        minutes: getMinutesCoded(),
         keystrokes: 0,
         linesAdded: 0
     };
@@ -50,9 +98,6 @@ export function getSessionCodetimeMetrics(): any {
     const metrics = JSON.parse(codeTimeMetricsStr);
 
     // checks for avoiding null and undefined
-    if (metrics.currentDayMinutes) {
-        metricsOut.minutes = metrics.currentDayMinutes;
-    }
     if (metrics.currentDayKeystrokes) {
         metricsOut.keystrokes = metrics.currentDayKeystrokes;
     }
