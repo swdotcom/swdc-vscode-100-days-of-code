@@ -19,14 +19,14 @@
 
 <br />
 
-<!-- <p align="center">
-  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.music-time">
-    <img alt="Marketplace" src="https://vsmarketplacebadge.apphb.com/version-short/softwaredotcom.music-time.svg"></a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.music-time">
-    <img alt="Installs" src="https://vsmarketplacebadge.apphb.com/installs-short/softwaredotcom.music-time.svg"></a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.music-time">
-    <img alt="Rating" src="https://vsmarketplacebadge.apphb.com/rating-short/softwaredotcom.music-time.svg"></a>
-</p> -->
+<p align="center">
+  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-100-days-of-code">
+    <img alt="Marketplace" src="https://vsmarketplacebadge.apphb.com/version-short/softwaredotcom.swdc-100-days-of-code.svg"></a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-100-days-of-code">
+    <img alt="Installs" src="https://vsmarketplacebadge.apphb.com/installs-short/softwaredotcom.swdc-100-days-of-code.svg"></a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-100-days-of-code">
+    <img alt="Rating" src="https://vsmarketplacebadge.apphb.com/rating-short/softwaredotcom.swdc-100-days-of-code.svg"></a>
+</p>
 
 <p align="center" style="margin: 0 10%">
     <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/Landing+Page.png" alt="100 Days of Code Landing Image" />
