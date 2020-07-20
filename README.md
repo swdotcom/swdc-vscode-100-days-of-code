@@ -19,13 +19,14 @@
 
 <br />
 
-<p align="center">
-  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-100-days-of-code">
-    <img alt="Marketplace" src="https://vsmarketplacebadge.apphb.com/version-short/softwaredotcom.swdc-100-days-of-code.svg"></a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-100-days-of-code">
-    <img alt="Installs" src="https://vsmarketplacebadge.apphb.com/installs-short/softwaredotcom.swdc-100-days-of-code.svg"></a>
-  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-100-days-of-code">
-    <img alt="Rating" src="https://vsmarketplacebadge.apphb.com/rating-short/softwaredotcom.swdc-100-days-of-code.svg"></a>
+<p align="center" >
+  <a href="https://www.software.com/100-days-of-code" style="margin: 5px;"><img src="https://www.software.com/badges/100-days-of-code"></a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-100-days-of-code" style="margin: 5px;">
+    <img alt="Marketplace" src="https://vsmarketplacebadge.apphb.com/version-short/softwaredotcom.swdc-100-days-of-code.svg?style=for-the-badge&color=00b4ee&labelColor=384357"></a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-100-days-of-code" style="margin: 5px;">
+    <img alt="Installs" src="https://vsmarketplacebadge.apphb.com/installs-short/softwaredotcom.swdc-100-days-of-code.svg?style=for-the-badge&color=00b4ee&labelColor=384357"></a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-100-days-of-code" style="margin: 5px;">
+    <img alt="Rating" src="https://vsmarketplacebadge.apphb.com/rating-short/softwaredotcom.swdc-100-days-of-code.svg?style=for-the-badge&color=00b4ee&labelColor=384357"></a>
 </p>
 
 <p align="center" style="margin: 0 10%">
@@ -147,6 +148,26 @@ Each log entry has a share button that will allow you to directly tweet your pro
 Tweets about your milestones will include a badge, description, and link for your followers to explore.
 
 <br>
+
+### **7. Add this badge to your work**
+
+Being a part of the 100 Days of Code challenge, you will work on a lot of projects. In order to take full advantage of the spotlight it brings you, you can add a custom 100 Days of Code badge to your GitHub readme files or your websites.
+
+<div align="center" style="margin-top: 30px;"><a href="https://www.software.com/100-days-of-code" style="margin: 5px; align: center;"><img src="https://www.software.com/badges/100-days-of-code"></a></div>
+
+Here is code to add it:
+
+-   MarkDown
+
+```
+[![Software | 100 Days of Code](https://www.software.com/badges/100-days-of-code)](https://www.software.com/100-days-of-code)
+```
+
+-   HTML
+
+```
+<a href="https://www.software.com/100-days-of-code" style="margin: 5px;"><img src="https://www.software.com/badges/100-days-of-code"></a>
+```
 
 ## 100 Days of Code Resources
 
