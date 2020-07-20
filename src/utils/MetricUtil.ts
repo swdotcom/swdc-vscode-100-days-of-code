@@ -63,7 +63,7 @@ export function getSessionCodetimeMetrics(): any {
     const sessionSummaryFile = getSessionSummaryJson();
 
     let metricsOut = {
-        minutes: getMinutesCoded(),
+        minutes: 0,
         keystrokes: 0,
         linesAdded: 0
     };
@@ -98,6 +98,9 @@ export function getSessionCodetimeMetrics(): any {
     const metrics = JSON.parse(codeTimeMetricsStr);
 
     // checks for avoiding null and undefined
+    if (metrics.currentDayMinutes) {
+        metricsOut.minutes = metrics.currentDayMinutes;
+    }
     if (metrics.currentDayKeystrokes) {
         metricsOut.keystrokes = metrics.currentDayKeystrokes;
     }
