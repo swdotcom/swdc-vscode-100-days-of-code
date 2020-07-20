@@ -54,14 +54,14 @@ function generateShareUrl(
     // Share link
     let dayURI = encodeURI(`Day ${day_number}/100 of`);
     let shareText = [
-        `\n${title}`,
-        `\nHours Coded: ${hours}`,
-        `Lines of Code: ${lines_added}`,
-        `Keystrokes: ${keystrokes}\n`
+        `\n\n${title}`,
+        `\nHours coded: ${hours}`,
+        `Lines of code: ${lines_added}`,
+        `Keystrokes: ${keystrokes}\n\n`
     ].join("\n");
     const shareURI = encodeURI(shareText);
     const hashtagURI = "%23";
-    return `https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.software.com%2F100-days-of-code&text=${dayURI}%20${hashtagURI}100DaysOfCode${shareURI}I%27m%20using%20@software_hq%27s%20${hashtagURI}100DaysOfCode%20${hashtagURI}vscode%20extension`;
+    return `https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.software.com%2F100-days-of-code&text=${dayURI}%20${hashtagURI}100DaysOfCode${shareURI}via%20@software_hq's%20${hashtagURI}vscode%20extension`;
 }
 
 function getFormattedDate(timestamp: number): string {

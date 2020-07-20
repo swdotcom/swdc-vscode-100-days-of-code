@@ -4,7 +4,7 @@ import { getSummaryObject, getDaysLevel, getHoursLevel, getLongStreakLevel, getL
 import { Summary } from "../models/Summary";
 import { getLastSevenLoggedDays, getAllCodetimeHours, getLogDateRange } from "./LogsUtil";
 import { getMilestoneById } from "./MilestonesUtil";
-import { monthNames, HOURS_THRESHOLD } from "./Constants";
+import { monthNames } from "./Constants";
 import { window } from "vscode";
 
 function getDashboardTemplate(): string {
@@ -130,14 +130,14 @@ function getLinesAddedLevelTooltipText(level: number): string {
 function generateShareUrl(days: number, hours: number, streaks: number, linesAdded: number, avgHours: number): string {
     const hashtagURI = "%23";
     const shareText = [
-        `\nDays: ${days}`,
-        `Total Hours Coded: ${hours} hrs`,
-        `Longest Streak: ${streaks} days`,
-        `Total Lines Added: ${linesAdded}`,
-        `Avg Hours/Day: ${avgHours} hrs\n`
+        `\n\nDays coded: ${days}`,
+        `Longest streak: ${streaks} days`,
+        `Total hours coded: ${hours} hrs`,
+        `Total lines added: ${linesAdded}`,
+        `Avg hours/day: ${avgHours} hrs\n\n`
     ].join("\n");
     const shareURI = encodeURI(shareText);
-    return `https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.software.com%2F100-days-of-code&text=My%20${hashtagURI}100DaysOfCode%20Progress:${shareURI}I%27m%20using%20@software_hq%27s%20${hashtagURI}100DaysOfCode%20${hashtagURI}vscode%20extension`;
+    return `https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.software.com%2F100-days-of-code&text=My%20${hashtagURI}100DaysOfCode%20progress:${shareURI}via%20@software_hq's%20${hashtagURI}vscode%20extension`;
 }
 
 function getStyleColorsBasedOnMode(): any {
@@ -148,14 +148,12 @@ function getStyleColorsBasedOnMode(): any {
     let datagramXMinColor = "rgba(170,170,170,1)";
     let datagramBackground = "rgba(0,0,0,0);";
     let cardToolTipColor = "rgba(109,109,109,0.9)";
-    let progressbarbackColor = "rgba(0, 180, 238, 0.)";
     if (tempWindow.activeColorTheme.kind === 1) {
         cardTextColor = "#444444";
         cardBackgroundColor = "rgba(0,0,0,0.10)";
         datagramXMinColor = "#444444";
         datagramBackground = "rgba(0,0,0,0.10);";
         cardToolTipColor = "rgba(165,165,165,0.9)";
-        progressbarbackColor = "rgba(0, 180, 238, 0.15)";
     }
     return { cardTextColor, cardBackgroundColor, datagramXMinColor, datagramBackground, cardToolTipColor };
 }
@@ -292,23 +290,9 @@ export function getUpdatedDashboardHtmlString(): string {
     const linesAdded = summary.lines_added + summary.currentLines;
     let avgHours = parseFloat((hours / days).toFixed(2));
 
-    let daysToolTipInfo: string = "";
-    if (summary.currentHours < HOURS_THRESHOLD) {
-        days--;
-        if (streaks === currStreak) {
-            streaks--;
-        }
-        if (days <= 0) {
-            avgHours = 0;
-            days = 0;
-            streaks = 0;
-        }
-        daysToolTipInfo = `<br>Today will be counted after ${HOURS_THRESHOLD * 60} minutes of coding.`;
-    }
-
-    // view certificate if coded over HOURS_THRESHOLD on 100th day or over 100 days of coding achieved
+    // view certificate if coded over 100 days
     let certificateVisibility = "hidden";
-    if (days > 100 || (days === 100 && summary.currentHours >= HOURS_THRESHOLD)) {
+    if (days >= 100) {
         certificateVisibility = "visible";
     }
 
@@ -317,7 +301,7 @@ export function getUpdatedDashboardHtmlString(): string {
     const { streaksLevel, streaksProgressPercentage } = getLongStreakLevel(streaks);
     const { linesAddedLevel, linesAddedProgressPercentage } = getLinesAddedLevel(linesAdded);
 
-    const daysLevelTooltip = getDaysLevelTooltipText(daysLevel) + daysToolTipInfo;
+    const daysLevelTooltip = getDaysLevelTooltipText(daysLevel);
     const hoursLevelTooltip = getHoursLevelTooltipText(hoursLevel);
     const streaksLevelTooltip = getStreaksLevelTooltipText(streaksLevel);
     const linesAddedLevelTooltip = getLinesAddedLevelTooltipText(linesAddedLevel);

@@ -9,13 +9,11 @@ function getMilestonesTemplate(): string {
     return path.join(__dirname, "../assets/templates/milestones.template.html");
 }
 
-function milestoneShareUrlGenerator(id: number, title: string, description: string): string {
+function generateShareUrl(id: number, title: string, description: string): string {
     const hashtagURI = "%23";
-    const beginURI = "https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.software.com%2Fmilestone%2F";
-    const endURI = `%0aWoohoo%21%20I%20earned%20this%20milestone%20while%20completing%20the%20${hashtagURI}100DaysOfCode%20Challenge%20with%20@software_hq%27s%20100%20Days%20of%20Code%20VS%20Code%20Plugin.&hashtags=100DaysOfCode%2CSoftware%2CDeveloper%2CAchiever`;
-    const titleURI = encodeURI(title);
-    const descriptionURI = encodeURI(description);
-    let url = `${beginURI}${id}&text=${titleURI}%20-%20${descriptionURI}${endURI}`;
+    const shareText = [`${title} - ${description}`, `\nWoohoo! I earned a new`].join("\n");
+    const shareURI = encodeURI(shareText);
+    const url = `https://twitter.com/intent/tweet?url=https%3A%2F%2Fwww.software.com%2Fmilestone%2F${id}&text=${shareURI}%20${hashtagURI}100DaysOfCode%20milestone%20via%20@software_hq's%20${hashtagURI}vscode%20extension`;
     return url;
 }
 
@@ -56,7 +54,7 @@ export function getUpdatedMilestonesHtmlString(): string {
 
         let icon: string;
         let dateAchieved: number = 0;
-        const shareLink = milestoneShareUrlGenerator(i + 1, title, description);
+        const shareLink = generateShareUrl(i + 1, title, description);
         // If achieved, card must be colored. Otherwise, card should be gray
 
         // for adding gray scale effect class into html
