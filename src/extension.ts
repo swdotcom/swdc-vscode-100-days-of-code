@@ -38,7 +38,15 @@ import {
     deleteLogsPayloadJson
 } from "./utils/LogsDbUtils";
 import { pushSummaryToDb } from "./utils/SummaryDbUtil";
-import { displayReadmeIfNotExists, isLoggedIn, setName, checkIfNameChanged } from "./utils/Util";
+import {
+    displayReadmeIfNotExists,
+    isLoggedIn,
+    setName,
+    checkIfNameChanged,
+    getPluginName,
+    getVersion,
+    sendHeartbeat
+} from "./utils/Util";
 import { commands } from "vscode";
 
 let one_minute_interval: NodeJS.Timeout;
@@ -59,7 +67,7 @@ const waitTimeMins = 3;
 export function activate(ctx: vscode.ExtensionContext) {
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
-    console.log("swdc-100-days-of-code: activated");
+    console.log(`Loaded ${getPluginName()} v${getVersion()}`);
 
     // Initialize all the files and db setup for the plugin
     initializePlugin();
@@ -80,6 +88,9 @@ export function initializePlugin() {
     // init condition
     if (getLatestLogEntryNumber() <= 0) {
         commands.executeCommand("DoC.revealTree");
+        sendHeartbeat("INSTALLED");
+    } else {
+        sendHeartbeat("HOURLY");
     }
 
     // try to send payloads that weren't sent
@@ -192,6 +203,7 @@ function initializeIntervalJobs() {
                 pushUpdatedMilestones();
             }
         }
+        sendHeartbeat("HOURLY");
     }, one_min_millis * 60);
 }
 

@@ -312,7 +312,10 @@ export function getUpdatedLogsHtml(): string {
     let addLogVisibility = "hidden";
 
     let submittedLogToday: boolean;
-    if (logs.length < 1 || (logs.length === 1 && logs[0].title === "No Title")) {
+    if (
+        logs.length < 1 ||
+        (logs.length === 1 && logs[0].title === "No Title" && compareDates(new Date(), new Date(logs[0].date)))
+    ) {
         logsHtml = `\t\t<h2 id='noLogs'>Log Daily Progress to see it here!</h2>`;
         addLogVisibility = "visible";
     } else {

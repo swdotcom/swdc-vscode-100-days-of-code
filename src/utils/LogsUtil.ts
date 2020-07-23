@@ -87,22 +87,24 @@ export function getLogsSummary(): any {
     let longest_streak = 0;
     let current_streak = 0;
 
-    const hours24 = 86400000;
-    let previousDate = logs[0].date - hours24;
-    for (let log of logs) {
-        totalHours += log.codetime_metrics.hours;
-        totalLinesAdded += log.codetime_metrics.lines_added;
-        totalKeystrokes += log.codetime_metrics.keystrokes;
-        totalDays++;
-        if (compareDates(new Date(previousDate + hours24), new Date(log.date))) {
-            current_streak++;
-            if (current_streak > longest_streak) {
-                longest_streak = current_streak;
+    if (logs.length > 0) {
+        const hours24 = 86400000;
+        let previousDate = logs[0].date - hours24;
+        for (let log of logs) {
+            totalHours += log.codetime_metrics.hours;
+            totalLinesAdded += log.codetime_metrics.lines_added;
+            totalKeystrokes += log.codetime_metrics.keystrokes;
+            totalDays++;
+            if (compareDates(new Date(previousDate + hours24), new Date(log.date))) {
+                current_streak++;
+                if (current_streak > longest_streak) {
+                    longest_streak = current_streak;
+                }
+            } else {
+                current_streak = 0;
             }
-        } else {
-            current_streak = 0;
+            previousDate = log.date;
         }
-        previousDate = log.date;
     }
 
     return {
@@ -562,8 +564,19 @@ export async function editLogEntry(
     await pushUpdatedLogs(true, dayNumber);
 }
 
+function checkIfLogIsEmpty(log: Log): boolean {
+    return (
+        log.codetime_metrics.hours === 0 &&
+        log.codetime_metrics.keystrokes === 0 &&
+        log.codetime_metrics.lines_added === 0 &&
+        log.title === "No Title" &&
+        log.description === "No Description" &&
+        log.milestones.length === 0 &&
+        (log.links.length === 0 || (log.links.length === 1 && log.links[0] === ""))
+    );
+}
+
 export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
-    const metrics = getSessionCodetimeMetrics();
     const logDate = new Date();
     let logs = getAllLogObjects();
 
@@ -573,6 +586,17 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
         let log = new Log();
         const dayNum = getLatestLogEntryNumber() + 1;
         log.date = logDate.valueOf();
+
+        // Reset if previous day was never coded on
+        if (logs.length > 0 && checkIfLogIsEmpty(logs[logs.length - 1])) {
+            logs[logs.length - 1].date = logDate.valueOf();
+            logs[logs.length - 1].milestones = milestones;
+            writeToLogsJson(logs);
+            updateSummaryJson();
+            await pushUpdatedLogs(true, logs[logs.length - 1].day_number);
+            return;
+        }
+
         log.milestones = milestones;
         log.codetime_metrics.hours = 0;
         log.codetime_metrics.keystrokes = 0;
@@ -594,6 +618,7 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
         const dateOb = new Date(logs[i].date);
         // Checking if date matches
         if (compareDates(dateOb, logDate)) {
+            const metrics = getSessionCodetimeMetrics();
             // checks if new day and fresh start
             const checkForJump: boolean = i === logs.length - 1 && i > 0 && logs[i].codetime_metrics.hours === 0;
 

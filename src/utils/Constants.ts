@@ -1,5 +1,7 @@
 export const OK_LABEL = "Ok";
 export const YES_LABEL = "Yes";
+export const _100_DAYS_OF_CODE_EXT_ID = "softwaredotcom.swdc-100-days-of-code";
+export const _100_DAYS_OF_CODE_PLUGIN_ID = 18;
 
 // API ENDPOINT
 // "http://localhost:5000", "https://qaapi.software.com", "https://stagingapi.software.com", "https://api.software.com"

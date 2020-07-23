@@ -1,15 +1,166 @@
-import { commands, ViewColumn, Uri, window, QuickPick, QuickPickItem } from "vscode";
+import { commands, ViewColumn, Uri, window, extensions } from "vscode";
 import { getLatestLogEntryNumber } from "./LogsUtil";
+import { _100_DAYS_OF_CODE_PLUGIN_ID, _100_DAYS_OF_CODE_EXT_ID } from "./Constants";
+import { softwarePost, isResponseOk } from "../managers/HttpManager";
 
 const fs = require("fs");
 const os = require("os");
 const open = require("open");
+const crypto = require("crypto");
 const { exec } = require("child_process");
 
+const alpha = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+let workspace_name: any = null;
 let _name = "";
 
-export function getExtensionName() {
-    return "100doc";
+function getPluginId() {
+    return _100_DAYS_OF_CODE_PLUGIN_ID;
+}
+
+export function getPluginName() {
+    return _100_DAYS_OF_CODE_EXT_ID;
+}
+
+export function getVersion() {
+    const extension = extensions.getExtension(_100_DAYS_OF_CODE_EXT_ID);
+    if (extension) {
+        return extension.packageJSON.version;
+    } else {
+        return;
+    }
+}
+
+function getOs() {
+    let parts = [];
+    let osType = os.type();
+    if (osType) {
+        parts.push(osType);
+    }
+    let osRelease = os.release();
+    if (osRelease) {
+        parts.push(osRelease);
+    }
+    let platform = os.platform();
+    if (platform) {
+        parts.push(platform);
+    }
+    if (parts.length > 0) {
+        return parts.join("_");
+    }
+    return "";
+}
+
+function nowInSecs() {
+    return Math.round(Date.now() / 1000);
+}
+
+async function getCommandResultLine(cmd: string, projectDir = null) {
+    const resultList = await getCommandResultList(cmd, projectDir);
+
+    let resultLine = "";
+    if (resultList && resultList.length) {
+        for (let i = 0; i < resultList.length; i++) {
+            let line = resultList[i];
+            if (line && line.trim().length > 0) {
+                resultLine = line.trim();
+                break;
+            }
+        }
+    }
+    return resultLine;
+}
+
+async function getCommandResultList(cmd: any, projectDir = null) {
+    let result: any = await wrapExecPromise(`${cmd}`, projectDir);
+    if (!result) {
+        return [];
+    }
+    const contentList = result.replace(/\r\n/g, "\r").replace(/\n/g, "\r").split(/\r/);
+    return contentList;
+}
+
+async function wrapExecPromise(cmd: string, projectDir: null | undefined) {
+    let result = null;
+    try {
+        let opts = projectDir !== undefined && projectDir !== null ? { cwd: projectDir } : {};
+        result = await execPromise(cmd, opts).catch(e => {
+            if (e.message) {
+                console.log(e.message);
+            }
+            return null;
+        });
+    } catch (e) {
+        if (e.message) {
+            console.log(e.message);
+        }
+        result = null;
+    }
+    return result;
+}
+
+function execPromise(command: any, opts: { cwd: any } | { cwd?: undefined }) {
+    return new Promise(function (resolve, reject) {
+        exec(command, opts, (error: any, stdout: string, stderr: any) => {
+            if (error) {
+                reject(error);
+                return;
+            }
+
+            resolve(stdout.trim());
+        });
+    });
+}
+
+async function getHostname() {
+    let hostname = await getCommandResultLine("hostname");
+    return hostname;
+}
+
+function getSessionFileCreateTime() {
+    let sessionFile = getSoftwareSessionFile();
+    const stat = fs.statSync(sessionFile);
+    if (stat.birthtime) {
+        return stat.birthtime;
+    }
+    return stat.ctime;
+}
+
+function getWorkspaceName() {
+    if (!workspace_name) {
+        workspace_name = randomCode();
+    }
+    return workspace_name;
+}
+
+function randomCode() {
+    return crypto
+        .randomBytes(16)
+        .map((value: number) => alpha.charCodeAt(Math.floor((value * alpha.length) / 256)))
+        .toString();
+}
+
+export async function sendHeartbeat(reason: string) {
+    let jwt = getItem("jwt");
+    if (jwt) {
+        let heartbeat = {
+            pluginId: getPluginId(),
+            os: getOs(),
+            start: nowInSecs(),
+            version: getVersion(),
+            hostname: await getHostname(),
+            session_ctime: getSessionFileCreateTime(),
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            trigger_annotation: reason,
+            editor_token: getWorkspaceName()
+        };
+        let api = `/data/heartbeat`;
+        softwarePost(api, heartbeat, jwt).then(async resp => {
+            if (!isResponseOk(resp)) {
+                console.log("unable to send heartbeat ping");
+            }
+        });
+    }
 }
 
 export function isWindows() {
