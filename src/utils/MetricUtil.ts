@@ -35,13 +35,7 @@ function getMinutesCoded(): number {
             retries--;
         }
         if (exists) {
-            const stats = fs.statSync(timeCounterFile);
-            // checks if file was updated today
-            if (compareDates(new Date(), stats.mtime)) {
-                timeCounterStr = fs.readFileSync(timeCounterFile).toString();
-            } else {
-                return minutes;
-            }
+            timeCounterStr = fs.readFileSync(timeCounterFile).toString();
         } else {
             return minutes;
         }
@@ -51,11 +45,19 @@ function getMinutesCoded(): number {
 
     const timeCounterMetrics = JSON.parse(timeCounterStr);
 
-    // checks for avoiding null and undefined
-    if (timeCounterMetrics.cumulative_code_time_seconds) {
-        minutes = timeCounterMetrics.cumulative_code_time_seconds / 60;
+    // checks if file was updated today
+    const day: string = timeCounterMetrics.current_day;
+    const dayArr = day.split("-");
+    const year = parseInt(dayArr[0]);
+    const month = parseInt(dayArr[1]);
+    const date = parseInt(dayArr[2]);
+    const dateNow = new Date();
+    if (year === dateNow.getFullYear() && month === dateNow.getMonth() + 1 && date === dateNow.getDate()) {
+        // checks for avoiding null and undefined
+        if (timeCounterMetrics.cumulative_code_time_seconds) {
+            minutes = timeCounterMetrics.cumulative_code_time_seconds / 60;
+        }
     }
-
     return minutes;
 }
 

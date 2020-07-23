@@ -574,9 +574,9 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
         const dayNum = getLatestLogEntryNumber() + 1;
         log.date = logDate.valueOf();
         log.milestones = milestones;
-        log.codetime_metrics.hours = parseFloat((metrics.minutes / 60).toFixed(1));
-        log.codetime_metrics.keystrokes = metrics.keystrokes;
-        log.codetime_metrics.lines_added = metrics.linesAdded;
+        log.codetime_metrics.hours = 0;
+        log.codetime_metrics.keystrokes = 0;
+        log.codetime_metrics.lines_added = 0;
         log.day_number = dayNum;
         log.title = "No Title";
         log.description = "No Description";
@@ -594,13 +594,29 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
         const dateOb = new Date(logs[i].date);
         // Checking if date matches
         if (compareDates(dateOb, logDate)) {
+            // checks if new day and fresh start
+            const checkForJump: boolean = i === logs.length - 1 && i > 0 && logs[i].codetime_metrics.hours === 0;
+
             // If user added extra hours, we don't want to reduce those
             logs[i].codetime_metrics.hours = Math.max(
                 logs[i].codetime_metrics.hours,
                 parseFloat((metrics.minutes / 60).toFixed(1))
             );
-            logs[i].codetime_metrics.keystrokes = Math.max(logs[i].codetime_metrics.keystrokes, metrics.keystrokes);
-            logs[i].codetime_metrics.lines_added = Math.max(logs[i].codetime_metrics.lines_added, metrics.linesAdded);
+            logs[i].codetime_metrics.keystrokes = metrics.keystrokes;
+            logs[i].codetime_metrics.lines_added = metrics.linesAdded;
+
+            if (checkForJump) {
+                // checks for irregular jumps
+                if (logs[i].codetime_metrics.hours === logs[i - 1].codetime_metrics.hours) {
+                    logs[i].codetime_metrics.hours = 0;
+                }
+                if (logs[i].codetime_metrics.keystrokes === logs[i - 1].codetime_metrics.keystrokes) {
+                    logs[i].codetime_metrics.keystrokes = 0;
+                }
+                if (logs[i].codetime_metrics.lines_added === logs[i - 1].codetime_metrics.lines_added) {
+                    logs[i].codetime_metrics.lines_added = 0;
+                }
+            }
 
             logs[i].milestones = logs[i].milestones.concat(milestones);
 
