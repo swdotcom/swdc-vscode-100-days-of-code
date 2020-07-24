@@ -110,25 +110,28 @@ export function getLogsSummary(): any {
 
             previousDate = logs[i].date;
         }
+
         // checks if last log is today
         if (compareDates(new Date(logs[logs.length - 1].date), new Date())) {
             currentHours = logs[logs.length - 1].codetime_metrics.hours;
             currentKeystrokes = logs[logs.length - 1].codetime_metrics.keystrokes;
             currentLines = logs[logs.length - 1].codetime_metrics.lines_added;
+            totalDays++;
         } else {
             totalHours += logs[logs.length - 1].codetime_metrics.hours;
             totalLinesAdded += logs[logs.length - 1].codetime_metrics.lines_added;
             totalKeystrokes += logs[logs.length - 1].codetime_metrics.keystrokes;
             totalDays++;
-            if (compareDates(new Date(previousDate + hours24), new Date(logs[logs.length - 1].date))) {
-                current_streak++;
-                if (current_streak > longest_streak) {
-                    longest_streak = current_streak;
-                }
-            } else {
-                current_streak = 0;
-            }
         }
+        if (compareDates(new Date(previousDate + hours24), new Date(logs[logs.length - 1].date))) {
+            current_streak++;
+            if (current_streak > longest_streak) {
+                longest_streak = current_streak;
+            }
+        } else {
+            current_streak = 0;
+        }
+
         currentDate = logs[logs.length - 1].date;
     }
 
@@ -605,6 +608,18 @@ function checkIfLogIsEmpty(log: Log): boolean {
     );
 }
 
+export async function resetPreviousLogIfEmpty() {
+    const logDate = new Date();
+    let logs = getAllLogObjects();
+    if (checkIfLogIsEmpty(logs[logs.length - 1])) {
+        logs[logs.length - 1].date = logDate.valueOf();
+        writeToLogsJson(logs);
+        reevaluateSummary();
+        await pushUpdatedLogs(true, logs[logs.length - 1].day_number);
+        return;
+    }
+}
+
 export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
     const logDate = new Date();
     let logs = getAllLogObjects();
@@ -615,17 +630,6 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
         let log = new Log();
         const dayNum = getLatestLogEntryNumber() + 1;
         log.date = logDate.valueOf();
-
-        // Reset if previous day was never coded on
-        if (logs.length > 0 && checkIfLogIsEmpty(logs[logs.length - 1])) {
-            logs[logs.length - 1].date = logDate.valueOf();
-            logs[logs.length - 1].milestones = milestones;
-            writeToLogsJson(logs);
-            reevaluateSummary();
-            await pushUpdatedLogs(true, logs[logs.length - 1].day_number);
-            return;
-        }
-
         log.milestones = milestones;
         log.codetime_metrics.hours = 0;
         log.codetime_metrics.keystrokes = 0;

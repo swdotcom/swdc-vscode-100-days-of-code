@@ -13,7 +13,8 @@ import {
     checkLogsJson,
     updateLogsMilestonesAndMetrics,
     getLatestLogEntryNumber,
-    deleteLogsJson
+    deleteLogsJson,
+    resetPreviousLogIfEmpty
 } from "./utils/LogsUtil";
 import { checkSummaryJson, reevaluateSummary, deleteSummaryJson } from "./utils/SummaryUtil";
 import {
@@ -60,7 +61,7 @@ const one_min_millis = 1000 * 60;
 let initTimestamp = 0;
 let reevaluateSummaryNeeded = true;
 
-// minutes to wait for code time to update session summary at cold start or midnight
+// minutes to wait for code time to update files at cold start or midnight
 const waitTimeMins = 3;
 
 // this method is called when the extension is activated
@@ -100,6 +101,7 @@ export function initializePlugin() {
         setName();
         // logs
         checkLogsPayload();
+        resetPreviousLogIfEmpty();
         if (!sentLogsDb) {
             pushNewLogs(false);
         }
@@ -157,6 +159,10 @@ function initializeIntervalJobs() {
                     reevaluateSummaryNeeded = false;
                 }
             } else {
+                // only runs once
+                if (!reevaluateSummaryNeeded) {
+                    resetPreviousLogIfEmpty();
+                }
                 reevaluateSummaryNeeded = true;
             }
         }
