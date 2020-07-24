@@ -286,9 +286,8 @@ export function getUpdatedDashboardHtmlString(): string {
     hours = parseFloat(hours.toFixed(2));
     let days = summary.days;
     let streaks = summary.longest_streak;
-    const currStreak = summary.current_streak;
     const linesAdded = summary.lines_added + summary.currentLines;
-    let avgHours = parseFloat((hours / days).toFixed(2));
+    let avgHours = days > 0 ? parseFloat((hours / days).toFixed(2)) : 0;
 
     // view certificate if coded over 100 days
     let certificateVisibility = "hidden";

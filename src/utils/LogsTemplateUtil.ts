@@ -311,7 +311,6 @@ export function getUpdatedLogsHtml(): string {
     let logsHtml = "";
     let addLogVisibility = "hidden";
 
-    let submittedLogToday: boolean;
     if (
         logs.length < 1 ||
         (logs.length === 1 && logs[0].title === "No Title" && compareDates(new Date(), new Date(logs[0].date)))
@@ -320,16 +319,21 @@ export function getUpdatedLogsHtml(): string {
         addLogVisibility = "visible";
     } else {
         let mostRecentLog = logs[logs.length - 1];
-        let logDate = new Date(mostRecentLog.date);
+        let mostRecentLogDate = new Date(mostRecentLog.date);
         let dateNow = new Date();
-        submittedLogToday = compareDates(dateNow, logDate) && mostRecentLog.title !== "No Title";
 
-        if (!submittedLogToday) {
+        // If no log for today
+        if (!compareDates(mostRecentLogDate, dateNow)) {
             addLogVisibility = "visible";
         }
-
         for (let i = logs.length - 1; i >= 0; i--) {
-            if (!submittedLogToday && i === logs.length - 1) {
+            // If today's log is unpopulated
+            if (
+                i === logs.length - 1 &&
+                compareDates(mostRecentLogDate, dateNow) &&
+                mostRecentLog.title === "No Title"
+            ) {
+                addLogVisibility = "visible";
                 continue;
             }
 
