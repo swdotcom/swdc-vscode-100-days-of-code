@@ -86,16 +86,20 @@ export function getLogsSummary(): any {
     let totalDays = 0;
     let longest_streak = 0;
     let current_streak = 0;
+    let currentHours = 0;
+    let currentKeystrokes = 0;
+    let currentLines = 0;
+    let currentDate = 0;
 
     if (logs.length > 0) {
         const hours24 = 86400000;
         let previousDate = logs[0].date - hours24;
-        for (let log of logs) {
-            totalHours += log.codetime_metrics.hours;
-            totalLinesAdded += log.codetime_metrics.lines_added;
-            totalKeystrokes += log.codetime_metrics.keystrokes;
+        for (let i = 0; i < logs.length - 1; i++) {
+            totalHours += logs[i].codetime_metrics.hours;
+            totalLinesAdded += logs[i].codetime_metrics.lines_added;
+            totalKeystrokes += logs[i].codetime_metrics.keystrokes;
             totalDays++;
-            if (compareDates(new Date(previousDate + hours24), new Date(log.date))) {
+            if (compareDates(new Date(previousDate + hours24), new Date(logs[i].date))) {
                 current_streak++;
                 if (current_streak > longest_streak) {
                     longest_streak = current_streak;
@@ -103,8 +107,29 @@ export function getLogsSummary(): any {
             } else {
                 current_streak = 0;
             }
-            previousDate = log.date;
+
+            previousDate = logs[i].date;
         }
+        // checks if last log is today
+        if (compareDates(new Date(logs[logs.length - 1].date), new Date())) {
+            currentHours = logs[logs.length - 1].codetime_metrics.hours;
+            currentKeystrokes = logs[logs.length - 1].codetime_metrics.keystrokes;
+            currentLines = logs[logs.length - 1].codetime_metrics.lines_added;
+        } else {
+            totalHours += logs[logs.length - 1].codetime_metrics.hours;
+            totalLinesAdded += logs[logs.length - 1].codetime_metrics.lines_added;
+            totalKeystrokes += logs[logs.length - 1].codetime_metrics.keystrokes;
+            totalDays++;
+            if (compareDates(new Date(previousDate + hours24), new Date(logs[logs.length - 1].date))) {
+                current_streak++;
+                if (current_streak > longest_streak) {
+                    longest_streak = current_streak;
+                }
+            } else {
+                current_streak = 0;
+            }
+        }
+        currentDate = logs[logs.length - 1].date;
     }
 
     return {
@@ -113,7 +138,11 @@ export function getLogsSummary(): any {
         totalKeystrokes,
         totalDays,
         longest_streak,
-        current_streak
+        current_streak,
+        currentHours,
+        currentKeystrokes,
+        currentLines,
+        currentDate
     };
 }
 
@@ -592,7 +621,7 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
             logs[logs.length - 1].date = logDate.valueOf();
             logs[logs.length - 1].milestones = milestones;
             writeToLogsJson(logs);
-            updateSummaryJson();
+            reevaluateSummary();
             await pushUpdatedLogs(true, logs[logs.length - 1].day_number);
             return;
         }

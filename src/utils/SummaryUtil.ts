@@ -91,15 +91,19 @@ export function compareLocalSummary(dbSummary: any) {
 export function reevaluateSummary() {
     // Aggregating log data
     const aggregateLogData = getLogsSummary();
+    const lastLog = getMostRecentLogObject();
 
     // Aggregating milestone data
     const totalMilestones = getTotalMilestonesAchieved();
 
-    let summary = getSummaryObject();
+    let summary: Summary = getSummaryObject();
     //aggregate hours has the total hours in the logs, we need to subtract the current day's hours because they are added at the end of the day.
-    summary.hours = aggregateLogData.totalHours - summary.currentHours;
-    summary.lines_added = aggregateLogData.totalLinesAdded - summary.currentLines;
-    summary.keystrokes = aggregateLogData.totalKeystrokes - summary.currentKeystrokes;
+    summary.hours = aggregateLogData.totalHours;
+    summary.lines_added = aggregateLogData.totalLinesAdded;
+    summary.keystrokes = aggregateLogData.totalKeystrokes;
+    summary.currentHours = aggregateLogData.currentHours;
+    summary.currentKeystrokes = aggregateLogData.currentKeystrokes;
+    summary.currentLines = aggregateLogData.currentLines;
 
     summary.days = aggregateLogData.totalDays;
     summary.longest_streak = aggregateLogData.longest_streak;
@@ -107,6 +111,8 @@ export function reevaluateSummary() {
 
     summary.milestones = totalMilestones;
     summary.recent_milestones = getThreeMostRecentMilestones();
+
+    summary.currentDate = aggregateLogData.currentDate;
 
     writeToSummaryJson(summary);
     pushUpdatedSummary();
