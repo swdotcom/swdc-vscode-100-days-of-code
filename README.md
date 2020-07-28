@@ -151,7 +151,7 @@ Tweets about your milestones will include a badge, description, and link for you
 
 ### **7. Add this badge to your work**
 
-As a participant in the 100 Days of Code challenge, you will work on a lot of projects. To show your folowers that you have joined the 100 Days of Code challenge, you can add a custom 100 Days of Code badge to your repositories, website, or GitHub profile README.
+As a participant in the 100 Days of Code challenge, you will work on a lot of projects. To show your followers that you have joined the 100 Days of Code challenge, you can add a custom 100 Days of Code badge to your repositories, website, or GitHub profile README.
 
 <p align="center" style="margin-top: 30px;">
   <a href="https://www.software.com/100-days-of-code" style="margin: 5px;"><img src="https://www.software.com/badges/100-days-of-code"></a>
@@ -170,19 +170,21 @@ Right badge:
 [![Challenge | 100 Days of Code](https://img.shields.io/static/v1?label=Challenge&labelColor=384357&message=100%20Days%20of%20Code&color=00b4ee&style=for-the-badge&link=https://www.100daysofcode.com)](https://www.100daysofcode.com)
 ```
 
-Or you can add it to an HTML file: 
+Or you can add it to an HTML file:
 
 ```html
 <!-- Left badge -->
 
 <a href="https://www.software.com/100-days-of-code">
-  <img src="https://www.software.com/badges/100-days-of-code"/>
+    <img src="https://www.software.com/badges/100-days-of-code" />
 </a>
 
 <!-- Right badge -->
 
 <a href="https://www.100daysofcode.com">
-  <img src="https://img.shields.io/static/v1?label=Challenge&labelColor=384357&message=100%20Days%20of%20Code&color=00b4ee&style=for-the-badge&link=https://www.100daysofcode.com"/>
+    <img
+        src="https://img.shields.io/static/v1?label=Challenge&labelColor=384357&message=100%20Days%20of%20Code&color=00b4ee&style=for-the-badge&link=https://www.100daysofcode.com"
+    />
 </a>
 ```
 
