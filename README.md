@@ -160,7 +160,7 @@ As a participant in the 100 Days of Code challenge, you will work on a lot of pr
 
 You can add it to a Markdown file:
 
-```md
+```markdown
 Left badge:
 
 [![Software | 100 Days of Code](https://www.software.com/badges/100-days-of-code)](https://www.software.com/100-days-of-code)
