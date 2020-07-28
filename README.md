@@ -19,7 +19,7 @@
 
 <br />
 
-<p align="center" >
+<p align="center">
   <a href="https://www.software.com/100-days-of-code" style="margin: 5px;"><img src="https://www.software.com/badges/100-days-of-code"></a>
   <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-100-days-of-code" style="margin: 5px;">
     <img alt="Marketplace" src="https://vsmarketplacebadge.apphb.com/version-short/softwaredotcom.swdc-100-days-of-code.svg?style=for-the-badge&color=00b4ee&labelColor=384357"></a>
@@ -151,44 +151,44 @@ Tweets about your milestones will include a badge, description, and link for you
 
 ### **7. Add this badge to your work**
 
-Being a part of the 100 Days of Code challenge, you will work on a lot of projects. In order to take full advantage of the spotlight it brings you, you can add a custom 100 Days of Code badge to your GitHub readme files or your websites.
+As a participant in the 100 Days of Code challenge, you will work on a lot of projects. To show your followers that you have joined the 100 Days of Code challenge, you can add a custom 100 Days of Code badge to your repositories, website, or GitHub profile README.
 
-<div align="center" style="margin-top: 30px;"><a href="https://www.software.com/100-days-of-code" style="margin: 5px; align: center;"><img src="https://www.software.com/badges/100-days-of-code"></a><a href="https://www.100daysofcode.com" style="margin: 5px; align: center;"><img src="https://img.shields.io/static/v1?label=Challenge&labelColor=384357&message=100%20Days%20of%20Code&color=00b4ee&style=for-the-badge&link=https://www.100daysofcode.com"></a></div>
+<p align="center" style="margin-top: 30px;">
+  <a href="https://www.software.com/100-days-of-code" style="margin: 5px;"><img src="https://www.software.com/badges/100-days-of-code"></a>
+  <a href="https://www.100daysofcode.com" style="margin: 5px;"><img src="https://img.shields.io/static/v1?label=Challenge&labelColor=384357&message=100%20Days%20of%20Code&color=00b4ee&style=for-the-badge&link=https://www.100daysofcode.com"></a>
+</p>
 
-Here is code to add it:
+You can add it to a Markdown file:
 
-MarkDown
+```markdown
+Left badge:
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Left badge:
-
-```md
 [![Software | 100 Days of Code](https://www.software.com/badges/100-days-of-code)](https://www.software.com/100-days-of-code)
-```
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Right badge:
+Right badge:
 
-```md
 [![Challenge | 100 Days of Code](https://img.shields.io/static/v1?label=Challenge&labelColor=384357&message=100%20Days%20of%20Code&color=00b4ee&style=for-the-badge&link=https://www.100daysofcode.com)](https://www.100daysofcode.com)
 ```
 
-HTML
-
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Left badge:
+Or you can add it to an HTML file:
 
 ```html
-<a href="https://www.software.com/100-days-of-code" style="margin: 5px;"
-    ><img src="https://www.software.com/badges/100-days-of-code"
-/></a>
-```
+<!-- Left badge -->
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Right badge:
+<a href="https://www.software.com/100-days-of-code">
+    <img src="https://www.software.com/badges/100-days-of-code" />
+</a>
 
-```html
-<a href="https://www.100daysofcode.com" style="margin: 5px;"
-    ><img
+<!-- Right badge -->
+
+<a href="https://www.100daysofcode.com">
+    <img
         src="https://img.shields.io/static/v1?label=Challenge&labelColor=384357&message=100%20Days%20of%20Code&color=00b4ee&style=for-the-badge&link=https://www.100daysofcode.com"
-/></a>
+    />
+</a>
 ```
+
+<br>
 
 ## 100 Days of Code Resources
 
