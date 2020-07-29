@@ -73,7 +73,7 @@ export function compareWithLocalMilestones(dbMilestones: any) {
     let milestones = getAllMilestones();
     let dates = [];
     for (let i = 0; i < dbMilestones.length; i++) {
-        const dbMilestonesLocalDate = dbMilestones[i].local_date * 1000;
+        const dbMilestonesLocalDate = dbMilestones[i].unix_date * 1000;
         const dbDateOb = new Date(dbMilestonesLocalDate);
         const dbMilestonesArray: Array<number> = dbMilestones[i].milestones;
         let toAddDailyMilestones = [];

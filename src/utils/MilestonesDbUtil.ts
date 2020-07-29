@@ -167,7 +167,8 @@ export function pushMilestonesToDb(date: number, milestones: Array<number>) {
     const day_number = getDayNumberFromDate(date);
     const sendMilestones = {
         day_number,
-        local_date: Math.round(date / 1000), // milliseconds --> seconds
+        unix_date: Math.round(date / 1000), // milliseconds --> seconds
+        local_date: Math.round(date / 1000) - offset_minutes * 60, // milliseconds --> seconds,
         offset_minutes,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         milestones

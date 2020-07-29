@@ -80,7 +80,7 @@ export async function fetchLogs() {
                         log.codetime_metrics.hours = parseFloat((element.minutes / 60).toFixed(2));
                         log.codetime_metrics.keystrokes = element.keystrokes;
                         log.codetime_metrics.lines_added = element.lines_added;
-                        log.date = element.local_date * 1000; // seconds --> milliseconds
+                        log.date = element.unix_date * 1000; // seconds --> milliseconds
                         log.links = element.ref_links;
                         logs.push(log);
                     });
@@ -114,7 +114,8 @@ export async function pushNewLogs(addNew: boolean) {
             keystrokes: log.codetime_metrics.keystrokes,
             lines_added: log.codetime_metrics.lines_added,
             lines_removed: 0,
-            local_date: Math.round(log.date / 1000), // milliseconds --> seconds
+            unix_date: Math.round(log.date / 1000), // milliseconds --> seconds
+            local_date: Math.round(log.date / 1000) - offset_minutes * 60, // milliseconds --> seconds
             offset_minutes,
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
         };
@@ -169,7 +170,8 @@ export async function pushUpdatedLogs(addNew: boolean, dayNumber: number) {
                 keystrokes: log.codetime_metrics.keystrokes,
                 lines_added: log.codetime_metrics.lines_added,
                 lines_removed: 0,
-                local_date: Math.round(log.date / 1000), // milliseconds --> seconds
+                unix_date: Math.round(log.date / 1000), // milliseconds --> seconds
+                local_date: Math.round(log.date / 1000) - offset_minutes * 60, // milliseconds --> seconds
                 offset_minutes,
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
             };
@@ -214,7 +216,8 @@ export function toCreateLogsPush(log: Log) {
         keystrokes: log.codetime_metrics.keystrokes,
         lines_added: log.codetime_metrics.lines_added,
         lines_removed: 0,
-        local_date: Math.round(log.date / 1000), // milliseconds --> seconds
+        unix_date: Math.round(log.date / 1000), // milliseconds --> seconds
+        local_date: Math.round(log.date / 1000) - offset_minutes * 60, // milliseconds --> seconds
         offset_minutes,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
     };
@@ -236,7 +239,8 @@ export function toUpdateLogsPush(log: Log) {
                 keystrokes: log.codetime_metrics.keystrokes,
                 lines_added: log.codetime_metrics.lines_added,
                 lines_removed: 0,
-                local_date: Math.round(log.date / 1000), // milliseconds --> seconds
+                unix_date: Math.round(log.date / 1000), // milliseconds --> seconds
+                local_date: Math.round(log.date / 1000) - offset_minutes * 60, // milliseconds --> seconds
                 offset_minutes,
                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
             };
@@ -255,7 +259,8 @@ export function toUpdateLogsPush(log: Log) {
         keystrokes: log.codetime_metrics.keystrokes,
         lines_added: log.codetime_metrics.lines_added,
         lines_removed: 0,
-        local_date: Math.round(log.date / 1000), // milliseconds --> seconds
+        unix_date: Math.round(log.date / 1000), // milliseconds --> seconds
+        local_date: Math.round(log.date / 1000) - offset_minutes * 60, // milliseconds --> seconds
         offset_minutes,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
     };
