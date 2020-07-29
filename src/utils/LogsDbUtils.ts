@@ -202,12 +202,65 @@ export async function pushUpdatedLogs(addNew: boolean, dayNumber: number) {
     }
 }
 
-export function toCreateLogsPush(log: any) {
-    toCreateLogs.push(log);
+export function toCreateLogsPush(log: Log) {
+    const date = new Date();
+    const offset_minutes = date.getTimezoneOffset();
+    const sendLog = {
+        day_number: log.day_number,
+        title: log.title,
+        description: log.description,
+        ref_links: log.links,
+        minutes: log.codetime_metrics.hours * 60,
+        keystrokes: log.codetime_metrics.keystrokes,
+        lines_added: log.codetime_metrics.lines_added,
+        lines_removed: 0,
+        local_date: Math.round(log.date / 1000), // milliseconds --> seconds
+        offset_minutes,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    };
+    toCreateLogs.push(sendLog);
+    sentLogsDb = false;
 }
 
-export function toUpdateLogsPush(log: any) {
-    toUpdateLogs.push(log);
+export function toUpdateLogsPush(log: Log) {
+    for (let i = 0; i < toUpdateLogs.length; i++) {
+        if (toUpdateLogs[i].day_number === log.day_number) {
+            const date = new Date(log.date);
+            const offset_minutes = date.getTimezoneOffset();
+            toUpdateLogs[i] = {
+                day_number: log.day_number,
+                title: log.title,
+                description: log.description,
+                ref_links: log.links,
+                minutes: log.codetime_metrics.hours * 60,
+                keystrokes: log.codetime_metrics.keystrokes,
+                lines_added: log.codetime_metrics.lines_added,
+                lines_removed: 0,
+                local_date: Math.round(log.date / 1000), // milliseconds --> seconds
+                offset_minutes,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            };
+            updatedLogsDb = false;
+            return;
+        }
+    }
+    const date = new Date();
+    const offset_minutes = date.getTimezoneOffset();
+    const sendLog = {
+        day_number: log.day_number,
+        title: log.title,
+        description: log.description,
+        ref_links: log.links,
+        minutes: log.codetime_metrics.hours * 60,
+        keystrokes: log.codetime_metrics.keystrokes,
+        lines_added: log.codetime_metrics.lines_added,
+        lines_removed: 0,
+        local_date: Math.round(log.date / 1000), // milliseconds --> seconds
+        offset_minutes,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+    };
+    toUpdateLogs.push(sendLog);
+    updatedLogsDb = false;
 }
 
 export function clearToCreateLogs() {

@@ -304,39 +304,13 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
         const rawToCreateLogs = logs.slice(dbLogs.length);
         clearToCreateLogs();
         rawToCreateLogs.forEach(log => {
-            const sendLog = {
-                day_number: log.day_number,
-                title: log.title,
-                description: log.description,
-                ref_links: log.links,
-                minutes: log.codetime_metrics.hours * 60,
-                keystrokes: log.codetime_metrics.keystrokes,
-                lines_added: log.codetime_metrics.lines_added,
-                lines_removed: 0,
-                local_date: Math.round(log.date / 1000), // milliseconds --> seconds
-                offset_minutes,
-                timezone
-            };
-            toCreateLogsPush(sendLog);
+            toCreateLogsPush(log);
         });
     }
 
     clearToUpdateLogs();
     rawToUpdateLogs.forEach(log => {
-        const sendLog = {
-            day_number: log.day_number,
-            title: log.title,
-            description: log.description,
-            ref_links: log.links,
-            minutes: log.codetime_metrics.hours * 60,
-            keystrokes: log.codetime_metrics.keystrokes,
-            lines_added: log.codetime_metrics.lines_added,
-            lines_removed: 0,
-            local_date: Math.round(log.date / 1000), // milliseconds --> seconds
-            offset_minutes,
-            timezone
-        };
-        toUpdateLogsPush(sendLog);
+        toUpdateLogsPush(log);
     });
 
     await pushNewLogs(false);
@@ -680,8 +654,7 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
 
             writeToLogsJson(logs);
             updateSummaryJson();
-            await pushUpdatedLogs(true, logs[i].day_number);
-
+            toUpdateLogsPush(logs[i]);
             if (
                 (!dateLogMessage || !compareDates(dateLogMessage, new Date())) &&
                 logs[i].codetime_metrics.hours > HOURS_THRESHOLD &&
