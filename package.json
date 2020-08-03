@@ -61,6 +61,14 @@
             {
                 "command": "DoC.viewMilestones",
                 "title": "100 Days of Code: View Milestones"
+            },
+            {
+                "command": "DoC.startNewRound",
+                "title": "100 Days of Code: Start New Round"
+            },
+            {
+                "command": "DoC.switchRound",
+                "title": "100 Days of Code: Switch Round"
             }
         ],
         "views": {

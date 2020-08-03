@@ -3,6 +3,7 @@ import { serverIsAvailable, softwareGet, isResponseOk, softwarePost, softwarePut
 import { Log } from "../models/Log";
 import { compareWithLocalLogs, getMostRecentLogObject, checkLogsJson, getLogsJson } from "./LogsUtil";
 import fs = require("fs");
+import { current_round } from "./SummaryUtil";
 
 export let updatedLogsDb = true;
 export let sentLogsDb = true;
@@ -68,7 +69,7 @@ export async function fetchLogs() {
             available = false;
         }
         if (available) {
-            const logs = await softwareGet("/100doc/logs", jwt).then(resp => {
+            const logs = await softwareGet(`/100doc/logs?challenge_round=${current_round}`, jwt).then(resp => {
                 if (isResponseOk(resp)) {
                     const rawLogs = resp.data;
                     let logs: Array<Log> = [];
@@ -117,7 +118,8 @@ export async function pushNewLogs(addNew: boolean) {
             unix_date: Math.round(log.date / 1000), // milliseconds --> seconds
             local_date: Math.round(log.date / 1000) - offset_minutes * 60, // milliseconds --> seconds
             offset_minutes,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            challenge_round: current_round
         };
         toCreateLogs.push(sendLog);
     }
@@ -173,7 +175,8 @@ export async function pushUpdatedLogs(addNew: boolean, dayNumber: number) {
                 unix_date: Math.round(log.date / 1000), // milliseconds --> seconds
                 local_date: Math.round(log.date / 1000) - offset_minutes * 60, // milliseconds --> seconds
                 offset_minutes,
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                challenge_round: current_round
             };
             toUpdateLogs.push(sendLog);
         } else {

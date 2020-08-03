@@ -1,4 +1,4 @@
-import { getSummaryObject, compareLocalSummary } from "./SummaryUtil";
+import { getSummaryObject, compareLocalSummary, current_round } from "./SummaryUtil";
 import { Summary } from "../models/Summary";
 import { serverIsAvailable, softwarePost, softwarePut, softwareGet, isResponseOk } from "../managers/HttpManager";
 import { getItem } from "./Util";
@@ -29,7 +29,8 @@ async function pushNewSummary() {
         longest_streak: summary.longest_streak,
         milestones: summary.milestones,
         shares: summary.shares,
-        languages: summary.languages
+        languages: summary.languages,
+        challenge_round: current_round
     };
     const jwt = getItem("jwt");
     if (jwt) {
@@ -57,7 +58,8 @@ export async function pushUpdatedSummary() {
         longest_streak: summary.longest_streak,
         milestones: summary.milestones,
         shares: summary.shares,
-        languages: summary.languages
+        languages: summary.languages,
+        challenge_round: current_round
     };
 
     const jwt = getItem("jwt");
@@ -85,7 +87,7 @@ export async function fetchSummary(): Promise<boolean> {
             available = false;
         }
         if (available) {
-            const summary = await softwareGet("/100doc/summary", jwt).then(resp => {
+            const summary = await softwareGet(`/100doc/summary?challenge_round=${current_round}`, jwt).then(resp => {
                 if (isResponseOk(resp) && resp.data) {
                     const rawSummary = resp.data;
                     let summary = {

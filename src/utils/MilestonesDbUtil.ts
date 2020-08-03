@@ -3,6 +3,7 @@ import { getSoftwareDir, isWindows, getItem } from "./Util";
 import { compareWithLocalMilestones, getMilestonesByDate, checkIfMilestonesAchievedOnDate } from "./MilestonesUtil";
 import { getDayNumberFromDate } from "./LogsUtil";
 import fs = require("fs");
+import { current_round } from "./SummaryUtil";
 
 // variables to keep in check the db update process
 export let updatedMilestonesDb = true;
@@ -79,7 +80,7 @@ export async function fetchMilestonesByDate(date: number): Promise<Array<number>
             const milestones = await softwareGet(
                 `/100doc/milestones?start_date=${Math.round(startDate.valueOf() / 1000)}&end_date=${Math.round(
                     endDate.valueOf() / 1000
-                )}`,
+                )}&challenge_round=${current_round}`,
                 jwt
             ).then(resp => {
                 if (isResponseOk(resp)) {
@@ -119,7 +120,7 @@ export async function fetchMilestonesForYesterdayAndToday() {
             const milestones = await softwareGet(
                 `/100doc/milestones?start_date=${Math.round(startDate.valueOf() / 1000)}&end_date=${Math.round(
                     endDate.valueOf() / 1000
-                )}`,
+                )}&challenge_round=${current_round}`,
                 jwt
             ).then(resp => {
                 if (isResponseOk(resp)) {
@@ -143,11 +144,13 @@ export async function fetchAllMilestones() {
             available = false;
         }
         if (available) {
-            const milestones = await softwareGet("/100doc/milestones", jwt).then(resp => {
-                if (isResponseOk(resp)) {
-                    return resp.data;
+            const milestones = await softwareGet(`/100doc/milestones?challenge_round=${current_round}`, jwt).then(
+                resp => {
+                    if (isResponseOk(resp)) {
+                        return resp.data;
+                    }
                 }
-            });
+            );
             if (milestones) {
                 compareWithLocalMilestones(milestones);
             }
@@ -171,7 +174,8 @@ export function pushMilestonesToDb(date: number, milestones: Array<number>) {
         local_date: Math.round(date / 1000) - offset_minutes * 60, // milliseconds --> seconds,
         offset_minutes,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        milestones
+        milestones,
+        challenge_round: current_round
     };
 
     // handles update and create

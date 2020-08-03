@@ -1,12 +1,16 @@
 import { getSoftwareDir, isWindows, compareDates } from "./Util";
 import fs = require("fs");
 import { window } from "vscode";
-import { getMostRecentLogObject, checkIfOnStreak, getLogsSummary } from "./LogsUtil";
+import { getMostRecentLogObject, checkIfOnStreak, getLogsSummary, deleteLogsJson } from "./LogsUtil";
 import { getLanguages } from "./LanguageUtil";
 import { Summary } from "../models/Summary";
 import { Log } from "../models/Log";
-import { getTotalMilestonesAchieved, getThreeMostRecentMilestones } from "./MilestonesUtil";
-import { pushUpdatedSummary } from "./SummaryDbUtil";
+import { getTotalMilestonesAchieved, getThreeMostRecentMilestones, deleteMilestoneJson } from "./MilestonesUtil";
+import { pushUpdatedSummary, fetchSummary } from "./SummaryDbUtil";
+import { deleteMilestonePayloadJson, fetchAllMilestones } from "./MilestonesDbUtil";
+import { deleteLogsPayloadJson, fetchLogs } from "./LogsDbUtils";
+
+export let current_round: number = 0;
 
 function getSummaryJson() {
     let file = getSoftwareDir();
@@ -24,6 +28,21 @@ export function checkSummaryJson() {
     const filepath = getSummaryJson();
     try {
         if (fs.existsSync(filepath)) {
+            let rawSummary = fs.readFileSync(filepath).toString();
+            let summary = JSON.parse(rawSummary);
+
+            // v0.1.3 added new fields for rounds
+            // implementing check for them
+            let updated = false;
+            if (!("current_round" in summary)) {
+                summary.current_round = 1;
+                updated = true;
+            }
+
+            if (updated) {
+                writeToSummaryJson(summary);
+            }
+            current_round = summary.current_round;
             return true;
         } else {
             fs.writeFileSync(
@@ -43,9 +62,11 @@ export function checkSummaryJson() {
                     `\t"current_streak": 0,`,
                     `\t"shares": 0,`,
                     `\t"languages": [],`,
-                    `\t"lastUpdated":  0\n}`
+                    `\t"lastUpdated":  0,`,
+                    `\t"current_round": 1\n}`
                 ].join("\n")
             );
+            current_round = 1;
             return true;
         }
     } catch (err) {
@@ -351,6 +372,38 @@ export function getAverageHoursLevel(avgHour: number): number {
     } else {
         return 0;
     }
+}
+
+export async function switchRound(roundNumber: number) {
+    const summary: Summary = getSummaryObject();
+    summary.current_round = roundNumber;
+    current_round = roundNumber;
+    summary.days = 0;
+    summary.currentDate = 0;
+    summary.currentHours = 0;
+    summary.currentKeystrokes = 0;
+    summary.currentLines = 0;
+    summary.hours = 0;
+    summary.longest_streak = 0;
+    summary.milestones = 0;
+    summary.lines_added = 0;
+    summary.keystrokes = 0;
+    summary.recent_milestones = [];
+    summary.current_streak = 0;
+    summary.shares = 0;
+    summary.languages = [];
+    summary.lastUpdated = 0;
+    writeToSummaryJson(summary);
+
+    // reset files
+    deleteMilestoneJson();
+    deleteMilestonePayloadJson();
+    deleteLogsJson();
+    deleteLogsPayloadJson();
+
+    await fetchLogs();
+    await fetchAllMilestones();
+    await fetchSummary();
 }
 
 function writeToSummaryJson(summary: Summary) {

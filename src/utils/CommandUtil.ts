@@ -14,6 +14,7 @@ import { getUpdatedDashboardHtmlString, getCertificateHtmlString } from "./Dashb
 import { displayReadmeIfNotExists, displayLoginPromptIfNotLoggedIn, isLoggedIn } from "./Util";
 import { getUpdatedMilestonesHtmlString } from "./MilestonesTemplateUtil";
 import { getUpdatedLogsHtml } from "./LogsTemplateUtil";
+import { current_round, checkSummaryJson, switchRound } from "./SummaryUtil";
 
 export function createCommands(): { dispose: () => void } {
     let cmds: any[] = [];
@@ -299,6 +300,76 @@ export function createCommands(): { dispose: () => void } {
                 currentPanel.onDidDispose(() => {
                     currentPanel = undefined;
                 });
+            }
+        })
+    );
+
+    cmds.push(
+        commands.registerCommand("DoC.startNewRound", () => {
+            if (current_round === 0) {
+                if (!checkSummaryJson()) {
+                    window.showErrorMessage("Cannot access Summary file! Please contact cody@software.com for help.");
+                    return;
+                } else if (current_round === 0) {
+                    return;
+                }
+            } else {
+                window
+                    .showInformationMessage(
+                        `Are you sure you want to start Round ${current_round + 1} of 100 Days of Code?`,
+                        {
+                            modal: true
+                        },
+                        "Yes"
+                    )
+                    .then(selection => {
+                        if (selection === "Yes") {
+                            switchRound(current_round + 1);
+                            window.showInformationMessage(`Round ${current_round} of 100 Days of Code started!`);
+                        }
+                    });
+            }
+        })
+    );
+
+    cmds.push(
+        commands.registerCommand("DoC.switchRound", () => {
+            if (current_round === 0) {
+                if (!checkSummaryJson()) {
+                    window.showErrorMessage("Cannot access Summary file! Please contact cody@software.com for help.");
+                    return;
+                } else if (current_round === 0) {
+                    return;
+                }
+            } else {
+                window
+                    .showInformationMessage(
+                        `Are you sure you want to switch from Round ${current_round} of 100 Days of Code?`,
+                        {
+                            modal: true
+                        },
+                        "Yes"
+                    )
+                    .then(selection => {
+                        if (selection === "Yes") {
+                            window
+                                .showInputBox({
+                                    prompt: "Please enter a round number",
+                                    value: current_round.toString()
+                                })
+                                .then(text => {
+                                    if (text) {
+                                        const roundNumber = parseInt(text);
+                                        if (roundNumber) {
+                                            switchRound(roundNumber);
+                                            window.showInformationMessage(
+                                                `Switched to Round ${current_round} of 100 Days of Code!`
+                                            );
+                                        }
+                                    }
+                                });
+                        }
+                    });
             }
         })
     );
