@@ -585,7 +585,7 @@ function checkIfLogIsEmpty(log: Log): boolean {
 export async function resetPreviousLogIfEmpty() {
     const logDate = new Date();
     let logs = getAllLogObjects();
-    if (checkIfLogIsEmpty(logs[logs.length - 1])) {
+    if (logs.length > 0 && checkIfLogIsEmpty(logs[logs.length - 1])) {
         logs[logs.length - 1].date = logDate.valueOf();
         writeToLogsJson(logs);
         reevaluateSummary();
