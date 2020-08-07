@@ -12,8 +12,6 @@
 
 <br />
 
-<p align="center"><b>100 Days of Code is in open beta. If you find any issues or have any feedback, please log a bug on our <a href="https://github.com/swdotcom/swdc-vscode-100-days-of-code/tree/develop">GitHub repo</a> or reach out to us at <a href="mailto:cody@software.com">cody@software.com</a>.</b></p>
-
 <p align="center"><a href="https://www.software.com/100-days-of-code">100 Days of Code</a> is a VS Code extension that helps you reach your goals and complete the #100DaysOfCode Challenge.
 </p>
 
