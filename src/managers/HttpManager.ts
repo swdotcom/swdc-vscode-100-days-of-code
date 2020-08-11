@@ -1,8 +1,6 @@
 import axios from "axios";
 import { api_endpoint } from "../utils/Constants";
 
-const querystring = require("querystring");
-
 // build the axios api base url
 const beApi = axios.create({
     baseURL: `${api_endpoint}`

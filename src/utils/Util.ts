@@ -5,7 +5,6 @@ import { softwarePost, isResponseOk } from "../managers/HttpManager";
 
 const fs = require("fs");
 const os = require("os");
-const open = require("open");
 const crypto = require("crypto");
 const { exec } = require("child_process");
 

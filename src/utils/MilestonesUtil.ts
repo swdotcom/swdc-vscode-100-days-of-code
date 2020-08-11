@@ -2,7 +2,7 @@ import { getSoftwareDir, isWindows, compareDates } from "./Util";
 import fs = require("fs");
 import { window, commands } from "vscode";
 import path = require("path");
-import { updateLogsMilestonesAndMetrics, setDailyMilestonesByDayNumber, updateLogMilestonesByDates } from "./LogsUtil";
+import { updateLogsMilestonesAndMetrics } from "./LogsUtil";
 import { Summary } from "../models/Summary";
 import {
     getSummaryObject,
@@ -101,16 +101,10 @@ export function compareWithLocalMilestones(dbMilestones: any) {
                 milestones[currMilestone.id - 1].date_achieved = dbMilestonesLocalDate;
             }
         }
-        // if (toAddDailyMilestones.length > 0) {
-        //     setDailyMilestonesByDayNumber(dbMilestones[i].day_number, toAddDailyMilestones);
-        // }
     }
 
     if (dates.length > 0) {
         writeToMilestoneJson(milestones);
-
-        // updates logs milestones
-        // updateLogMilestonesByDates(dates);
     }
 }
 

@@ -13,7 +13,7 @@ import {
     reevaluateSummary
 } from "./SummaryUtil";
 import { window, commands } from "vscode";
-import { fetchMilestonesByDate, pushMilestonesToDb, fetchAllMilestones } from "./MilestonesDbUtil";
+import { fetchMilestonesByDate, pushMilestonesToDb } from "./MilestonesDbUtil";
 import {
     pushNewLogs,
     pushUpdatedLogs,
@@ -293,9 +293,6 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
     // Updates the userSummary.json with the merged logs data
     reevaluateSummary();
 
-    const date = new Date();
-    const offset_minutes = date.getTimezoneOffset();
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     let rawToUpdateLogs = logs;
 
     if (logs.length > dbLogs.length) {
