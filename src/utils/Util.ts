@@ -307,3 +307,19 @@ export function checkIfNameChanged() {
         return false;
     }
 }
+
+// reads data from local file into a JSON object
+export function getFileDataAsJson(file: string): any {
+    let data: {} = {};
+    if (!fs.existsSync(file)) {
+        console.log("File not found: " + file);
+        return data;
+    }
+    try {
+        let buffer = fs.readFileSync(file, "utf-8");
+        data = JSON.parse(buffer);
+    } catch (err) {
+        console.log("Could not read file:" + err.message);
+    }
+    return data;
+}

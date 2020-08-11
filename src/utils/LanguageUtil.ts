@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows, compareDates } from "./Util";
+import { getSoftwareDir, isWindows, compareDates, getFileDataAsJson } from "./Util";
 import fs = require("fs");
 
 function getFileSummaryJson() {
@@ -13,7 +13,7 @@ function getFileSummaryJson() {
 
 export function getLanguages() {
     const fileSummaryFile = getFileSummaryJson();
-    let filesString: string;
+    let fileJson;
     try {
         // retries help when a user downloads Code Time with 100 Days of Code
         // they allow the file to be created and not throw errors
@@ -24,14 +24,13 @@ export function getLanguages() {
             retries--;
         }
         if (exists) {
-            filesString = fs.readFileSync(fileSummaryFile).toString();
+            fileJson = getFileDataAsJson(fileSummaryFile);
         } else {
             return [];
         }
     } catch (err) {
         return [];
     }
-    const fileJson = JSON.parse(filesString);
 
     const dateNow = new Date();
     let languages: Array<string> = [];
