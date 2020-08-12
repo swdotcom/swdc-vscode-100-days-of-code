@@ -63,7 +63,7 @@ export function getAllLogObjects(): Array<Log> {
     if (exists) {
         const filepath = getLogsJson();
         const rawLogs = getFileDataAsJson(filepath);
-        return rawLogs.logs;
+        return rawLogs.logs || [];
     }
     return [];
 }

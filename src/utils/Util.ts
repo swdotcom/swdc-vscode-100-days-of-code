@@ -308,9 +308,14 @@ export function checkIfNameChanged() {
     }
 }
 
-// reads data from local file into a JSON object
-export function getFileDataAsJson(file: string): any {
-    let data: {} = {};
+/**
+ * reads data from local file into a JSON object
+ *
+ * @param file - the absolute file path
+ * @param defaultType - a JSON default type to return
+ */
+export function getFileDataAsJson(file: string, defaultResult: any = {}) {
+    let data = defaultResult;
     if (!fs.existsSync(file)) {
         console.log("File not found: " + file);
         return data;

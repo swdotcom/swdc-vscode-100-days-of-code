@@ -469,7 +469,7 @@ export function getAllMilestones(): Array<Milestone> {
     }
     const filepath = getMilestonesJson();
     const rawMilestones = getFileDataAsJson(filepath);
-    const milestones: Array<Milestone> = rawMilestones.milestones;
+    const milestones: Array<Milestone> = rawMilestones.milestones || [];
     return milestones;
 }
 
