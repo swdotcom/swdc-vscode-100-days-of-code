@@ -312,7 +312,7 @@ export function checkIfNameChanged() {
  * reads data from local file into a JSON object
  *
  * @param file - the absolute file path
- * @param defaultType - a JSON default type to return
+ * @param defaultResult - a JSON default result to return
  */
 export function getFileDataAsJson(file: string, defaultResult: any = null) {
     if (fs.existsSync(file)) {
