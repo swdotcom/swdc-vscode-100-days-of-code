@@ -12,8 +12,6 @@
 
 <br />
 
-<p align="center"><b>100 Days of Code is in open beta. If you find any issues or have any feedback, please log a bug on our <a href="https://github.com/swdotcom/swdc-vscode-100-days-of-code/tree/develop">GitHub repo</a> or reach out to us at <a href="mailto:cody@software.com">cody@software.com</a>.</b></p>
-
 <p align="center"><a href="https://www.software.com/100-days-of-code">100 Days of Code</a> is a VS Code extension that helps you reach your goals and complete the #100DaysOfCode Challenge.
 </p>
 
@@ -189,6 +187,14 @@ Or you can add it to an HTML file:
 ```
 
 <br>
+
+### **8. Earn a 100 Days of Code Certificate**
+
+Yay! You completed the challenge. At the end of the 100 Days, this 100 Days of Code certificate will be unlocked on your dashboard. Share your achievement with the community you've been a part of on Twitter, LinkedIn and other social media websites.
+
+<p align="center" style="margin: 0 10%">
+    <img src="https://100-days-of-code.s3-us-west-1.amazonaws.com/Readme/Certificate.png" alt="100 Days of Code Certificate" />
+</p>
 
 ## 100 Days of Code Resources
 
