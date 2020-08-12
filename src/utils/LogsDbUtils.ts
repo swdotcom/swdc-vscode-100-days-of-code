@@ -154,7 +154,7 @@ export async function pushUpdatedLogs(addNew: boolean, dayNumber: number) {
         const logsExists = checkLogsJson();
         if (logsExists) {
             const filepath = getLogsJson();
-            let rawLogs = getFileDataAsJson(filepath);
+            let rawLogs = getFileDataAsJson(filepath, {});
             let logs = rawLogs.logs || [];
             let log = logs[dayNumber - 1];
             const date = new Date();

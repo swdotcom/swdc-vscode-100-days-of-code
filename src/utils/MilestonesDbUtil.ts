@@ -38,7 +38,7 @@ export function createMilestonesPayloadJson() {
 
 export function checkMilestonesPayload() {
     const filepath = getMilestonesPayloadJson();
-    const payloadData = getFileDataAsJson(filepath);
+    const payloadData = getFileDataAsJson(filepath, {});
     try {
         updatedMilestonesDb = payloadData["updatedMilestonesDb"];
         sentMilestonesDb = payloadData["sentMilestonesDb"];

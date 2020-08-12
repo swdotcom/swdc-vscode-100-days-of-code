@@ -314,17 +314,15 @@ export function checkIfNameChanged() {
  * @param file - the absolute file path
  * @param defaultType - a JSON default type to return
  */
-export function getFileDataAsJson(file: string, defaultResult: any = {}) {
-    let data = defaultResult;
-    if (!fs.existsSync(file)) {
+export function getFileDataAsJson(file: string, defaultResult: any = null) {
+    if (fs.existsSync(file)) {
+        try {
+            return JSON.parse(fs.readFileSync(file, "utf-8"));
+        } catch (err) {
+            console.log("Could not read file:" + err.message);
+        }
+    } else {
         console.log("File not found: " + file);
-        return data;
     }
-    try {
-        let buffer = fs.readFileSync(file, "utf-8");
-        data = JSON.parse(buffer);
-    } catch (err) {
-        console.log("Could not read file:" + err.message);
-    }
-    return data;
+    return defaultResult;
 }

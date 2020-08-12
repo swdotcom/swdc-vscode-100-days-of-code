@@ -35,7 +35,7 @@ function getMinutesCoded(): number {
             retries--;
         }
         if (exists) {
-            timeCounterMetrics = getFileDataAsJson(timeCounterFile);
+            timeCounterMetrics = getFileDataAsJson(timeCounterFile, {});
         } else {
             return minutes;
         }
@@ -83,7 +83,7 @@ export function getSessionCodetimeMetrics(): any {
             const stats = fs.statSync(sessionSummaryFile);
             // checks if file was updated today
             if (compareDates(new Date(), stats.mtime)) {
-                metrics = getFileDataAsJson(sessionSummaryFile);
+                metrics = getFileDataAsJson(sessionSummaryFile, {});
             } else {
                 return metricsOut;
             }

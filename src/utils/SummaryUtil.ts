@@ -212,7 +212,7 @@ export function getSummaryObject() {
         window.showErrorMessage("Cannot access Summary file! Please contact cody@software.com for help.");
     }
     const filepath = getSummaryJson();
-    return getFileDataAsJson(filepath);
+    return getFileDataAsJson(filepath, {});
 }
 
 export function getDaysLevel(daysComplete: number): any {

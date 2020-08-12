@@ -24,7 +24,7 @@ export function getLanguages() {
             retries--;
         }
         if (exists) {
-            fileJson = getFileDataAsJson(fileSummaryFile);
+            fileJson = getFileDataAsJson(fileSummaryFile, {});
         } else {
             return [];
         }
