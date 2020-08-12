@@ -1,5 +1,5 @@
 import { serverIsAvailable, softwareGet, isResponseOk, softwarePost, softwarePut } from "../managers/HttpManager";
-import { getSoftwareDir, isWindows, getItem } from "./Util";
+import { getSoftwareDir, isWindows, getItem, getFileDataAsJson } from "./Util";
 import { compareWithLocalMilestones, getMilestonesByDate, checkIfMilestonesAchievedOnDate } from "./MilestonesUtil";
 import { getDayNumberFromDate } from "./LogsUtil";
 import fs = require("fs");
@@ -38,14 +38,12 @@ export function createMilestonesPayloadJson() {
 
 export function checkMilestonesPayload() {
     const filepath = getMilestonesPayloadJson();
+    const payloadData = getFileDataAsJson(filepath, {});
     try {
-        if (fs.existsSync(filepath)) {
-            const payloadData = JSON.parse(fs.readFileSync(filepath).toString());
-            updatedMilestonesDb = payloadData["updatedMilestonesDb"];
-            sentMilestonesDb = payloadData["sentMilestonesDb"];
-            toCreateMilestones = payloadData["toCreateMilestones"];
-            toUpdateMilestones = payloadData["toUpdateMilestones"];
-        }
+        updatedMilestonesDb = payloadData["updatedMilestonesDb"];
+        sentMilestonesDb = payloadData["sentMilestonesDb"];
+        toCreateMilestones = payloadData["toCreateMilestones"];
+        toUpdateMilestones = payloadData["toUpdateMilestones"];
     } catch (err) {
         console.log(err);
     }

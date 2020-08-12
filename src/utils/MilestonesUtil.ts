@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows, compareDates } from "./Util";
+import { getSoftwareDir, isWindows, compareDates, getFileDataAsJson } from "./Util";
 import fs = require("fs");
 import { window, commands } from "vscode";
 import path = require("path");
@@ -468,8 +468,8 @@ export function getAllMilestones(): Array<Milestone> {
         return [];
     }
     const filepath = getMilestonesJson();
-    let rawMilestones = fs.readFileSync(filepath).toString();
-    let milestones: Array<Milestone> = JSON.parse(rawMilestones).milestones;
+    const rawMilestones = getFileDataAsJson(filepath, {});
+    const milestones: Array<Milestone> = rawMilestones.milestones || [];
     return milestones;
 }
 

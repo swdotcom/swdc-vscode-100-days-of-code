@@ -307,3 +307,22 @@ export function checkIfNameChanged() {
         return false;
     }
 }
+
+/**
+ * reads data from local file into a JSON object
+ *
+ * @param file - the absolute file path
+ * @param defaultResult - a JSON default result to return
+ */
+export function getFileDataAsJson(file: string, defaultResult: any = null) {
+    if (fs.existsSync(file)) {
+        try {
+            return JSON.parse(fs.readFileSync(file, "utf-8"));
+        } catch (err) {
+            console.log("Could not read file:" + err.message);
+        }
+    } else {
+        console.log("File not found: " + file);
+    }
+    return defaultResult;
+}

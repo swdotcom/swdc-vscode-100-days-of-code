@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows, getItem } from "./Util";
+import { getSoftwareDir, isWindows, getItem, getFileDataAsJson } from "./Util";
 import { serverIsAvailable, softwareGet, isResponseOk, softwarePost, softwarePut } from "../managers/HttpManager";
 import { Log } from "../models/Log";
 import { compareWithLocalLogs, getMostRecentLogObject, checkLogsJson, getLogsJson } from "./LogsUtil";
@@ -37,14 +37,12 @@ export function createLogsPayloadJson() {
 
 export function checkLogsPayload() {
     const filepath = getLogsPayloadJson();
+    const payloadData = getFileDataAsJson(filepath);
     try {
-        if (fs.existsSync(filepath)) {
-            const payloadData = JSON.parse(fs.readFileSync(filepath).toString());
-            updatedLogsDb = payloadData["updatedLogsDb"];
-            sentLogsDb = payloadData["sentLogsDb"];
-            toCreateLogs = payloadData["toCreateLogs"];
-            toUpdateLogs = payloadData["toUpdateLogs"];
-        }
+        updatedLogsDb = payloadData["updatedLogsDb"];
+        sentLogsDb = payloadData["sentLogsDb"];
+        toCreateLogs = payloadData["toCreateLogs"];
+        toUpdateLogs = payloadData["toUpdateLogs"];
     } catch (err) {
         console.log(err);
     }
@@ -156,8 +154,8 @@ export async function pushUpdatedLogs(addNew: boolean, dayNumber: number) {
         const logsExists = checkLogsJson();
         if (logsExists) {
             const filepath = getLogsJson();
-            let rawLogs = fs.readFileSync(filepath).toString();
-            let logs = JSON.parse(rawLogs).logs;
+            let rawLogs = getFileDataAsJson(filepath, { logs: [] });
+            let logs = rawLogs.logs;
             let log = logs[dayNumber - 1];
             const date = new Date();
             const offset_minutes = date.getTimezoneOffset();

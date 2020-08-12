@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows, compareDates } from "./Util";
+import { getSoftwareDir, isWindows, compareDates, getFileDataAsJson } from "./Util";
 import fs = require("fs");
 import { CodetimeMetrics } from "../models/CodetimeMetrics";
 import { Log } from "../models/Log";
@@ -62,8 +62,8 @@ export function getAllLogObjects(): Array<Log> {
     const exists = checkLogsJson();
     if (exists) {
         const filepath = getLogsJson();
-        const rawLogs = fs.readFileSync(filepath).toString();
-        return JSON.parse(rawLogs).logs;
+        const rawLogs = getFileDataAsJson(filepath, { logs: [] });
+        return rawLogs.logs;
     }
     return [];
 }

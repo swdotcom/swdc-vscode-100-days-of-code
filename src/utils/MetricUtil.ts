@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows, compareDates } from "./Util";
+import { getSoftwareDir, isWindows, compareDates, getFileDataAsJson } from "./Util";
 import fs = require("fs");
 
 function getSessionSummaryJson() {
@@ -24,7 +24,7 @@ function getTimeCounterJson() {
 function getMinutesCoded(): number {
     const timeCounterFile = getTimeCounterJson();
     let minutes = 0;
-    let timeCounterStr = "";
+    let timeCounterMetrics;
     try {
         // retries help when a user downloads Code Time with 100 Days of Code
         // they allow the file to be created and not throw errors
@@ -35,15 +35,13 @@ function getMinutesCoded(): number {
             retries--;
         }
         if (exists) {
-            timeCounterStr = fs.readFileSync(timeCounterFile).toString();
+            timeCounterMetrics = getFileDataAsJson(timeCounterFile, {});
         } else {
             return minutes;
         }
     } catch (err) {
         return minutes;
     }
-
-    const timeCounterMetrics = JSON.parse(timeCounterStr);
 
     // checks if file was updated today
     const day: string = timeCounterMetrics.current_day;
@@ -71,7 +69,7 @@ export function getSessionCodetimeMetrics(): any {
     };
 
     // try to get codetime metrics from session summary file
-    let codeTimeMetricsStr: string;
+    let metrics;
     try {
         // retries help when a user downloads Code Time with 100 Days of Code
         // they allow the file to be created and not throw errors
@@ -85,7 +83,7 @@ export function getSessionCodetimeMetrics(): any {
             const stats = fs.statSync(sessionSummaryFile);
             // checks if file was updated today
             if (compareDates(new Date(), stats.mtime)) {
-                codeTimeMetricsStr = fs.readFileSync(sessionSummaryFile).toString();
+                metrics = getFileDataAsJson(sessionSummaryFile, {});
             } else {
                 return metricsOut;
             }
@@ -95,9 +93,6 @@ export function getSessionCodetimeMetrics(): any {
     } catch (err) {
         return metricsOut;
     }
-
-    // reading code time metrics from the string
-    const metrics = JSON.parse(codeTimeMetricsStr);
 
     // checks for avoiding null and undefined
     if (metrics.currentDayKeystrokes) {

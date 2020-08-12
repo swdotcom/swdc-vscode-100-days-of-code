@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows, compareDates } from "./Util";
+import { getSoftwareDir, isWindows, compareDates, getFileDataAsJson } from "./Util";
 import fs = require("fs");
 import { window } from "vscode";
 import { getMostRecentLogObject, checkIfOnStreak, getLogsSummary } from "./LogsUtil";
@@ -19,7 +19,6 @@ function getSummaryJson() {
 }
 
 export function checkSummaryJson() {
-    const date = new Date();
     // checks if summary JSON exists. If not populates it with base values
     const filepath = getSummaryJson();
     try {
@@ -91,7 +90,6 @@ export function compareLocalSummary(dbSummary: any) {
 export function reevaluateSummary() {
     // Aggregating log data
     const aggregateLogData = getLogsSummary();
-    const lastLog = getMostRecentLogObject();
 
     // Aggregating milestone data
     const totalMilestones = getTotalMilestonesAchieved();
@@ -214,8 +212,7 @@ export function getSummaryObject() {
         window.showErrorMessage("Cannot access Summary file! Please contact cody@software.com for help.");
     }
     const filepath = getSummaryJson();
-    let rawSummary = fs.readFileSync(filepath).toString();
-    return JSON.parse(rawSummary);
+    return getFileDataAsJson(filepath, {});
 }
 
 export function getDaysLevel(daysComplete: number): any {
