@@ -1,5 +1,6 @@
 import { window } from "vscode";
 import { getSummaryObject } from "./SummaryUtil";
+import { Summary } from "../models/Summary";
 import { getMilestoneById } from "./MilestonesUtil";
 import { Log } from "../models/Log";
 import { getAllLogObjects } from "./LogsUtil";
@@ -73,7 +74,7 @@ function getFormattedDate(timestamp: number): string {
 }
 
 function getLogsCardSummaryVariables(dayHours: number, dayKeystrokes: number, dayLinesAdded: number) {
-    const summary = getSummaryObject();
+    const summary: Summary = getSummaryObject();
     const hours = summary.hours + summary.currentHours;
     const keystrokes = summary.keystrokes + summary.currentKeystrokes;
     const lines = summary.lines_added + summary.currentLines;

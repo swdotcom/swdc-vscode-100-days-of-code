@@ -158,7 +158,7 @@ export function updateSummaryJson() {
 }
 
 export function updateSummaryMilestones(newMilestones: Array<number>, totalMilestones: number) {
-    let summary = getSummaryObject();
+    let summary: Summary = getSummaryObject();
     summary.milestones = totalMilestones;
 
     // order milestones in latest to oldest order of achievement
@@ -172,18 +172,18 @@ export function updateSummaryMilestones(newMilestones: Array<number>, totalMiles
 }
 
 export function getSummaryTotalHours() {
-    let summary = getSummaryObject();
+    let summary: Summary = getSummaryObject();
     return summary.hours;
 }
 
 export function setSummaryTotalHours(newHours: number) {
-    let summary = getSummaryObject();
+    let summary: Summary = getSummaryObject();
     summary.hours = newHours;
     writeToSummaryJson(summary);
 }
 
 export function setSummaryCurrentHours(newCurrentHours: number) {
-    let summary = getSummaryObject();
+    let summary: Summary = getSummaryObject();
     summary.currentHours = newCurrentHours;
     writeToSummaryJson(summary);
 }
@@ -191,7 +191,7 @@ export function setSummaryCurrentHours(newCurrentHours: number) {
 export function updateSummaryLanguages() {
     // update languages aggregate and make sure none are repeated
     const newLanguages = getLanguages();
-    let summary = getSummaryObject();
+    let summary: Summary = getSummaryObject();
     const currLanguages = summary.languages;
     const totalLanguages = currLanguages.concat(newLanguages);
     const reducedLanguages = Array.from(new Set(totalLanguages));
