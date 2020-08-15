@@ -13,7 +13,7 @@ const alpha = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 let workspace_name: any = null;
 let _name = "";
 
-function getPluginId() {
+export function getPluginId() {
     return _100_DAYS_OF_CODE_PLUGIN_ID;
 }
 
@@ -228,6 +228,15 @@ export function getItem(key: string) {
     const jsonObj = getSoftwareSessionAsJson();
     let val = jsonObj[key] || null;
     return val;
+}
+
+export function getJwt(prefix = false) {
+    const jwt = getItem('jwt');
+    if (!jwt || prefix) {
+        return jwt
+    } else {
+        return jwt.split("JWT ")[1]
+    }
 }
 
 export function getSoftwareSessionAsJson() {

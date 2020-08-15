@@ -89,7 +89,8 @@
         "axios": "^0.19.2",
         "moment-timezone": "^0.5.28",
         "open": "^7.0.3",
-        "querystring": "^0.2.0"
+        "querystring": "^0.2.0",
+        "swdc-tracker": "1.0.23"
     },
     "extensionDependencies": [
         "softwaredotcom.swdc-vscode"

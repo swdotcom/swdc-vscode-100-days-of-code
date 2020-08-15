@@ -13,6 +13,6 @@ export class TreeNode {
     public callback: any = null;
     public icon: string = "";
     public children: TreeNode[] = [];
-    public eventDescription: string = "";
     public initialCollapsibleState: TreeItemCollapsibleState = TreeItemCollapsibleState.Collapsed;
+    public element_name: string = "";
 }
