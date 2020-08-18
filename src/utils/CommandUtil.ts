@@ -14,6 +14,7 @@ import { getUpdatedDashboardHtmlString, getCertificateHtmlString } from "./Dashb
 import { displayReadmeIfNotExists, displayLoginPromptIfNotLoggedIn, isLoggedIn } from "./Util";
 import { getUpdatedMilestonesHtmlString } from "./MilestonesTemplateUtil";
 import { getUpdatedLogsHtml } from "./LogsTemplateUtil";
+import { TrackerManager } from "../managers/TrackerManager";
 
 export function createCommands(): { dispose: () => void } {
     let cmds: any[] = [];
@@ -88,6 +89,15 @@ export function createCommands(): { dispose: () => void } {
                             );
                             break;
                         case "addLog":
+                            TrackerManager.getInstance().trackUIInteraction(
+                                "click",
+                                "100doc_add_log_btn",
+                                "100doc_logs_view",
+                                "blue",
+                                "",
+                                "Add Log"
+                            )
+
                             if (currentPanel && isLoggedIn()) {
                                 currentPanel.dispose();
                                 commands.executeCommand("DoC.addLog");
@@ -96,6 +106,14 @@ export function createCommands(): { dispose: () => void } {
                             }
                             break;
                         case "incrementShare":
+                            TrackerManager.getInstance().trackUIInteraction(
+                                "click",
+                                "100doc_share_log_btn",
+                                "100doc_logs_view",
+                                "",
+                                "share",
+                                ""
+                            )
                             updateLogShare(message.value);
                             checkSharesMilestones();
                             break;
@@ -144,12 +162,38 @@ export function createCommands(): { dispose: () => void } {
                             if (currentPanel) {
                                 currentPanel.dispose();
                                 commands.executeCommand("DoC.viewLogs");
+                                TrackerManager.getInstance().trackUIInteraction(
+                                    "click",
+                                    "100doc_logs_btn",
+                                    "100doc_dashboard_view",
+                                    '',
+                                    '',
+                                    'View Logs'
+                                )
                             }
+                            break;
+                        case "ShareProgress":
+                            TrackerManager.getInstance().trackUIInteraction(
+                                "click",
+                                "100doc_share_progress_btn",
+                                "100doc_dashboard_view",
+                                "blue",
+                                "",
+                                "Share progress"
+                            )
                             break;
                         case "Milestones":
                             if (currentPanel) {
                                 currentPanel.dispose();
                                 commands.executeCommand("DoC.viewMilestones");
+                                TrackerManager.getInstance().trackUIInteraction(
+                                    "click",
+                                    "100doc_milestones_btn",
+                                    "100doc_dashboard_view",
+                                    '',
+                                    '',
+                                    'View Milestones'
+                                )
                             }
                             break;
                         case "Certificate":
@@ -221,6 +265,14 @@ export function createCommands(): { dispose: () => void } {
                 currentPanel.webview.onDidReceiveMessage(message => {
                     switch (message.command) {
                         case "incrementShare":
+                            TrackerManager.getInstance().trackUIInteraction(
+                                "click",
+                                "100doc_share_milestone_btn",
+                                "100doc_milestones_view",
+                                "",
+                                "share",
+                                ""
+                            )
                             updateMilestoneShare(message.value);
                             checkSharesMilestones();
                             break;

@@ -49,6 +49,9 @@ import {
     sendHeartbeat
 } from "./utils/Util";
 import { commands } from "vscode";
+import { TrackerManager } from "./managers/TrackerManager";
+
+const tracker: TrackerManager = TrackerManager.getInstance();
 
 let one_minute_interval: NodeJS.Timeout;
 let five_minute_interval: NodeJS.Timeout;
@@ -131,6 +134,9 @@ export function initializePlugin() {
     } else {
         initializeLogInCheckInterval();
     }
+
+    // initialize tracker
+    tracker.init();
 }
 
 function initializeIntervalJobs() {

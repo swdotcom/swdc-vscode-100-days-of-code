@@ -460,6 +460,8 @@
         const milestonesButton = document.getElementById("viewMilestones");
         const logsButton = document.getElementById("viewLogs");
         const certificate = document.getElementById("certificate");
+        const shareProgressButton = document.getElementById("shareProgress");
+
         certificate.addEventListener("click", function () {
             vscode.postMessage({ command: "Certificate" });
         });
@@ -468,6 +470,9 @@
         });
         milestonesButton.addEventListener("click", function () {
             vscode.postMessage({ command: "Milestones" });
+        });
+        shareProgressButton.addEventListener("click", function () {
+            vscode.postMessage({ command: "ShareProgress" })
         });
     </script>
 </html>
