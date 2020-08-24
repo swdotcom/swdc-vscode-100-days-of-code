@@ -23,8 +23,7 @@ import {
     pushNewMilestones,
     updatedMilestonesDb,
     pushUpdatedMilestones,
-    fetchAllMilestones,
-    fetchMilestonesForYesterdayAndToday,
+    fetchMilestones,
     createMilestonesPayloadJson,
     deleteMilestonePayloadJson
 } from "./utils/MilestonesDbUtil";
@@ -121,7 +120,7 @@ export function initializePlugin() {
         if (!updatedMilestonesDb) {
             pushUpdatedMilestones();
         }
-        fetchAllMilestones();
+        fetchMilestones();
 
         const dateOb = new Date();
         initTimestamp = dateOb.valueOf();
@@ -196,19 +195,19 @@ function initializeIntervalJobs() {
             if (!updatedMilestonesDb) {
                 pushUpdatedMilestones();
             }
-            fetchMilestonesForYesterdayAndToday();
+            fetchMilestones();
 
             // summary
             pushSummaryToDb();
         }
-    }, one_min_millis * 1);
+    }, one_min_millis * 5);
 
     one_hour_interval = setInterval(() => {
         if (checkIfNameChanged()) {
             logOut();
         } else {
             if (updatedMilestonesDb && sentMilestonesDb) {
-                fetchAllMilestones();
+                fetchMilestones();
             } else if (!sentMilestonesDb) {
                 pushNewMilestones();
             } else {
@@ -241,7 +240,7 @@ function initializeLogInCheckInterval() {
             if (!updatedMilestonesDb) {
                 pushUpdatedMilestones();
             }
-            fetchAllMilestones();
+            fetchMilestones();
 
             // fetches and updates the user summary in the db
             pushSummaryToDb();

@@ -57,100 +57,68 @@ export function deleteMilestonePayloadJson() {
     }
 }
 
-export async function fetchMilestonesByDate(date: number): Promise<Array<number>> {
+/**
+ *
+ * @param date a date value (timestamp or date string)
+ * @param fetchAll whether to fetch all time or for a shorter time period
+ */
+export async function fetchMilestones(date: number = 0, fetchAll: boolean = false): Promise<Array<number>> {
+    let milestones: any[] = [];
     const jwt = getItem("jwt");
-    if (jwt) {
-        // End Date Time is 11:59:59 pm
-        let endDate = new Date(date);
+    if (!jwt) {
+        return milestones;
+    }
+
+    // check if service is available
+    let available = false;
+    try {
+        available = await serverIsAvailable();
+    } catch (err) {
+        available = false;
+    }
+    if (!available) {
+        return milestones;
+    }
+
+    // get the milestones from the server
+    if (fetchAll) {
+        await softwareGet("/100doc/milestones", jwt).then(resp => {
+            if (isResponseOk(resp)) {
+                milestones = resp.data;
+            }
+        });
+    } else {
+        const ONE_DAY_SEC = 68400000;
+        // default to today and yesterday
+        let endDate = new Date(); // 11:59:59 pm today
+        let startDate = new Date(endDate.valueOf() - ONE_DAY_SEC * 2); // 12:00:01 am yesterday
+
+        if (date) {
+            endDate = new Date(date); // 11:59:59 pm today
+            startDate = new Date(endDate.valueOf() - ONE_DAY_SEC); // 12:00:01 am yesterday
+        }
+        // normalize dates
+        startDate.setHours(0, 0, 1, 0);
         endDate.setHours(23, 59, 59, 0);
 
-        // Start Date Time is 12:00:01 am
-        let startDate = new Date(endDate.valueOf() - 68400000);
-        startDate.setHours(0, 0, 1, 0);
-        let available = false;
-        try {
-            available = await serverIsAvailable();
-        } catch (err) {
-            available = false;
-        }
-        if (available) {
-            const milestones = await softwareGet(
-                `/100doc/milestones?start_date=${Math.round(startDate.valueOf() / 1000)}&end_date=${Math.round(
-                    endDate.valueOf() / 1000
-                )}`,
-                jwt
-            ).then(resp => {
-                if (isResponseOk(resp)) {
-                    return resp.data;
-                }
-            });
-            if (milestones) {
-                // checking if milestones are sent. if not, return empty array
-                if (milestones.length > 1) {
-                    return milestones[0].milestones;
-                } else {
-                    return [];
-                }
-            }
-        }
-    }
-    return [];
-}
+        // query params
+        const start_date = Math.round(startDate.valueOf() / 1000);
+        const end_date = Math.round(endDate.valueOf() / 1000);
 
-export async function fetchMilestonesForYesterdayAndToday() {
-    const jwt = getItem("jwt");
-    if (jwt) {
-        // End Date is 11:59:59 pm today
-        let endDate = new Date();
-        endDate.setHours(23, 59, 59, 0);
-
-        // Start Date is 12:00:01 am yesterday
-        let startDate = new Date(endDate.valueOf() - 68400000 * 2);
-        startDate.setHours(0, 0, 1, 0);
-        let available = false;
-        try {
-            available = await serverIsAvailable();
-        } catch (err) {
-            available = false;
-        }
-        if (available) {
-            const milestones = await softwareGet(
-                `/100doc/milestones?start_date=${Math.round(startDate.valueOf() / 1000)}&end_date=${Math.round(
-                    endDate.valueOf() / 1000
-                )}`,
-                jwt
-            ).then(resp => {
-                if (isResponseOk(resp)) {
-                    return resp.data;
-                }
-            });
-            if (milestones) {
-                compareWithLocalMilestones(milestones);
+        await softwareGet(`/100doc/milestones?start_date=${start_date}&end_date=${end_date}`, jwt).then(resp => {
+            if (isResponseOk(resp)) {
+                milestones = resp.data;
             }
-        }
+        });
     }
-}
 
-export async function fetchAllMilestones() {
-    const jwt = getItem("jwt");
-    if (jwt) {
-        let available = false;
-        try {
-            available = await serverIsAvailable();
-        } catch (err) {
-            available = false;
-        }
-        if (available) {
-            const milestones = await softwareGet("/100doc/milestones", jwt).then(resp => {
-                if (isResponseOk(resp)) {
-                    return resp.data;
-                }
-            });
-            if (milestones) {
-                compareWithLocalMilestones(milestones);
-            }
-        }
+    // sync with local
+    if (milestones.length > 0) {
+        compareWithLocalMilestones(milestones);
     }
+
+    // return milestones
+    return milestones;
 }
 
 export function pushMilestonesToDb(date: number, milestones: Array<number>) {
