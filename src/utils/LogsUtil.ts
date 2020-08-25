@@ -13,7 +13,7 @@ import {
     reevaluateSummary
 } from "./SummaryUtil";
 import { window, commands } from "vscode";
-import { fetchMilestonesByDate, pushMilestonesToDb } from "./MilestonesDbUtil";
+import { fetchMilestones, pushMilestonesToDb } from "./MilestonesDbUtil";
 import {
     pushNewLogs,
     pushUpdatedLogs,
@@ -205,13 +205,13 @@ export async function compareWithLocalLogs(logs: Array<Log>) {
                 localLogs[i].codetime_metrics.keystrokes > 100 ||
                 localLogs[i].codetime_metrics.lines_added > 0)
         ) {
-            localLogs[i].milestones = await fetchMilestonesByDate(localLogs[i].date);
+            localLogs[i].milestones = await fetchMilestones(localLogs[i].date);
         }
     }
 
     if (localLogs.length < logs.length) {
         for (let i = localLogs.length; i < logs.length; i++) {
-            logs[i].milestones = await fetchMilestonesByDate(logs[i].date);
+            logs[i].milestones = await fetchMilestones(logs[i].date);
             localLogs.push(logs[i]);
         }
         changed = true;
@@ -268,7 +268,7 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
             }
 
             // fetch and update milestones in db
-            let newMilestones = await fetchMilestonesByDate(logs[i].date);
+            let newMilestones = await fetchMilestones(logs[i].date);
             if (newMilestones) {
                 newMilestones = newMilestones.concat(logs[i].milestones);
                 newMilestones = Array.from(new Set(newMilestones));
