@@ -185,9 +185,9 @@ export async function compareWithLocalLogs(logs: Array<Log>) {
                 localLogs.push(log);
             }
         });
-        // make sure localLogs are sorted by day_number
+        // make sure localLogs are sorted by date
         localLogs.sort((a, b) => {
-            return a.day_number - b.day_number;
+            return a.date - b.date;
         });
         changed = true;
     }
@@ -195,14 +195,21 @@ export async function compareWithLocalLogs(logs: Array<Log>) {
     // fetch all the milestones at once and then add them to each log iteratively below
     const milestones = await fetchMilestones(null, true);
 
+    // make sure localLogs are in sync with the server
     localLogs.forEach(async localLog => {
         let log = logs.find(e => e.day_number === localLog.day_number);
+        // no log, no need to update localLog
         if (!log) {
             return;
         }
+
+        // if there are two logs for the same date with different date numbers (e.g. same day generated on different dates)
+        // then realign the days so that the numbering is correct
         if (log.day_number !== localLog.day_number || !compareDates(new Date(log.date), new Date(localLog.date))) {
             return mergeLocalLogs(localLogs, logs);
         }
+
+        // continue updating each log
         if (log.title !== localLog.title) {
             localLog.title = log.title;
             changed = true;
