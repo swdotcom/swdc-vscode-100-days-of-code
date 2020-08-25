@@ -160,62 +160,80 @@ export function getDayNumberFromDate(dateUnix: number): number {
     return -1;
 }
 
+/**
+ * Compares server logs with local logs and then syncs them
+ * @param logs - logs returned by the server
+ */
 export async function compareWithLocalLogs(logs: Array<Log>) {
     let localLogs: Array<Log> = getAllLogObjects();
     let changed = false;
 
+    // if local logs has more entries than logs, merge them
     if (localLogs.length > logs.length) {
         return mergeLocalLogs(localLogs, logs);
     }
 
-    for (let i = 0; i < localLogs.length; i++) {
-        if (
-            logs[i].day_number !== localLogs[i].day_number ||
-            !compareDates(new Date(logs[i].date), new Date(localLogs[i].date))
-        ) {
-            return mergeLocalLogs(localLogs, logs);
-        }
-        if (logs[i].title !== localLogs[i].title) {
-            localLogs[i].title = logs[i].title;
-            changed = true;
-        }
-        if (logs[i].description !== localLogs[i].description) {
-            localLogs[i].description = logs[i].description;
-            changed = true;
-        }
-        if (JSON.stringify(logs[i].links) !== JSON.stringify(localLogs[i].links)) {
-            localLogs[i].links = logs[i].links;
-            changed = true;
-        }
-        if (logs[i].codetime_metrics.hours > localLogs[i].codetime_metrics.hours) {
-            localLogs[i].codetime_metrics.hours = logs[i].codetime_metrics.hours;
-            changed = true;
-        }
-        if (logs[i].codetime_metrics.keystrokes > localLogs[i].codetime_metrics.keystrokes) {
-            localLogs[i].codetime_metrics.keystrokes = logs[i].codetime_metrics.keystrokes;
-            changed = true;
-        }
-        if (logs[i].codetime_metrics.lines_added > localLogs[i].codetime_metrics.lines_added) {
-            localLogs[i].codetime_metrics.lines_added = logs[i].codetime_metrics.lines_added;
-            changed = true;
-        }
-        if (
-            localLogs[i].milestones.length === 0 &&
-            (localLogs[i].codetime_metrics.hours > 0.5 ||
-                localLogs[i].codetime_metrics.keystrokes > 100 ||
-                localLogs[i].codetime_metrics.lines_added > 0)
-        ) {
-            localLogs[i].milestones = await fetchMilestones(localLogs[i].date);
-        }
-    }
-
+    // if local logs have fewer entries than logs, add server logs to local
     if (localLogs.length < logs.length) {
-        for (let i = localLogs.length; i < logs.length; i++) {
-            logs[i].milestones = await fetchMilestones(logs[i].date);
-            localLogs.push(logs[i]);
-        }
+        logs.forEach(log => {
+            // check if a localLog for that day number exists
+            const foundDay = localLogs.find(e => e.day_number === log.day_number);
+            if (foundDay) {
+                return;
+            } else {
+                // if it doesn't exist, add it to localLogs
+                localLogs.push(log);
+            }
+        });
+        // make sure localLogs are sorted by day_number
+        localLogs.sort((a, b) => {
+            return a.day_number - b.day_number;
+        });
         changed = true;
     }
+
+    // fetch all the milestones at once and then add them to each log iteratively below
+    const milestones = await fetchMilestones(null, true);
+
+    localLogs.forEach(async localLog => {
+        let log = logs.find(e => e.day_number === localLog.day_number);
+        if (!log) {
+            return;
+        }
+        if (log.day_number !== localLog.day_number || !compareDates(new Date(log.date), new Date(localLog.date))) {
+            return mergeLocalLogs(localLogs, logs);
+        }
+        if (log.title !== localLog.title) {
+            localLog.title = log.title;
+            changed = true;
+        }
+        if (log.description !== localLog.description) {
+            localLog.description = log.description;
+            changed = true;
+        }
+        if (JSON.stringify(log.links) !== JSON.stringify(localLog.links)) {
+            localLog.links = log.links;
+            changed = true;
+        }
+        if (log.codetime_metrics.hours > localLog.codetime_metrics.hours) {
+            localLog.codetime_metrics.hours = log.codetime_metrics.hours;
+            changed = true;
+        }
+        if (log.codetime_metrics.keystrokes > localLog.codetime_metrics.keystrokes) {
+            localLog.codetime_metrics.keystrokes = log.codetime_metrics.keystrokes;
+            changed = true;
+        }
+        if (log.codetime_metrics.lines_added > localLog.codetime_metrics.lines_added) {
+            localLog.codetime_metrics.lines_added = log.codetime_metrics.lines_added;
+            changed = true;
+        }
+
+        let foundMilestones = milestones.find(e => e.day_number === localLog.day_number);
+        if (foundMilestones && foundMilestones.milestones) {
+            localLog.milestones = foundMilestones.milestones;
+        }
+    });
+
     if (changed) {
         writeToLogsJson(localLogs);
         reevaluateSummary();
