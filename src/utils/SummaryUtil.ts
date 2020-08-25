@@ -148,11 +148,12 @@ export function updateSummaryJson() {
 
     // update languages aggregate and make sure none are repeated
     const newLanguages = getLanguages();
-    const currLanguages = summary.languages;
-    const totalLanguages = currLanguages.concat(newLanguages);
-    const reducedLanguages = Array.from(new Set(totalLanguages));
-    summary.languages = reducedLanguages;
-
+    if (newLanguages != null) {
+        const currLanguages = summary.languages || [];
+        const totalLanguages = currLanguages.concat(newLanguages);
+        const reducedLanguages = Array.from(new Set(totalLanguages));
+        summary.languages = reducedLanguages;
+    }
     summary.lastUpdated = new Date().getTime();
     writeToSummaryJson(summary);
 }
