@@ -40,7 +40,7 @@ export const connectDoCTreeView = (view: TreeView<TreeNode>) => {
 
             const item: TreeNode = e.selection[0];
 
-            tracker.trackUIInteraction("click", item.element_name, "100doc_menu_tree", "", "", item.label)
+            tracker.trackUIInteraction("click", item.element_name, "100doc_menu_tree", "", "", item.label);
 
             if (item.command) {
                 const args = item.commandArgs || null;
@@ -103,7 +103,7 @@ export class Tree100DoCProvider implements TreeDataProvider<TreeNode> {
     }
 
     refresh(): void {
-        this._onDidChangeTreeData.fire();
+        this._onDidChangeTreeData.fire(undefined);
     }
 
     refreshParent(parent: TreeNode) {

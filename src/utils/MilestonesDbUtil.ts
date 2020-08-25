@@ -39,6 +39,11 @@ export function createMilestonesPayloadJson() {
 export function checkMilestonesPayload() {
     const filepath = getMilestonesPayloadJson();
     const payloadData = getFileDataAsJson(filepath, {});
+    // if the object has less than the 4 keys below, it's been corrupted
+    if (Object.keys(payloadData).length < 4) {
+        console.log("Milestones object is empty");
+        return;
+    }
     try {
         updatedMilestonesDb = payloadData["updatedMilestonesDb"];
         sentMilestonesDb = payloadData["sentMilestonesDb"];
@@ -62,7 +67,7 @@ export function deleteMilestonePayloadJson() {
  * @param date a date value (timestamp or date string)
  * @param fetchAll whether to fetch all time or for a shorter time period
  */
-export async function fetchMilestones(date: any = null, fetchAll: boolean = false): Promise<Array<number>> {
+export async function fetchMilestones(date: any = null, fetchAll: boolean = false) {
     let milestones: any[] = [];
     const jwt = getItem("jwt");
     if (!jwt) {

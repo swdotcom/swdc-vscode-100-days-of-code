@@ -14,7 +14,7 @@
         "test": "node ./out/test/runTest.js"
     },
     "engines": {
-        "vscode": "^1.43.0"
+        "vscode": "^1.35.0"
     },
     "preview": false,
     "categories": [
@@ -76,7 +76,7 @@
         "@types/glob": "^7.1.1",
         "@types/mocha": "^7.0.1",
         "@types/node": "^12.11.7",
-        "@types/vscode": "^1.43.0",
+        "@types/vscode": "^1.35.0",
         "@typescript-eslint/eslint-plugin": "^2.18.0",
         "@typescript-eslint/parser": "^2.18.0",
         "eslint": "^6.8.0",
