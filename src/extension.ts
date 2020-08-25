@@ -120,7 +120,7 @@ export function initializePlugin() {
         if (!updatedMilestonesDb) {
             pushUpdatedMilestones();
         }
-        fetchMilestones();
+        fetchMilestones(null, true);
 
         const dateOb = new Date();
         initTimestamp = dateOb.valueOf();
@@ -207,7 +207,7 @@ function initializeIntervalJobs() {
             logOut();
         } else {
             if (updatedMilestonesDb && sentMilestonesDb) {
-                fetchMilestones();
+                fetchMilestones(null, true);
             } else if (!sentMilestonesDb) {
                 pushNewMilestones();
             } else {
@@ -240,7 +240,7 @@ function initializeLogInCheckInterval() {
             if (!updatedMilestonesDb) {
                 pushUpdatedMilestones();
             }
-            fetchMilestones();
+            fetchMilestones(null, true);
 
             // fetches and updates the user summary in the db
             pushSummaryToDb();

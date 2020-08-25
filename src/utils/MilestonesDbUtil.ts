@@ -62,7 +62,7 @@ export function deleteMilestonePayloadJson() {
  * @param date a date value (timestamp or date string)
  * @param fetchAll whether to fetch all time or for a shorter time period
  */
-export async function fetchMilestones(date: number = 0, fetchAll: boolean = false): Promise<Array<number>> {
+export async function fetchMilestones(date: any = null, fetchAll: boolean = false): Promise<Array<number>> {
     let milestones: any[] = [];
     const jwt = getItem("jwt");
     if (!jwt) {
