@@ -247,8 +247,9 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
         return a.date - b.date;
     });
 
-    let i = 0;
+    const milestones = await fetchMilestones(null, true);
 
+    let i = 0;
     while (i < logs.length - 1) {
         if (compareDates(new Date(logs[i].date), new Date(logs[i + 1].date))) {
             if (logs[i].title !== logs[i + 1].title) {
@@ -285,13 +286,12 @@ async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
                 logs[i].codetime_metrics.lines_added = logs[i + 1].codetime_metrics.lines_added;
             }
 
-            // fetch and update milestones in db
-            let newMilestones = await fetchMilestones(logs[i].date);
-            if (newMilestones) {
-                newMilestones = newMilestones.concat(logs[i].milestones);
-                newMilestones = Array.from(new Set(newMilestones));
-                logs[i].milestones = newMilestones;
-                pushMilestonesToDb(logs[i].date, newMilestones);
+            let foundMilestones = milestones.find(e => e.date === logs[i].date);
+            if (foundMilestones && foundMilestones.milestones) {
+                foundMilestones = foundMilestones.concat(logs[i].milestones);
+                foundMilestones = Array.from(new Set(foundMilestones));
+                logs[i].milestones = foundMilestones;
+                pushMilestonesToDb(logs[i].date, foundMilestones);
             }
 
             // remove logs[i+1] as it is now merged with logs[i]
