@@ -37,8 +37,15 @@ export function createMilestonesPayloadJson() {
 }
 
 export function checkMilestonesPayload() {
+    // default these to keep the loop running
+    updatedMilestonesDb = false;
+    sentMilestonesDb = false;
+    toCreateMilestones = [];
+    toUpdateMilestones = [];
+
     const filepath = getMilestonesPayloadJson();
     const payloadData = getFileDataAsJson(filepath, {});
+
     if (!payloadData) {
         // no logsPayload.json file
         return;
@@ -48,6 +55,8 @@ export function checkMilestonesPayload() {
         console.log("Milestones object is empty");
         return;
     }
+
+    // only update if there is payloadData
     try {
         updatedMilestonesDb = payloadData["updatedMilestonesDb"];
         sentMilestonesDb = payloadData["sentMilestonesDb"];
