@@ -37,13 +37,26 @@ export function createMilestonesPayloadJson() {
 }
 
 export function checkMilestonesPayload() {
+    // default these to keep the loop running
+    updatedMilestonesDb = false;
+    sentMilestonesDb = false;
+    toCreateMilestones = [];
+    toUpdateMilestones = [];
+
     const filepath = getMilestonesPayloadJson();
     const payloadData = getFileDataAsJson(filepath, {});
+
+    if (!payloadData) {
+        // no milestonesPayload.json file
+        return;
+    }
     // if the object has less than the 4 keys below, it's been corrupted
     if (Object.keys(payloadData).length < 4) {
         console.log("Milestones object is empty");
         return;
     }
+
+    // only update if there is payloadData
     try {
         updatedMilestonesDb = payloadData["updatedMilestonesDb"];
         sentMilestonesDb = payloadData["sentMilestonesDb"];

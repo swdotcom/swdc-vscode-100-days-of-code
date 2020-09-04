@@ -36,12 +36,25 @@ export function createLogsPayloadJson() {
 }
 
 export function checkLogsPayload() {
+    // default these to keep the loop running
+    updatedLogsDb = false;
+    sentLogsDb = false;
+    toCreateLogs = [];
+    toUpdateLogs = [];
+
     const filepath = getLogsPayloadJson();
     const payloadData = getFileDataAsJson(filepath);
+
+    if (!payloadData) {
+        // no logsPayload.json file
+        return;
+    }
     if (Object.keys(payloadData).length < 4) {
         console.log("Logs payload object is empty");
         return;
     }
+
+    // only update if there is payloadData
     try {
         updatedLogsDb = payloadData["updatedLogsDb"];
         sentLogsDb = payloadData["sentLogsDb"];
