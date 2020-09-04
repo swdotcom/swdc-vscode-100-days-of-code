@@ -47,7 +47,7 @@ export function checkMilestonesPayload() {
     const payloadData = getFileDataAsJson(filepath, {});
 
     if (!payloadData) {
-        // no logsPayload.json file
+        // no milestonesPayload.json file
         return;
     }
     // if the object has less than the 4 keys below, it's been corrupted
