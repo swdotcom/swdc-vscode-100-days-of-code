@@ -39,6 +39,10 @@ export function createMilestonesPayloadJson() {
 export function checkMilestonesPayload() {
     const filepath = getMilestonesPayloadJson();
     const payloadData = getFileDataAsJson(filepath, {});
+    if (!payloadData) {
+        // no logsPayload.json file
+        return;
+    }
     // if the object has less than the 4 keys below, it's been corrupted
     if (Object.keys(payloadData).length < 4) {
         console.log("Milestones object is empty");

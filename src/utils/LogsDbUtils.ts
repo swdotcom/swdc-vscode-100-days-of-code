@@ -38,6 +38,10 @@ export function createLogsPayloadJson() {
 export function checkLogsPayload() {
     const filepath = getLogsPayloadJson();
     const payloadData = getFileDataAsJson(filepath);
+    if (!payloadData) {
+        // no logsPayload.json file
+        return;
+    }
     if (Object.keys(payloadData).length < 4) {
         console.log("Logs payload object is empty");
         return;
