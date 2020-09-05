@@ -24,6 +24,7 @@ import {
 } from "./LogsDbUtils";
 import { pushSummaryToDb } from "./SummaryDbUtil";
 import { HOURS_THRESHOLD } from "./Constants";
+const moment = require("moment-timezone");
 let dateLogMessage: Date | any = undefined;
 
 export function getLogsJson(): string {
@@ -351,23 +352,29 @@ async function restoreAllMilestones() {
     writeToLogsJson(logs);
 }
 
-function checkIfDateExists(): boolean {
-    const dateNow = new Date();
+/**
+ * compares a log to the logs stored locally to check if it already exists
+ * checks against both date and day number
+ * @param log - a log object
+ */
+function checkIfLogExists(log: Log): boolean {
+    let logExists = false;
+
+    const logEndOfDay = moment(log.date).endOf("day");
+    const logDayNumber = log.day_number;
+
     const logs = getAllLogObjects();
+    const existingLogs = logs.filter(n => {
+        let endOfDay = moment(n.date).endOf("day");
+        let dayNumber = n.day_number;
+        return logEndOfDay === endOfDay && logDayNumber === dayNumber;
+    });
 
-    for (let i = logs.length - 1; i >= 0; i--) {
-        const dateOb = new Date(logs[i].date);
-        // Older date
-        if (dateNow.valueOf > dateOb.valueOf) {
-            return false;
-        }
-
-        // Checking if date exists
-        if (compareDates(dateOb, dateNow)) {
-            return true;
-        }
+    if (existingLogs.length > 0) {
+        logExists = true;
     }
-    return false;
+
+    return logExists;
 }
 
 export function setDailyMilestonesByDayNumber(dayNumber: number, newMilestones: Array<number>) {
@@ -436,9 +443,10 @@ export async function addLogToJson(
     log.codetime_metrics = codetimeMetrics;
     log.day_number = dayNum;
 
-    // if date exists, we need to edit log not create one
-    const dateExists = checkIfDateExists();
-    if (dateExists) {
+    const logExists = checkIfLogExists(log);
+
+    // if log exists, we need to edit log not create one
+    if (logExists) {
         return updateLogByDate(log);
     }
 
@@ -517,8 +525,8 @@ export function checkIfOnStreak(): boolean {
 export async function updateLogByDate(log: Log) {
     const logDate = new Date(log.date);
     let logs = getAllLogObjects();
-    const dateExists = checkIfDateExists();
-    if (!dateExists) {
+    const logExists = checkIfLogExists(log);
+    if (!logExists) {
         addLogToJson(
             log.title,
             log.description,
@@ -620,10 +628,10 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
     const logDate = new Date();
     let logs = getAllLogObjects();
 
+    let log = new Log();
     // if date doesn't exist, create a log with just milestones and a date
-    const dateExists = checkIfDateExists();
-    if (!dateExists) {
-        let log = new Log();
+    const logExists = checkIfLogExists(log);
+    if (!logExists) {
         const dayNum = getLatestLogEntryNumber() + 1;
         log.date = logDate.valueOf();
         log.milestones = milestones;
