@@ -17,6 +17,7 @@ import {
     resetPreviousLogIfEmpty
 } from "./utils/LogsUtil";
 import { checkSummaryJson, reevaluateSummary, deleteSummaryJson } from "./utils/SummaryUtil";
+import { syncLogs } from "./utils/LogSync";
 import {
     checkMilestonesPayload,
     sentMilestonesDb,
@@ -27,16 +28,7 @@ import {
     createMilestonesPayloadJson,
     deleteMilestonePayloadJson
 } from "./utils/MilestonesDbUtil";
-import {
-    checkLogsPayload,
-    sentLogsDb,
-    pushNewLogs,
-    updatedLogsDb,
-    pushUpdatedLogs,
-    fetchLogs,
-    createLogsPayloadJson,
-    deleteLogsPayloadJson
-} from "./utils/LogsDbUtils";
+import { createLogsPayloadJson, deleteLogsPayloadJson } from "./utils/LogsDbUtils";
 import { pushSummaryToDb } from "./utils/SummaryDbUtil";
 import {
     displayReadmeIfNotExists,
@@ -101,16 +93,8 @@ export function initializePlugin() {
 
     if (isLoggedIn()) {
         setName();
-        // logs
-        checkLogsPayload();
-        resetPreviousLogIfEmpty();
-        if (!sentLogsDb) {
-            pushNewLogs(false);
-        }
-        if (!updatedLogsDb) {
-            pushUpdatedLogs(false, 0);
-        }
-        fetchLogs();
+
+        syncLogs();
 
         // milestones
         checkMilestonesPayload();
@@ -177,15 +161,7 @@ function initializeIntervalJobs() {
         if (checkIfNameChanged()) {
             logOut();
         } else {
-            // logs
-            checkLogsPayload();
-            if (!sentLogsDb) {
-                pushNewLogs(false);
-            }
-            if (!updatedLogsDb) {
-                pushUpdatedLogs(false, 0);
-            }
-            fetchLogs();
+            syncLogs();
 
             // milestones
             checkMilestonesPayload();
@@ -222,15 +198,7 @@ function initializeLogInCheckInterval() {
     init_interval = setInterval(() => {
         if (isLoggedIn()) {
             setName();
-            // logs
-            checkLogsPayload();
-            if (!sentLogsDb) {
-                pushNewLogs(false);
-            }
-            if (!updatedLogsDb) {
-                pushUpdatedLogs(false, 0);
-            }
-            fetchLogs();
+            syncLogs();
 
             // milestones
             checkMilestonesPayload();
