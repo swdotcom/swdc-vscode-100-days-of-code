@@ -14,7 +14,7 @@ import {
 } from "./SummaryUtil";
 import { window, commands } from "vscode";
 import { pushMilestonesToDb } from "./MilestonesDbUtil";
-import { pushNewLogs, toUpdateLogsPush } from "./LogsDbUtils";
+import { toUpdateLogsPush } from "./LogsDbUtils";
 import { createLog, updateLog } from "./LogSync";
 import { HOURS_THRESHOLD } from "./Constants";
 const moment = require("moment-timezone");
@@ -406,7 +406,7 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
 
         writeToLogsJson(logs);
         updateSummaryJson();
-        await pushNewLogs(true);
+        createLog(log);
         return;
     }
 

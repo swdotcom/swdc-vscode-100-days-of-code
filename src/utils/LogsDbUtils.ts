@@ -110,53 +110,6 @@ export async function fetchLogs() {
     }
 }
 
-export async function pushNewLogs(addNew: boolean) {
-    if (addNew) {
-        const log: Log = getMostRecentLogObject();
-        const date = new Date();
-        const offset_minutes = date.getTimezoneOffset();
-        const links = log.links === [] ? [""] : log.links;
-        const sendLog = {
-            day_number: log.day_number,
-            title: log.title,
-            description: log.description,
-            ref_links: links,
-            minutes: log.codetime_metrics.hours * 60,
-            keystrokes: log.codetime_metrics.keystrokes,
-            lines_added: log.codetime_metrics.lines_added,
-            lines_removed: 0,
-            unix_date: Math.round(log.date / 1000), // milliseconds --> seconds
-            local_date: Math.round(log.date / 1000) - offset_minutes * 60, // milliseconds --> seconds
-            offset_minutes,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-        };
-        toCreateLogs.push(sendLog);
-    }
-    const jwt = getItem("jwt");
-    if (jwt) {
-        let available = false;
-        try {
-            available = await serverIsAvailable();
-        } catch (err) {
-            available = false;
-        }
-        if (available) {
-            const resp = await softwarePost("/100doc/logs", toCreateLogs, jwt);
-            const added: boolean = isResponseOk(resp);
-            if (!added) {
-                sentLogsDb = false;
-            } else {
-                sentLogsDb = true;
-                toCreateLogs = [];
-            }
-        } else {
-            sentLogsDb = false;
-        }
-    } else {
-        sentLogsDb = false;
-    }
-}
-
 export function toCreateLogsPush(log: Log) {
     const date = new Date();
     const offset_minutes = date.getTimezoneOffset();
