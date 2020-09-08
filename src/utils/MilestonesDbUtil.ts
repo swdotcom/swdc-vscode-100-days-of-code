@@ -1,8 +1,9 @@
 import { serverIsAvailable, softwareGet, isResponseOk, softwarePost, softwarePut } from "../managers/HttpManager";
-import { getSoftwareDir, isWindows, getItem, getFileDataAsJson } from "./Util";
+import { getSoftwareDir, isWindows, getItem } from "./Util";
 import { compareWithLocalMilestones, getMilestonesByDate, checkIfMilestonesAchievedOnDate } from "./MilestonesUtil";
 import { getDayNumberFromDate } from "./LogsUtil";
 import fs = require("fs");
+import { getFileDataAsJson } from "../managers/FileManager";
 
 // variables to keep in check the db update process
 export let updatedMilestonesDb = true;

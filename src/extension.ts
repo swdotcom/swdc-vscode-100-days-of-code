@@ -16,7 +16,7 @@ import {
     deleteLogsJson,
     resetPreviousLogIfEmpty
 } from "./utils/LogsUtil";
-import { checkSummaryJson, reevaluateSummary, deleteSummaryJson } from "./utils/SummaryUtil";
+import { reevaluateSummary, deleteSummaryJson } from "./utils/SummaryUtil";
 import {
     checkMilestonesPayload,
     sentMilestonesDb,
@@ -37,7 +37,7 @@ import {
     createLogsPayloadJson,
     deleteLogsPayloadJson
 } from "./utils/LogsDbUtils";
-import { pushSummaryToDb } from "./utils/SummaryDbUtil";
+import { pushSummaryToDb, fetchSummary } from "./utils/SummaryDbUtil";
 import {
     displayReadmeIfNotExists,
     isLoggedIn,
@@ -83,7 +83,6 @@ export function initializePlugin() {
     // checks if all the files exist
     checkLogsJson();
     checkMilestonesJson();
-    checkSummaryJson();
 
     // Displays README on first launch
     displayReadmeIfNotExists();
@@ -244,6 +243,9 @@ function initializeLogInCheckInterval() {
 
             // fetches and updates the user summary in the db
             pushSummaryToDb();
+
+            // update the summary on init
+            fetchSummary();
 
             clearInterval(init_interval);
 

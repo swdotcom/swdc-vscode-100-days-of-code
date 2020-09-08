@@ -1,5 +1,6 @@
-import { getSoftwareDir, isWindows, compareDates, getFileDataAsJson } from "./Util";
+import { getSoftwareDir, isWindows, compareDates } from "./Util";
 import fs = require("fs");
+import { getFileDataAsJson } from "../managers/FileManager";
 
 function getSessionSummaryJson() {
     let file = getSoftwareDir();

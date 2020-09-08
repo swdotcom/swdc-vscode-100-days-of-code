@@ -233,9 +233,9 @@ export function getItem(key: string) {
 export function getJwt(prefix = false) {
     const jwt = getItem('jwt');
     if (!jwt || prefix) {
-        return jwt
+        return jwt;
     } else {
-        return jwt.split("JWT ")[1]
+        return jwt.split("JWT ")[1];
     }
 }
 
@@ -315,23 +315,4 @@ export function checkIfNameChanged() {
     } else {
         return false;
     }
-}
-
-/**
- * reads data from local file into a JSON object
- *
- * @param file - the absolute file path
- * @param defaultResult - a JSON default result to return
- */
-export function getFileDataAsJson(file: string, defaultResult: any = null) {
-    if (fs.existsSync(file)) {
-        try {
-            return JSON.parse(fs.readFileSync(file, "utf-8"));
-        } catch (err) {
-            console.log("Could not read file:" + err.message);
-        }
-    } else {
-        console.log("File not found: " + file);
-    }
-    return defaultResult;
 }
