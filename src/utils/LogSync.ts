@@ -25,17 +25,15 @@ export async function updateLog(log: Log) {
     // get all log objects
     const logs = await getLocalLogsFromFile();
     // find and update the log object
-    const logEndOfDay = moment(log.date).endOf("day");
+    const logEndOfDay = moment(log.date).endOf("day").format("MM DD YYYY");
     const logDayNumber = log.day_number;
     const index = logs.findIndex(n => {
-        let endOfDay = moment(n.date).endOf("day");
+        let endOfDay = moment(n.date).endOf("day").format("MM DD YYYY");
         let dayNumber = n.day_number;
         return logEndOfDay === endOfDay && logDayNumber === dayNumber;
     });
-    if (index) {
-        // replace
-        logs[index] = log;
-    }
+    // replace
+    logs[index] = log;
     // write back to local
     updateLocalLogs(logs);
     // push changes to server
