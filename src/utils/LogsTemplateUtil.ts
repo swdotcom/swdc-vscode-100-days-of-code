@@ -1,5 +1,4 @@
 import { window } from "vscode";
-import { getSummaryObject } from "./SummaryUtil";
 import { Summary } from "../models/Summary";
 import { getMilestoneById } from "./MilestonesUtil";
 import { Log } from "../models/Log";
@@ -8,6 +7,7 @@ import { compareDates } from "./Util";
 import path = require("path");
 import fs = require("fs");
 import { monthNames } from "./Constants";
+import { fetchSummaryJsonFileData } from "../managers/FileManager";
 
 function getLogsTemplate() {
     return path.join(__dirname, "../assets/templates/logs.template.html");
@@ -74,7 +74,7 @@ function getFormattedDate(timestamp: number): string {
 }
 
 function getLogsCardSummaryVariables(dayHours: number, dayKeystrokes: number, dayLinesAdded: number) {
-    const summary: Summary = getSummaryObject();
+    const summary: Summary = fetchSummaryJsonFileData();
     const hours = summary.hours + summary.currentHours;
     const keystrokes = summary.keystrokes + summary.currentKeystrokes;
     const lines = summary.lines_added + summary.currentLines;

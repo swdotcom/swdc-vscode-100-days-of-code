@@ -1,11 +1,12 @@
 import path = require("path");
 import fs = require("fs");
-import { getSummaryObject, getDaysLevel, getHoursLevel, getLongStreakLevel, getLinesAddedLevel } from "./SummaryUtil";
+import { getDaysLevel, getHoursLevel, getLongStreakLevel, getLinesAddedLevel } from "./SummaryUtil";
 import { Summary } from "../models/Summary";
 import { getLastSevenLoggedDays, getAllCodetimeHours, getLogDateRange } from "./LogsUtil";
 import { getMilestoneById } from "./MilestonesUtil";
 import { monthNames } from "./Constants";
 import { window } from "vscode";
+import { fetchSummaryJsonFileData } from "../managers/FileManager";
 
 function getDashboardTemplate(): string {
     return path.join(__dirname, "../assets/templates/dashboard.template.html");
@@ -279,7 +280,7 @@ function getMilestonesHtml(recent_milestones: Array<number>): string {
 }
 
 export function getUpdatedDashboardHtmlString(): string {
-    const summary: Summary = getSummaryObject();
+    const summary: Summary = fetchSummaryJsonFileData();
 
     // Metrics
     let hours = summary.hours + summary.currentHours;

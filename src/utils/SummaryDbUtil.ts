@@ -1,23 +1,22 @@
-import { getSummaryObject, compareLocalSummary } from "./SummaryUtil";
+import { compareLocalSummary } from "./SummaryUtil";
 import { Summary } from "../models/Summary";
 import { serverIsAvailable, softwarePost, softwarePut, softwareGet, isResponseOk } from "../managers/HttpManager";
 import { getItem } from "./Util";
+import fs = require("fs");
+import { getSummaryJsonFilePath, fetchSummaryJsonFileData } from "../managers/FileManager";
 
 export async function pushSummaryToDb() {
     // checks if summary exists and updates/creates it
-    const summaryExists = await fetchSummary();
-    if (summaryExists) {
-        pushUpdatedSummary();
-        fetchSummary();
-    } else {
+    if (!fs.existsSync(getSummaryJsonFilePath())) {
         pushNewSummary();
-        fetchSummary();
+    } else {
+        pushUpdatedSummary();
     }
 }
 
 async function pushNewSummary() {
     // get the summary from the JSON
-    const summary: Summary = getSummaryObject();
+    const summary: Summary = fetchSummaryJsonFileData();
 
     // convert the summary object to the db style object
     const toCreateSummary = {
@@ -46,7 +45,7 @@ async function pushNewSummary() {
 }
 
 export async function pushUpdatedSummary() {
-    const summary: Summary = getSummaryObject();
+    const summary: Summary = fetchSummaryJsonFileData();
 
     const toCreateSummary = {
         days: summary.days,
@@ -62,16 +61,7 @@ export async function pushUpdatedSummary() {
 
     const jwt = getItem("jwt");
     if (jwt) {
-        let available = false;
-
-        try {
-            available = await serverIsAvailable();
-        } catch (err) {
-            available = false;
-        }
-        if (available) {
-            const resp = await softwarePut("/100doc/summary", toCreateSummary, jwt);
-        }
+        softwarePut("/100doc/summary", toCreateSummary, jwt);
     }
 }
 
