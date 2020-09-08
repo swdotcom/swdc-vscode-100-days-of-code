@@ -41,23 +41,15 @@ import {
 } from "./utils/Util";
 import { commands } from "vscode";
 import { TrackerManager } from "./managers/TrackerManager";
-import { fetchSummaryJsonFileData } from "./managers/FileManager";
 
 const tracker: TrackerManager = TrackerManager.getInstance();
 
-let one_minute_interval: NodeJS.Timeout;
 let five_minute_interval: NodeJS.Timeout;
 let one_hour_interval: NodeJS.Timeout;
 let init_interval: NodeJS.Timeout;
 let log_out_interval: NodeJS.Timeout;
 
 const one_min_millis = 1000 * 60;
-
-let initTimestamp = 0;
-let reevaluateSummaryNeeded = true;
-
-// minutes to wait for code time to update files at cold start or midnight
-const waitTimeMins = 3;
 
 // this method is called when the extension is activated
 export function activate(ctx: vscode.ExtensionContext) {
@@ -84,8 +76,6 @@ export function initializePlugin() {
     if (getLatestLogEntryNumber() <= 0) {
         commands.executeCommand("DoC.revealTree");
         sendHeartbeat("INSTALLED");
-    } else {
-        sendHeartbeat("HOURLY");
     }
 
     // try to send payloads that weren't sent
@@ -106,9 +96,6 @@ export function initializePlugin() {
         }
         fetchMilestones(null, true);
 
-        const dateOb = new Date();
-        initTimestamp = dateOb.valueOf();
-
         // fetches and updates the user summary in the db
         pushSummaryToDb();
 
@@ -125,44 +112,17 @@ export function initializePlugin() {
 function initializeIntervalJobs() {
     setLogOutInterval();
 
-    one_minute_interval = setInterval(() => {
-        if (checkIfNameChanged()) {
-            logOut();
-        } else {
-            const currDate = new Date();
-            // in order to get enough time for code time to update:
-            // it must be wait time greater than the init time
-            // it should update wait time after midnight
-            if (
-                currDate.valueOf() - one_min_millis * waitTimeMins > initTimestamp &&
-                (currDate.getHours() !== 0 || currDate.getMinutes() > waitTimeMins)
-            ) {
-                // updates logs with latest metrics and checks for milestones
-                updateLogsMilestonesAndMetrics([]);
-                checkCodeTimeMetricsMilestonesAchieved();
-                checkLanguageMilestonesAchieved();
-                checkDaysMilestones();
-
-                if (reevaluateSummaryNeeded) {
-                    reevaluateSummary();
-                    reevaluateSummaryNeeded = false;
-                }
-            } else {
-                // only runs once
-                if (!reevaluateSummaryNeeded) {
-                    resetPreviousLogIfEmpty();
-                }
-                reevaluateSummaryNeeded = true;
-            }
-        }
-    }, one_min_millis);
-
     five_minute_interval = setInterval(() => {
         if (checkIfNameChanged()) {
             logOut();
         } else {
+            resetPreviousLogIfEmpty();
+
+            checkForMilestones();
+
             // milestones
             checkMilestonesPayload();
+
             if (!sentMilestonesDb) {
                 pushNewMilestones();
             }
@@ -173,6 +133,8 @@ function initializeIntervalJobs() {
 
             // summary
             pushSummaryToDb();
+
+            reevaluateSummary();
         }
     }, one_min_millis * 5);
 
@@ -191,6 +153,14 @@ function initializeIntervalJobs() {
         }
         sendHeartbeat("HOURLY");
     }, one_min_millis * 60);
+}
+
+function checkForMilestones() {
+    // updates logs with latest metrics and checks for milestones
+    updateLogsMilestonesAndMetrics([]);
+    checkCodeTimeMetricsMilestonesAchieved();
+    checkLanguageMilestonesAchieved();
+    checkDaysMilestones();
 }
 
 function initializeLogInCheckInterval() {
@@ -233,7 +203,6 @@ function setLogOutInterval() {
 
 function logOut() {
     // reset updates
-    clearInterval(one_minute_interval);
     clearInterval(five_minute_interval);
     clearInterval(one_hour_interval);
     clearInterval(init_interval);
@@ -255,7 +224,6 @@ export function deactivate(ctx: vscode.ExtensionContext) {
     createMilestonesPayloadJson();
 
     // clearing the the intervals for processes
-    clearInterval(one_minute_interval);
     clearInterval(five_minute_interval);
     clearInterval(one_hour_interval);
     clearInterval(init_interval);
