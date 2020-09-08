@@ -9,13 +9,7 @@ import {
     checkDaysMilestones,
     deleteMilestoneJson
 } from "./utils/MilestonesUtil";
-import {
-    checkLogsJson,
-    updateLogsMilestonesAndMetrics,
-    getLatestLogEntryNumber,
-    deleteLogsJson,
-    resetPreviousLogIfEmpty
-} from "./utils/LogsUtil";
+import { checkLogsJson, getLatestLogEntryNumber, deleteLogsJson, resetPreviousLogIfEmpty } from "./utils/LogsUtil";
 import { syncLogs } from "./utils/LogSync";
 import { syncSummary, deleteSummaryJson } from "./utils/SummaryUtil";
 import {
@@ -158,7 +152,7 @@ function checkForMilestones() {
     // updates logs with latest metrics and checks for milestones
 
     // this updates existing logs metrics or adds placeholder log
-    updateLogsMilestonesAndMetrics();
+    // updateLogsMilestonesAndMetrics();
 
     // checks to see if there are any new achieved milestones
     checkCodeTimeMetricsMilestonesAchieved();
@@ -173,7 +167,6 @@ function checkForMilestones() {
 function initializeLogInCheckInterval() {
     init_interval = setInterval(() => {
         if (isLoggedIn()) {
-
             setName();
 
             syncLogs();

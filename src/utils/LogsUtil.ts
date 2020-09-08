@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows, compareDates } from "./Util";
+import { compareDates } from "./Util";
 import fs = require("fs");
 import { CodetimeMetrics } from "../models/CodetimeMetrics";
 import { Log } from "../models/Log";
@@ -9,7 +9,7 @@ import {
     updateSummaryJson,
     getSummaryTotalHours,
     setSummaryCurrentHours,
-    setSummaryTotalHours,
+    setSummaryTotalHours
 } from "./SummaryUtil";
 import { window, commands } from "vscode";
 import { pushMilestonesToDb } from "./MilestonesDbUtil";
@@ -404,9 +404,9 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number> =
         log.links = [""];
         logs.push(log);
 
+        updateSummaryJson();
         createLog(log);
     } else if (logs && logs.length) {
-
         // date exists
         for (let i = logs.length - 1; i >= 0; i--) {
             const dateOb = new Date(logs[i].date);
@@ -438,7 +438,6 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number> =
                 }
 
                 logs[i].milestones = logs[i].milestones.concat(milestones);
-
 
                 toUpdateLogsPush(logs[i]);
                 if (
