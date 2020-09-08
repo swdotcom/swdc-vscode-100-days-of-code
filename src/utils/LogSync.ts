@@ -2,7 +2,8 @@ import fs = require("fs");
 const moment = require("moment-timezone");
 import { getItem } from "./Util";
 import { serverIsAvailable, softwareGet, isResponseOk, softwarePost, softwarePut } from "../managers/HttpManager";
-import { getSoftwareDir, isWindows, getFileDataAsJson } from "./Util";
+import { getSoftwareDir, isWindows } from "./Util";
+import { getFileDataAsJson } from "../managers/FileManager";
 import { fetchMilestones } from "./MilestonesDbUtil";
 import { Log } from "../models/Log";
 
