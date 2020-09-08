@@ -29,7 +29,7 @@ import {
     deleteMilestonePayloadJson
 } from "./utils/MilestonesDbUtil";
 import { createLogsPayloadJson, deleteLogsPayloadJson } from "./utils/LogsDbUtils";
-import { pushSummaryToDb } from "./utils/SummaryDbUtil";
+import { pushSummaryToDb, fetchSummary } from "./utils/SummaryDbUtil";
 import {
     displayReadmeIfNotExists,
     isLoggedIn,
@@ -41,6 +41,7 @@ import {
 } from "./utils/Util";
 import { commands } from "vscode";
 import { TrackerManager } from "./managers/TrackerManager";
+import { fetchSummaryJsonFileData } from "./managers/FileManager";
 
 const tracker: TrackerManager = TrackerManager.getInstance();
 
