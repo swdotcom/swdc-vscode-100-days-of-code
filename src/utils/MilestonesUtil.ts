@@ -1,47 +1,39 @@
-import { getSoftwareDir, isWindows, compareDates, getFileDataAsJson } from "./Util";
+import { compareDates } from "./Util";
 import fs = require("fs");
 import { window, commands } from "vscode";
 import path = require("path");
 import { updateLogsMilestonesAndMetrics } from "./LogsUtil";
 import { Summary } from "../models/Summary";
 import {
-    getSummaryObject,
     updateSummaryMilestones,
     incrementSummaryShare,
-    updateSummaryLanguages
+    updateSummaryLanguages,
 } from "./SummaryUtil";
 import { getLanguages } from "./LanguageUtil";
 import { pushMilestonesToDb } from "./MilestonesDbUtil";
 import { HOURS_THRESHOLD } from "./Constants";
 import { Milestone } from "../models/Milestone";
+import { getFile, getFileDataAsJson, fetchSummaryJsonFileData } from "../managers/FileManager";
 
-function getMilestonesJson(): string {
-    let file = getSoftwareDir();
-    if (isWindows()) {
-        file += "\\milestones.json";
-    } else {
-        file += "/milestones.json";
-    }
-    return file;
+function getMilestonesJsonFilePath(): string {
+    return getFile("milestones.json");
 }
 
 export function checkMilestonesJson(): boolean {
-    const filepath = getMilestonesJson();
-    try {
-        if (fs.existsSync(filepath)) {
-            return true;
-        } else {
+    const filePath = getMilestonesJsonFilePath();
+    if (!fs.existsSync(filePath)) {
+        try {
             const src = path.join(__dirname, "../assets/milestones.json");
-            fs.copyFileSync(src, filepath);
-            return true;
+            fs.copyFileSync(src, filePath);
+        } catch (e) {
+            return false;
         }
-    } catch (err) {
-        return false;
     }
+    return true;
 }
 
 export function deleteMilestoneJson() {
-    const filepath = getMilestonesJson();
+    const filepath = getMilestonesJsonFilePath();
     const fileExists = fs.existsSync(filepath);
     if (fileExists) {
         fs.unlinkSync(filepath);
@@ -126,7 +118,7 @@ export function checkIfMilestonesAchievedOnDate(date: number): boolean {
 
 export function checkCodeTimeMetricsMilestonesAchieved(): void {
     let achievedMilestones = [];
-    const summary: Summary = getSummaryObject();
+    const summary: Summary = fetchSummaryJsonFileData();
 
     // check for aggregate codetime
     const aggHours = summary.hours + summary.currentHours;
@@ -199,7 +191,7 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
 
 export function checkLanguageMilestonesAchieved(): void {
     updateSummaryLanguages();
-    const summary: Summary = getSummaryObject();
+    const summary: Summary = fetchSummaryJsonFileData();
     const languages = getLanguages();
     let milestones: Set<number> = new Set<number>();
 
@@ -265,7 +257,7 @@ export function checkLanguageMilestonesAchieved(): void {
 }
 
 export function checkDaysMilestones(): void {
-    const summary: Summary = getSummaryObject();
+    const summary: Summary = fetchSummaryJsonFileData();
 
     let days = summary.days;
     let streaks = summary.longest_streak;
@@ -314,7 +306,7 @@ export function checkDaysMilestones(): void {
 }
 
 export function checkSharesMilestones(): void {
-    const summary: Summary = getSummaryObject();
+    const summary: Summary = fetchSummaryJsonFileData();
     const shares = summary.shares;
 
     if (shares >= 100) {
@@ -462,12 +454,11 @@ export function getTotalMilestonesAchieved(): number {
 
 export function getAllMilestones(): Array<Milestone> {
     // Checks if the file exists and if not, creates a new file
-    const exists = checkMilestonesJson();
-    if (!exists) {
+    if (!checkMilestonesJson()) {
         window.showErrorMessage("Cannot access Milestone file! Please contact cody@software.com for help.");
         return [];
     }
-    const filepath = getMilestonesJson();
+    const filepath = getMilestonesJsonFilePath();
     const rawMilestones = getFileDataAsJson(filepath, {});
     const milestones: Array<Milestone> = rawMilestones.milestones || [];
     return milestones;
@@ -498,7 +489,7 @@ export function getThreeMostRecentMilestones(): Array<number> {
 }
 
 function writeToMilestoneJson(milestones: Array<any>) {
-    const filepath = getMilestonesJson();
+    const filepath = getMilestonesJsonFilePath();
     let sendMilestones = { milestones };
     try {
         fs.writeFileSync(filepath, JSON.stringify(sendMilestones, null, 4));

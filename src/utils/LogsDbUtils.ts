@@ -1,8 +1,9 @@
-import { getSoftwareDir, isWindows, getItem, getFileDataAsJson } from "./Util";
+import { getItem } from "./Util";
 import { serverIsAvailable, softwareGet, isResponseOk, softwarePost, softwarePut } from "../managers/HttpManager";
 import { Log } from "../models/Log";
 import { getMostRecentLogObject, checkLogsJson, getLogsJson } from "./LogsUtil";
 import fs = require("fs");
+import { getFile, getFileDataAsJson } from "../managers/FileManager";
 
 export let updatedLogsDb = true;
 export let sentLogsDb = true;
@@ -10,18 +11,12 @@ export let sentLogsDb = true;
 let toCreateLogs: Array<any> = [];
 let toUpdateLogs: Array<any> = [];
 
-function getLogsPayloadJson(): string {
-    let file = getSoftwareDir();
-    if (isWindows()) {
-        file += "\\logsPayload.json";
-    } else {
-        file += "/logsPayload.json";
-    }
-    return file;
+function getLogsPayloadFilePath(): string {
+    return getFile("logsPayload.json");
 }
 
 export function createLogsPayloadJson() {
-    const filepath = getLogsPayloadJson();
+    const filepath = getLogsPayloadFilePath();
     const fileData = {
         updatedLogsDb,
         sentLogsDb,
@@ -42,7 +37,7 @@ export function checkLogsPayload() {
     toCreateLogs = [];
     toUpdateLogs = [];
 
-    const filepath = getLogsPayloadJson();
+    const filepath = getLogsPayloadFilePath();
     const payloadData = getFileDataAsJson(filepath);
 
     if (!payloadData) {
@@ -66,7 +61,7 @@ export function checkLogsPayload() {
 }
 
 export function deleteLogsPayloadJson() {
-    const filepath = getLogsPayloadJson();
+    const filepath = getLogsPayloadFilePath();
     const fileExists = fs.existsSync(filepath);
     if (fileExists) {
         fs.unlinkSync(filepath);

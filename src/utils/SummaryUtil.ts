@@ -1,59 +1,16 @@
-import { getSoftwareDir, isWindows, compareDates, getFileDataAsJson } from "./Util";
+import { compareDates } from "./Util";
 import fs = require("fs");
-import { window } from "vscode";
 import { getMostRecentLogObject, checkIfOnStreak, getLogsSummary } from "./LogsUtil";
 import { getLanguages } from "./LanguageUtil";
 import { Summary } from "../models/Summary";
 import { Log } from "../models/Log";
 import { getTotalMilestonesAchieved, getThreeMostRecentMilestones } from "./MilestonesUtil";
 import { pushUpdatedSummary } from "./SummaryDbUtil";
+import { getSummaryJsonFilePath, fetchSummaryJsonFileData } from "../managers/FileManager";
 
-function getSummaryJson() {
-    let file = getSoftwareDir();
-    if (isWindows()) {
-        file += "\\userSummary.json";
-    } else {
-        file += "/userSummary.json";
-    }
-    return file;
-}
-
-export function checkSummaryJson() {
-    // checks if summary JSON exists. If not populates it with base values
-    const filepath = getSummaryJson();
-    try {
-        if (fs.existsSync(filepath)) {
-            return true;
-        } else {
-            fs.writeFileSync(
-                filepath,
-                [
-                    `{\n\t"days": 0,`,
-                    `\t"currentDate": 0,`,
-                    `\t"currentHours": 0,`,
-                    `\t"currentKeystrokes": 0,`,
-                    `\t"currentLines": 0,`,
-                    `\t"hours": 0,`,
-                    `\t"longest_streak": 0,`,
-                    `\t"milestones": 0,`,
-                    `\t"lines_added": 0,`,
-                    `\t"keystrokes": 0,`,
-                    `\t"recent_milestones": [],`,
-                    `\t"current_streak": 0,`,
-                    `\t"shares": 0,`,
-                    `\t"languages": [],`,
-                    `\t"lastUpdated":  0\n}`
-                ].join("\n")
-            );
-            return true;
-        }
-    } catch (err) {
-        return false;
-    }
-}
 
 export function deleteSummaryJson() {
-    const filepath = getSummaryJson();
+    const filepath = getSummaryJsonFilePath();
     const fileExists = fs.existsSync(filepath);
     if (fileExists) {
         fs.unlinkSync(filepath);
@@ -61,7 +18,7 @@ export function deleteSummaryJson() {
 }
 
 export function compareLocalSummary(dbSummary: any) {
-    let summary: Summary = getSummaryObject();
+    let summary: Summary = fetchSummaryJsonFileData();
 
     // updates local summary if and only if db is as updated
     if (dbSummary.days >= summary.days) {
@@ -94,7 +51,7 @@ export function reevaluateSummary() {
     // Aggregating milestone data
     const totalMilestones = getTotalMilestonesAchieved();
 
-    let summary: Summary = getSummaryObject();
+    let summary: Summary = fetchSummaryJsonFileData();
     //aggregate hours has the total hours in the logs, we need to subtract the current day's hours because they are added at the end of the day.
     summary.hours = aggregateLogData.totalHours;
     summary.lines_added = aggregateLogData.totalLinesAdded;
@@ -117,7 +74,7 @@ export function reevaluateSummary() {
 }
 
 export function updateSummaryJson() {
-    let summary: Summary = getSummaryObject();
+    let summary: Summary = fetchSummaryJsonFileData();
     const log: Log = getMostRecentLogObject();
     const onStreak = checkIfOnStreak();
     const currentDate = new Date(summary.currentDate);
@@ -148,7 +105,7 @@ export function updateSummaryJson() {
 
     // update languages aggregate and make sure none are repeated
     const newLanguages = getLanguages();
-    if (newLanguages != null) {
+    if (newLanguages) {
         const currLanguages = summary.languages || [];
         const totalLanguages = currLanguages.concat(newLanguages);
         const reducedLanguages = Array.from(new Set(totalLanguages));
@@ -159,7 +116,7 @@ export function updateSummaryJson() {
 }
 
 export function updateSummaryMilestones(newMilestones: Array<number>, totalMilestones: number) {
-    let summary: Summary = getSummaryObject();
+    let summary: Summary = fetchSummaryJsonFileData();
     summary.milestones = totalMilestones;
 
     // order milestones in latest to oldest order of achievement
@@ -173,18 +130,18 @@ export function updateSummaryMilestones(newMilestones: Array<number>, totalMiles
 }
 
 export function getSummaryTotalHours() {
-    let summary: Summary = getSummaryObject();
+    let summary: Summary = fetchSummaryJsonFileData();
     return summary.hours;
 }
 
 export function setSummaryTotalHours(newHours: number) {
-    let summary: Summary = getSummaryObject();
+    let summary: Summary = fetchSummaryJsonFileData();
     summary.hours = newHours;
     writeToSummaryJson(summary);
 }
 
 export function setSummaryCurrentHours(newCurrentHours: number) {
-    let summary: Summary = getSummaryObject();
+    let summary: Summary = fetchSummaryJsonFileData();
     summary.currentHours = newCurrentHours;
     writeToSummaryJson(summary);
 }
@@ -192,7 +149,7 @@ export function setSummaryCurrentHours(newCurrentHours: number) {
 export function updateSummaryLanguages() {
     // update languages aggregate and make sure none are repeated
     const newLanguages = getLanguages();
-    let summary: Summary = getSummaryObject();
+    let summary: Summary = fetchSummaryJsonFileData();
     const currLanguages = summary.languages;
     const totalLanguages = currLanguages.concat(newLanguages);
     const reducedLanguages = Array.from(new Set(totalLanguages));
@@ -202,19 +159,9 @@ export function updateSummaryLanguages() {
 }
 
 export function incrementSummaryShare() {
-    const summary: Summary = getSummaryObject();
+    const summary: Summary = fetchSummaryJsonFileData();
     summary.shares++;
     writeToSummaryJson(summary);
-}
-
-export function getSummaryObject() {
-    const exists = checkSummaryJson();
-    if (!exists) {
-        window.showErrorMessage("Cannot access Summary file! Please contact cody@software.com for help.");
-    }
-    const filepath = getSummaryJson();
-    const defaultSummary = new Summary();
-    return getFileDataAsJson(filepath, defaultSummary);
 }
 
 export function getDaysLevel(daysComplete: number): any {
@@ -353,7 +300,7 @@ export function getAverageHoursLevel(avgHour: number): number {
 }
 
 function writeToSummaryJson(summary: Summary) {
-    const filepath = getSummaryJson();
+    const filepath = getSummaryJsonFilePath();
     try {
         fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
     } catch (err) {

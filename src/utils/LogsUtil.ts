@@ -1,4 +1,4 @@
-import { getSoftwareDir, isWindows, compareDates, getFileDataAsJson } from "./Util";
+import { getSoftwareDir, isWindows, compareDates } from "./Util";
 import fs = require("fs");
 import { CodetimeMetrics } from "../models/CodetimeMetrics";
 import { Log } from "../models/Log";
@@ -17,6 +17,7 @@ import { pushMilestonesToDb } from "./MilestonesDbUtil";
 import { toUpdateLogsPush } from "./LogsDbUtils";
 import { createLog, updateLog } from "./LogSync";
 import { HOURS_THRESHOLD } from "./Constants";
+import { getFileDataAsJson } from "../managers/FileManager";
 const moment = require("moment-timezone");
 let dateLogMessage: Date | any = undefined;
 
