@@ -13,16 +13,9 @@ import {
     reevaluateSummary
 } from "./SummaryUtil";
 import { window, commands } from "vscode";
-import { fetchMilestones, pushMilestonesToDb } from "./MilestonesDbUtil";
-import {
-    pushNewLogs,
-    pushUpdatedLogs,
-    clearToCreateLogs,
-    toCreateLogsPush,
-    clearToUpdateLogs,
-    toUpdateLogsPush
-} from "./LogsDbUtils";
-import { pushSummaryToDb } from "./SummaryDbUtil";
+import { pushMilestonesToDb } from "./MilestonesDbUtil";
+import { pushNewLogs, toUpdateLogsPush } from "./LogsDbUtils";
+import { createLog, updateLog } from "./LogSync";
 import { HOURS_THRESHOLD } from "./Constants";
 const moment = require("moment-timezone");
 let dateLogMessage: Date | any = undefined;
@@ -162,197 +155,6 @@ export function getDayNumberFromDate(dateUnix: number): number {
 }
 
 /**
- * Compares server logs with local logs and then syncs them
- * @param logs - logs returned by the server
- */
-export async function compareWithLocalLogs(logs: Array<Log>) {
-    let localLogs: Array<Log> = getAllLogObjects();
-    let changed = false;
-
-    // if local logs has more entries than logs, merge them
-    if (localLogs.length > logs.length) {
-        return mergeLocalLogs(localLogs, logs);
-    }
-
-    // if local logs have fewer entries than logs, add server logs to local
-    if (localLogs.length < logs.length) {
-        logs.forEach(log => {
-            // check if a localLog for that day number exists
-            const foundDay = localLogs.find(e => e.day_number === log.day_number);
-            if (foundDay) {
-                return;
-            } else {
-                // if it doesn't exist, add it to localLogs
-                localLogs.push(log);
-            }
-        });
-        // make sure localLogs are sorted by date
-        localLogs.sort((a, b) => {
-            return a.date - b.date;
-        });
-        changed = true;
-    }
-
-    // fetch all the milestones at once and then add them to each log iteratively below
-    const milestones = await fetchMilestones(null, true);
-
-    // make sure localLogs are in sync with the server
-    localLogs.forEach(async localLog => {
-        let log = logs.find(e => e.day_number === localLog.day_number);
-        // no log, no need to update localLog
-        if (!log) {
-            return;
-        }
-
-        // if there are two logs for the same date with different date numbers (e.g. same day generated on different dates)
-        // then realign the days so that the numbering is correct
-        if (log.day_number !== localLog.day_number || !compareDates(new Date(log.date), new Date(localLog.date))) {
-            return mergeLocalLogs(localLogs, logs);
-        }
-
-        // continue updating each log
-        if (log.title !== localLog.title) {
-            localLog.title = log.title;
-            changed = true;
-        }
-        if (log.description !== localLog.description) {
-            localLog.description = log.description;
-            changed = true;
-        }
-        if (JSON.stringify(log.links) !== JSON.stringify(localLog.links)) {
-            localLog.links = log.links;
-            changed = true;
-        }
-        if (log.codetime_metrics.hours > localLog.codetime_metrics.hours) {
-            localLog.codetime_metrics.hours = log.codetime_metrics.hours;
-            changed = true;
-        }
-        if (log.codetime_metrics.keystrokes > localLog.codetime_metrics.keystrokes) {
-            localLog.codetime_metrics.keystrokes = log.codetime_metrics.keystrokes;
-            changed = true;
-        }
-        if (log.codetime_metrics.lines_added > localLog.codetime_metrics.lines_added) {
-            localLog.codetime_metrics.lines_added = log.codetime_metrics.lines_added;
-            changed = true;
-        }
-
-        let foundMilestones = milestones.find(e => e.day_number === localLog.day_number);
-        if (foundMilestones && foundMilestones.milestones) {
-            localLog.milestones = foundMilestones.milestones;
-        }
-    });
-
-    if (changed) {
-        writeToLogsJson(localLogs);
-        reevaluateSummary();
-        restoreAllMilestones();
-    }
-}
-
-async function mergeLocalLogs(localLogs: Array<Log>, dbLogs: Array<Log>) {
-    const logs = localLogs.concat(dbLogs);
-    logs.sort((a: Log, b: Log) => {
-        return a.date - b.date;
-    });
-
-    const milestones = await fetchMilestones(null, true);
-
-    let i = 0;
-    while (i < logs.length - 1) {
-        if (compareDates(new Date(logs[i].date), new Date(logs[i + 1].date))) {
-            if (logs[i].title !== logs[i + 1].title) {
-                // Case: i is No Title, we replace it with i+1 (which might be No Title, so No Title will stay)
-                // Case: i+1 is No Title, we keep title form i
-                // Case: Neither is No Title, we replace it with i "OR" i+1
-                if (logs[i].title === "No Title") {
-                    logs[i].title = logs[i + 1].title;
-                } else if (logs[i + 1].title !== "No Title") {
-                    logs[i].title += " OR ";
-                    logs[i].title += logs[i + 1].title;
-                }
-            }
-            if (logs[i].description !== logs[i + 1].description) {
-                // Case: i is No Description, we replace it with i+1 (which might be No Description, so No Description will stay)
-                // Case: i+1 is No Description, we keep title form i
-                // Case: Neither is No Description, we replace it with i "OR" i+1
-                if (logs[i].description === "No Description") {
-                    logs[i].description = logs[i + 1].description;
-                } else if (logs[i + 1].title !== "No Description") {
-                    logs[i].description += " OR ";
-                    logs[i].description += logs[i + 1].description;
-                }
-            }
-            const newLinks = logs[i].links.concat(logs[i + 1].links);
-            logs[i].links = Array.from(new Set(newLinks));
-            if (logs[i].codetime_metrics.hours < logs[i + 1].codetime_metrics.hours) {
-                logs[i].codetime_metrics.hours = logs[i + 1].codetime_metrics.hours;
-            }
-            if (logs[i].codetime_metrics.keystrokes < logs[i + 1].codetime_metrics.keystrokes) {
-                logs[i].codetime_metrics.keystrokes = logs[i + 1].codetime_metrics.keystrokes;
-            }
-            if (logs[i].codetime_metrics.lines_added < logs[i + 1].codetime_metrics.lines_added) {
-                logs[i].codetime_metrics.lines_added = logs[i + 1].codetime_metrics.lines_added;
-            }
-
-            let foundMilestones = milestones.find(e => e.date === logs[i].date);
-            if (foundMilestones && foundMilestones.milestones) {
-                foundMilestones = foundMilestones.concat(logs[i].milestones);
-                foundMilestones = Array.from(new Set(foundMilestones));
-                logs[i].milestones = foundMilestones;
-                pushMilestonesToDb(logs[i].date, foundMilestones);
-            }
-
-            // remove logs[i+1] as it is now merged with logs[i]
-            logs.splice(i + 1, 1);
-            // no increment as i still needs to check with the new i+1
-        } else {
-            i++;
-        }
-    }
-
-    for (let i = 0; i < logs.length; i++) {
-        logs[i].day_number = i + 1;
-    }
-
-    writeToLogsJson(logs);
-
-    // Updates the userSummary.json with the merged logs data
-    reevaluateSummary();
-
-    let rawToUpdateLogs = logs;
-
-    if (logs.length > dbLogs.length) {
-        rawToUpdateLogs = logs.slice(0, dbLogs.length);
-
-        const rawToCreateLogs = logs.slice(dbLogs.length);
-        clearToCreateLogs();
-        rawToCreateLogs.forEach(log => {
-            toCreateLogsPush(log);
-        });
-    }
-
-    clearToUpdateLogs();
-    rawToUpdateLogs.forEach(log => {
-        toUpdateLogsPush(log);
-    });
-
-    await pushNewLogs(false);
-    await pushUpdatedLogs(false, 0);
-    await pushSummaryToDb();
-
-    // updates all local milestones and logs
-    restoreAllMilestones();
-}
-
-async function restoreAllMilestones() {
-    let logs = getAllLogObjects();
-    for (let i = 0; i < logs.length; i++) {
-        logs[i].milestones = getMilestonesByDate(logs[i].date);
-    }
-    writeToLogsJson(logs);
-}
-
-/**
  * compares a log to the logs stored locally to check if it already exists
  * checks against both date and day number
  * @param log - a log object
@@ -427,8 +229,6 @@ export async function addLogToJson(
         return false;
     }
 
-    let logs = getAllLogObjects();
-
     let codetimeMetrics = new CodetimeMetrics();
 
     codetimeMetrics.hours = parseFloat(hours);
@@ -447,14 +247,12 @@ export async function addLogToJson(
 
     // if log exists, we need to edit log not create one
     if (logExists) {
-        return updateLogByDate(log);
+        return updateLog(log);
+    } else {
+        createLog(log);
     }
 
-    logs.push(log);
-    writeToLogsJson(logs);
-
     updateSummaryJson();
-    await pushNewLogs(true);
 }
 
 export function getLatestLogEntryNumber(): number {
@@ -522,43 +320,6 @@ export function checkIfOnStreak(): boolean {
     return compareDates(currDate, prevDatePlusDay);
 }
 
-export async function updateLogByDate(log: Log) {
-    const logDate = new Date(log.date);
-    let logs = getAllLogObjects();
-    const logExists = checkIfLogExists(log);
-    if (!logExists) {
-        addLogToJson(
-            log.title,
-            log.description,
-            log.codetime_metrics.hours.toString(),
-            log.codetime_metrics.keystrokes.toString(),
-            log.codetime_metrics.lines_added.toString(),
-            log.links
-        );
-        return;
-    }
-
-    for (let i = logs.length - 1; i >= 0; i--) {
-        const dateOb = new Date(logs[i].date);
-
-        // Checking if date matches
-        if (compareDates(dateOb, logDate)) {
-            logs[i].title = log.title;
-            logs[i].description = log.description;
-            logs[i].links = log.links;
-            logs[i].date = log.date;
-            logs[i].codetime_metrics.keystrokes = log.codetime_metrics.keystrokes;
-            logs[i].codetime_metrics.lines_added = log.codetime_metrics.lines_added;
-            logs[i].codetime_metrics.hours = log.codetime_metrics.hours;
-
-            writeToLogsJson(logs);
-            updateSummaryJson();
-            await pushUpdatedLogs(true, logs[i].day_number);
-            return;
-        }
-    }
-}
-
 export function updateLogShare(day: number) {
     let logs = getAllLogObjects();
     if (!logs[day - 1].shared) {
@@ -596,8 +357,7 @@ export async function editLogEntry(
         summaryTotalHours += log.codetime_metrics.hours;
         setSummaryTotalHours(summaryTotalHours);
     }
-    writeToLogsJson(logs);
-    await pushUpdatedLogs(true, dayNumber);
+    updateLog(log);
 }
 
 function checkIfLogIsEmpty(log: Log): boolean {
@@ -619,7 +379,7 @@ export async function resetPreviousLogIfEmpty() {
         logs[logs.length - 1].date = logDate.valueOf();
         writeToLogsJson(logs);
         reevaluateSummary();
-        await pushUpdatedLogs(true, logs[logs.length - 1].day_number);
+        updateLog(logs[logs.length - 1]);
         return;
     }
 }

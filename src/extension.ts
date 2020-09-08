@@ -161,8 +161,6 @@ function initializeIntervalJobs() {
         if (checkIfNameChanged()) {
             logOut();
         } else {
-            syncLogs();
-
             // milestones
             checkMilestonesPayload();
             if (!sentMilestonesDb) {
@@ -182,6 +180,7 @@ function initializeIntervalJobs() {
         if (checkIfNameChanged()) {
             logOut();
         } else {
+            syncLogs();
             if (updatedMilestonesDb && sentMilestonesDb) {
                 fetchMilestones(null, true);
             } else if (!sentMilestonesDb) {

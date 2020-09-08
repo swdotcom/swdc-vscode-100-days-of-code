@@ -6,6 +6,42 @@ import { getSoftwareDir, isWindows, getFileDataAsJson } from "./Util";
 import { fetchMilestones } from "./MilestonesDbUtil";
 import { Log } from "../models/Log";
 
+// creates a new log locally and on the server
+export async function createLog(log: Log) {
+    // get all log objects
+    const logs = await getLocalLogsFromFile();
+    // add the new log
+    const updatedLogs = [...logs, log];
+    // write back to the local file
+    updateLocalLogs(updatedLogs);
+    // push the new log to the server
+    const preparedLog = await prepareLogForServerUpdate(log);
+    pushNewLogToServer(preparedLog);
+}
+
+// updates a log locally and on the server
+export async function updateLog(log: Log) {
+    // get all log objects
+    const logs = await getLocalLogsFromFile();
+    // find and update the log object
+    const logEndOfDay = moment(log.date).endOf("day");
+    const logDayNumber = log.day_number;
+    const index = logs.findIndex(n => {
+        let endOfDay = moment(n.date).endOf("day");
+        let dayNumber = n.day_number;
+        return logEndOfDay === endOfDay && logDayNumber === dayNumber;
+    });
+    if (index) {
+        // replace
+        logs[index] = log;
+    }
+    // write back to local
+    updateLocalLogs(logs);
+    // push changes to server
+    const preparedLog = await prepareLogForServerUpdate(log);
+    updateExistingLogOnServer(preparedLog);
+}
+
 // pulls logs from the server and saves them locally. This will be run periodically.
 export async function syncLogs() {
     const serverLogs = await fetchLogsFromServer();
@@ -67,42 +103,6 @@ async function addMilestonesToLogs(logs: Array<Log>) {
             log.milestones = foundMilestones.milestones;
         }
     });
-}
-
-// creates a new log locally and on the server
-async function createLog(log: Log) {
-    // get all log objects
-    const logs = await getLocalLogsFromFile();
-    // add the new log
-    const updatedLogs = [...logs, log];
-    // write back to the local file
-    updateLocalLogs(updatedLogs);
-    // push the new log to the server
-    const preparedLog = await prepareLogForServerUpdate(log);
-    pushNewLogToServer(preparedLog);
-}
-
-// updates a log locally and on the server
-async function updateLog(log: Log) {
-    // get all log objects
-    const logs = await getLocalLogsFromFile();
-    // find and update the log object
-    const logEndOfDay = moment(log.date).endOf("day");
-    const logDayNumber = log.day_number;
-    const index = logs.findIndex(n => {
-        let endOfDay = moment(n.date).endOf("day");
-        let dayNumber = n.day_number;
-        return logEndOfDay === endOfDay && logDayNumber === dayNumber;
-    });
-    if (index) {
-        // replace
-        logs[index] = log;
-    }
-    // write back to local
-    updateLocalLogs(logs);
-    // push changes to server
-    const preparedLog = await prepareLogForServerUpdate(log);
-    updateExistingLogOnServer(preparedLog);
 }
 
 // converts local log to format that server will accept

@@ -1,7 +1,7 @@
 import { getSoftwareDir, isWindows, getItem, getFileDataAsJson } from "./Util";
 import { serverIsAvailable, softwareGet, isResponseOk, softwarePost, softwarePut } from "../managers/HttpManager";
 import { Log } from "../models/Log";
-import { compareWithLocalLogs, getMostRecentLogObject, checkLogsJson, getLogsJson } from "./LogsUtil";
+import { getMostRecentLogObject, checkLogsJson, getLogsJson } from "./LogsUtil";
 import fs = require("fs");
 
 export let updatedLogsDb = true;
@@ -106,10 +106,6 @@ export async function fetchLogs() {
                     return logs;
                 }
             });
-            if (logs) {
-                compareWithLocalLogs(logs);
-                // exits out in the next iteration
-            }
         }
     }
 }
@@ -158,64 +154,6 @@ export async function pushNewLogs(addNew: boolean) {
         }
     } else {
         sentLogsDb = false;
-    }
-}
-
-export async function pushUpdatedLogs(addNew: boolean, dayNumber: number) {
-    // try to post new logs before sending edited
-    // logs as the edits might be on the newer logs
-    if (!sentLogsDb) {
-        await pushNewLogs(false);
-    }
-    if (addNew) {
-        const logsExists = checkLogsJson();
-        if (logsExists) {
-            const filepath = getLogsJson();
-            let rawLogs = getFileDataAsJson(filepath, { logs: [] });
-            let logs = rawLogs.logs;
-            let log = logs[dayNumber - 1];
-            const date = new Date();
-            const offset_minutes = date.getTimezoneOffset();
-            const sendLog = {
-                day_number: log.day_number,
-                title: log.title,
-                description: log.description,
-                ref_links: log.links,
-                minutes: log.codetime_metrics.hours * 60,
-                keystrokes: log.codetime_metrics.keystrokes,
-                lines_added: log.codetime_metrics.lines_added,
-                lines_removed: 0,
-                unix_date: Math.round(log.date / 1000), // milliseconds --> seconds
-                local_date: Math.round(log.date / 1000) - offset_minutes * 60, // milliseconds --> seconds
-                offset_minutes,
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-            };
-            toUpdateLogs.push(sendLog);
-        } else {
-            updatedLogsDb = false;
-        }
-    }
-    const jwt = getItem("jwt");
-    if (jwt) {
-        let available = false;
-        try {
-            available = await serverIsAvailable();
-        } catch (err) {
-            available = false;
-        }
-        if (available) {
-            const added: boolean = isResponseOk(await softwarePut("/100doc/logs", toUpdateLogs, jwt));
-            if (!added) {
-                updatedLogsDb = false;
-            } else {
-                updatedLogsDb = true;
-                toUpdateLogs = [];
-            }
-        } else {
-            updatedLogsDb = false;
-        }
-    } else {
-        updatedLogsDb = false;
     }
 }
 
