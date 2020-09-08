@@ -71,56 +71,68 @@ export function deleteMilestonePayloadJson() {
 }
 
 /**
- *
- * @param date a date value (timestamp or date string)
- * @param fetchAll whether to fetch all time or for a shorter time period
+ * This will return an array of..
+ * [{challenge_round, createdAt, day_number, local_date, milestones [numbers], offset_minutes, timezone, type, unix_date, userId}]
+ * @param date
  */
-export async function fetchMilestones(date: any = null, fetchAll: boolean = false) {
-    let milestones: any[] = [];
+export async function fetchMilestones(date: any = null): Promise<any> {
     const jwt = getItem("jwt");
-    if (!jwt) {
-        return milestones;
+    const ONE_DAY_SEC = 68400000;
+    // default to today and yesterday
+    let endDate = new Date(); // 11:59:59 pm today
+    let startDate = new Date(endDate.valueOf() - ONE_DAY_SEC * 2); // 12:00:01 am yesterday
+
+    if (date) {
+        endDate = new Date(date); // 11:59:59 pm today
+        startDate = new Date(endDate.valueOf() - ONE_DAY_SEC); // 12:00:01 am yesterday
     }
+    // normalize dates
+    startDate.setHours(0, 0, 1, 0);
+    endDate.setHours(23, 59, 59, 0);
 
-    // get the milestones from the server
-    if (fetchAll) {
-        await softwareGet("/100doc/milestones", jwt).then(resp => {
-            if (isResponseOk(resp)) {
-                milestones = resp.data;
-            }
-        });
-    } else {
-        const ONE_DAY_SEC = 68400000;
-        // default to today and yesterday
-        let endDate = new Date(); // 11:59:59 pm today
-        let startDate = new Date(endDate.valueOf() - ONE_DAY_SEC * 2); // 12:00:01 am yesterday
+    // query params
+    const start_date = Math.round(startDate.valueOf() / 1000);
+    const end_date = Math.round(endDate.valueOf() / 1000);
 
-        if (date) {
-            endDate = new Date(date); // 11:59:59 pm today
-            startDate = new Date(endDate.valueOf() - ONE_DAY_SEC); // 12:00:01 am yesterday
+    const milestoneData = await softwareGet(`/100doc/milestones?start_date=${start_date}&end_date=${end_date}`, jwt).then(resp => {
+        if (isResponseOk(resp) && resp.data) {
+            return resp.data;
         }
-        // normalize dates
-        startDate.setHours(0, 0, 1, 0);
-        endDate.setHours(23, 59, 59, 0);
-
-        // query params
-        const start_date = Math.round(startDate.valueOf() / 1000);
-        const end_date = Math.round(endDate.valueOf() / 1000);
-
-        await softwareGet(`/100doc/milestones?start_date=${start_date}&end_date=${end_date}`, jwt).then(resp => {
-            if (isResponseOk(resp)) {
-                milestones = resp.data;
-            }
-        });
-    }
+        return null;
+    });
 
     // sync with local
-    if (milestones.length > 0) {
-        compareWithLocalMilestones(milestones);
+    if (milestoneData) {
+        compareWithLocalMilestones(milestoneData);
     }
 
     // return milestones
-    return milestones;
+    return milestoneData;
+}
+
+/**
+ * This will return an array of..
+ * [{challenge_round, createdAt, day_number, local_date, milestones [numbers], offset_minutes, timezone, type, unix_date, userId}]
+ * @param date a date value (timestamp or date string)
+ * @param fetchAll whether to fetch all time or for a shorter time period
+ */
+export async function fetchAllMilestones(fetchAll: boolean = false): Promise<any> {
+    const jwt = getItem("jwt");
+
+    const milestoneData = await softwareGet("/100doc/milestones", jwt).then(resp => {
+        if (isResponseOk(resp) && resp.data) {
+            return resp.data;
+        }
+        return null;
+    });
+
+    // sync with local
+    if (milestoneData) {
+        compareWithLocalMilestones(milestoneData);
+    }
+
+    // return milestones
+    return milestoneData;
 }
 
 export function pushMilestonesToDb(date: number, milestones: Array<number>) {

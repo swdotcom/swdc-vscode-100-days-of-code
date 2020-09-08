@@ -4,7 +4,7 @@ import { getItem } from "./Util";
 import { softwareGet, isResponseOk, softwarePost, softwarePut } from "../managers/HttpManager";
 import { getSoftwareDir, isWindows } from "./Util";
 import { getFileDataAsJson } from "../managers/FileManager";
-import { fetchMilestones } from "./MilestonesDbUtil";
+import { fetchAllMilestones } from "./MilestonesDbUtil";
 import { Log } from "../models/Log";
 
 // creates a new log locally and on the server
@@ -92,9 +92,9 @@ function formatLogs(logs: []) {
 // joins milestones to each log
 async function addMilestonesToLogs(logs: Array<Log>) {
     // fetch all the milestones at once and then add them to each log iteratively below
-    const milestones = await fetchMilestones(null, true);
+    const milestones = await fetchAllMilestones();
     logs.forEach(async log => {
-        let foundMilestones = milestones.find(e => e.day_number === log.day_number);
+        let foundMilestones = milestones ? milestones.find((e: any) => e.day_number === log.day_number) : null;
         if (foundMilestones && foundMilestones.milestones) {
             log.milestones = foundMilestones.milestones;
         }

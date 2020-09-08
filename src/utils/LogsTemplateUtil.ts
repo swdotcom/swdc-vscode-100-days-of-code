@@ -166,15 +166,17 @@ function getMilestonesText(milestones: Array<number>): string {
         if (milestoneIndex < milestoneNum) {
             let milestoneId = milestones[milestoneIndex];
             let milestone = getMilestoneById(milestoneId);
-            milestonesText += [
-                `\t\t\t\t\t\t<div class="cardMilestone">`,
-                `\t\t\t\t\t\t\t<span class="tooltiptext">`,
-                `\t\t\t\t\t\t\t\t<div style="font-weight: bold;">${milestone.title}</div>`,
-                `\t\t\t\t\t\t\t\t<div>${milestone.description}</div>`,
-                `\t\t\t\t\t\t\t</span>`,
-                `\t\t\t\t\t\t\t<img class="cardMilestoneIcon" src="${milestone.icon}" alt="${milestone.title}">`,
-                `\t\t\t\t\t\t</div>\n`
-            ].join("\n");
+            if (milestone) {
+                milestonesText += [
+                    `\t\t\t\t\t\t<div class="cardMilestone">`,
+                    `\t\t\t\t\t\t\t<span class="tooltiptext">`,
+                    `\t\t\t\t\t\t\t\t<div style="font-weight: bold;">${milestone.title}</div>`,
+                    `\t\t\t\t\t\t\t\t<div>${milestone.description}</div>`,
+                    `\t\t\t\t\t\t\t</span>`,
+                    `\t\t\t\t\t\t\t<img class="cardMilestoneIcon" src="${milestone.icon}" alt="${milestone.title}">`,
+                    `\t\t\t\t\t\t</div>\n`
+                ].join("\n");
+            }
         } else {
             milestonesText += [`\t\t\t\t\t\t<div class="cardMilestone">`, `\t\t\t\t\t\t</div>\n`].join("\n");
         }

@@ -18,9 +18,10 @@ import {
     pushNewMilestones,
     updatedMilestonesDb,
     pushUpdatedMilestones,
-    fetchMilestones,
     createMilestonesPayloadJson,
-    deleteMilestonePayloadJson
+    deleteMilestonePayloadJson,
+    fetchAllMilestones,
+    fetchMilestones
 } from "./utils/MilestonesDbUtil";
 import { createLogsPayloadJson, deleteLogsPayloadJson } from "./utils/LogsDbUtils";
 import { fetchSummary } from "./utils/SummaryDbUtil";
@@ -88,7 +89,7 @@ export function initializePlugin() {
         if (!updatedMilestonesDb) {
             pushUpdatedMilestones();
         }
-        fetchMilestones(null, true);
+        fetchAllMilestones();
 
         // sets interval jobs
         initializeIntervalJobs();
@@ -124,7 +125,7 @@ function initializeIntervalJobs() {
                 pushUpdatedMilestones();
             }
 
-            fetchMilestones();
+            fetchAllMilestones();
 
             // syncs the Summary info (hours, lines, etc) to the file
             syncSummary();
@@ -137,7 +138,7 @@ function initializeIntervalJobs() {
         } else {
             syncLogs();
             if (updatedMilestonesDb && sentMilestonesDb) {
-                fetchMilestones(null, true);
+                fetchAllMilestones();
             } else if (!sentMilestonesDb) {
                 pushNewMilestones();
             } else {
@@ -179,7 +180,7 @@ function initializeLogInCheckInterval() {
             if (!updatedMilestonesDb) {
                 pushUpdatedMilestones();
             }
-            fetchMilestones(null, true);
+            fetchMilestones();
 
             // update the summary on init
             fetchSummary();
