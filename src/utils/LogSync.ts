@@ -1,7 +1,7 @@
 import fs = require("fs");
 const moment = require("moment-timezone");
 import { getItem } from "./Util";
-import { serverIsAvailable, softwareGet, isResponseOk, softwarePost, softwarePut } from "../managers/HttpManager";
+import { softwareGet, isResponseOk, softwarePost, softwarePut } from "../managers/HttpManager";
 import { getSoftwareDir, isWindows } from "./Util";
 import { getFileDataAsJson } from "../managers/FileManager";
 import { fetchMilestones } from "./MilestonesDbUtil";
@@ -58,10 +58,7 @@ export async function syncLogs() {
 async function fetchLogsFromServer() {
     let logs: [] = [];
     const jwt = getItem("jwt");
-    if (!jwt) return;
-
-    const available = await serverIsAvailable();
-    if (available) {
+    if (jwt) {
         await softwareGet("/100doc/logs", jwt).then(resp => {
             if (isResponseOk(resp)) {
                 logs = resp.data;
@@ -129,10 +126,7 @@ function prepareLogForServerUpdate(log: Log) {
 // push new local logs to the server
 async function pushNewLogToServer(log: {}) {
     const jwt = getItem("jwt");
-    if (!jwt) return;
-
-    const available = await serverIsAvailable();
-    if (available) {
+    if (jwt) {
         softwarePost("/100doc/logs", [log], jwt);
     }
 }
@@ -140,10 +134,7 @@ async function pushNewLogToServer(log: {}) {
 // push new local logs to the server
 async function updateExistingLogOnServer(log: {}) {
     const jwt = getItem("jwt");
-    if (!jwt) return;
-
-    const available = await serverIsAvailable();
-    if (available) {
+    if (jwt) {
         softwarePut("/100doc/logs", [log], jwt);
     }
 }
@@ -164,15 +155,14 @@ function getLogsFromFile(filepath: string): Array<Log> {
     let logs: Array<Log> = [];
     const exists = checkIfLocalFileExists(filepath);
     if (exists) {
-        const logsData = getFileDataAsJson(filepath, { logs: [] });
-        logs = logsData.logs;
+        logs = getFileDataAsJson(filepath);
     }
     return logs;
 }
 
 function saveLogsToFile(logs: Array<Log>, filepath: string) {
     try {
-        fs.writeFileSync(filepath, JSON.stringify(logs, null, 4));
+        fs.writeFileSync(filepath, JSON.stringify(logs, null, 2));
     } catch (err) {
         console.log(err);
     }

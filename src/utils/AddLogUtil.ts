@@ -29,7 +29,7 @@ function getStyleColorsBasedOnMode(): any {
 }
 
 export function getUpdatedAddLogHtmlString(): string {
-    updateLogsMilestonesAndMetrics([]);
+    updateLogsMilestonesAndMetrics();
     const log: Log = getMostRecentLogObject();
     const dateOb = new Date();
     const date = dateOb.getDate();

@@ -64,12 +64,14 @@ export function compareWithLocalMilestones(dbMilestones: any) {
     // goes through each milestone and updates based on db data
     let milestones = getAllMilestones();
     let dates = [];
+
     for (let i = 0; i < dbMilestones.length; i++) {
         const dbMilestonesLocalDate = dbMilestones[i].unix_date * 1000;
         const dbDateOb = new Date(dbMilestonesLocalDate);
         const dbMilestonesArray: Array<number> = dbMilestones[i].milestones;
         let toAddDailyMilestones = [];
-        for (let j = 0; j < dbMilestonesArray.length; j++) {
+        // the - 1 will ensure it doesn't get an array out of bounds exception but we need to fix all of this next
+        for (let j = 1; j <= dbMilestonesArray.length; j++) {
             const currMilestone = milestones[dbMilestonesArray[j] - 1];
             if (currMilestone.achieved && !compareDates(dbDateOb, new Date(currMilestone.date_achieved))) {
                 // Daily Milestones will not update
@@ -459,9 +461,8 @@ export function getAllMilestones(): Array<Milestone> {
         return [];
     }
     const filepath = getMilestonesJsonFilePath();
-    const rawMilestones = getFileDataAsJson(filepath, {});
-    const milestones: Array<Milestone> = rawMilestones.milestones || [];
-    return milestones;
+    const milestones = getFileDataAsJson(filepath);
+    return milestones || [];
 }
 
 export function getThreeMostRecentMilestones(): Array<number> {
@@ -492,7 +493,7 @@ function writeToMilestoneJson(milestones: Array<any>) {
     const filepath = getMilestonesJsonFilePath();
     let sendMilestones = { milestones };
     try {
-        fs.writeFileSync(filepath, JSON.stringify(sendMilestones, null, 4));
+        fs.writeFileSync(filepath, JSON.stringify(sendMilestones, null, 2));
     } catch (err) {
         console.log(err);
     }

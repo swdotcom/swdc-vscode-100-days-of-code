@@ -216,8 +216,8 @@ export function getLocalREADMEFile() {
 }
 
 export function displayReadmeIfNotExists(override = false) {
-    const logsEmpty = getLatestLogEntryNumber() <= 0;
-    if (logsEmpty || override) {
+    const logEntryLen = getLatestLogEntryNumber();
+    if (logEntryLen === 0 || override) {
         const readmeUri = Uri.file(getLocalREADMEFile());
 
         commands.executeCommand("markdown.showPreview", readmeUri, ViewColumn.One, { locked: true });

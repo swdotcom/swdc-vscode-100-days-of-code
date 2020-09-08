@@ -1,9 +1,9 @@
-import { serverIsAvailable, softwareGet, isResponseOk, softwarePost, softwarePut } from "../managers/HttpManager";
-import { getSoftwareDir, isWindows, getItem } from "./Util";
+import { softwareGet, isResponseOk, softwarePost, softwarePut } from "../managers/HttpManager";
+import { getItem } from "./Util";
 import { compareWithLocalMilestones, getMilestonesByDate, checkIfMilestonesAchievedOnDate } from "./MilestonesUtil";
 import { getDayNumberFromDate } from "./LogsUtil";
 import fs = require("fs");
-import { getFileDataAsJson } from "../managers/FileManager";
+import { getFileDataAsJson, getFile } from "../managers/FileManager";
 
 // variables to keep in check the db update process
 export let updatedMilestonesDb = true;
@@ -13,13 +13,7 @@ let toCreateMilestones: Array<any> = [];
 let toUpdateMilestones: Array<any> = [];
 
 function getMilestonesPayloadJson(): string {
-    let file = getSoftwareDir();
-    if (isWindows()) {
-        file += "\\milestonesPayload.json";
-    } else {
-        file += "/milestonesPayload.json";
-    }
-    return file;
+    return getFile("milestonesPayload.json");
 }
 
 export function createMilestonesPayloadJson() {
@@ -31,7 +25,7 @@ export function createMilestonesPayloadJson() {
         toUpdateMilestones
     };
     try {
-        fs.writeFileSync(filepath, JSON.stringify(fileData, null, 4));
+        fs.writeFileSync(filepath, JSON.stringify(fileData, null, 2));
     } catch (err) {
         console.log(err);
     }
@@ -45,7 +39,7 @@ export function checkMilestonesPayload() {
     toUpdateMilestones = [];
 
     const filepath = getMilestonesPayloadJson();
-    const payloadData = getFileDataAsJson(filepath, {});
+    const payloadData = getFileDataAsJson(filepath);
 
     if (!payloadData) {
         // no milestonesPayload.json file
@@ -85,17 +79,6 @@ export async function fetchMilestones(date: any = null, fetchAll: boolean = fals
     let milestones: any[] = [];
     const jwt = getItem("jwt");
     if (!jwt) {
-        return milestones;
-    }
-
-    // check if service is available
-    let available = false;
-    try {
-        available = await serverIsAvailable();
-    } catch (err) {
-        available = false;
-    }
-    if (!available) {
         return milestones;
     }
 
@@ -172,24 +155,14 @@ export function pushMilestonesToDb(date: number, milestones: Array<number>) {
 export async function pushNewMilestones() {
     const jwt = getItem("jwt");
     if (jwt) {
-        let available = false;
-        try {
-            available = await serverIsAvailable();
-        } catch (err) {
-            available = false;
-        }
-        if (available) {
-            const resp = await softwarePost("/100doc/milestones", toCreateMilestones, jwt);
-            const added: boolean = isResponseOk(resp);
-            if (!added) {
-                sentMilestonesDb = false;
-            } else {
-                sentMilestonesDb = true;
-                toCreateMilestones = [];
-                return;
-            }
-        } else {
+        const resp = await softwarePost("/100doc/milestones", toCreateMilestones, jwt);
+        const added: boolean = isResponseOk(resp);
+        if (!added) {
             sentMilestonesDb = false;
+        } else {
+            sentMilestonesDb = true;
+            toCreateMilestones = [];
+            return;
         }
     } else {
         sentMilestonesDb = false;
@@ -204,24 +177,15 @@ export async function pushUpdatedMilestones() {
         if (!sentMilestonesDb) {
             await pushNewMilestones();
         }
-        let available = false;
-        try {
-            available = await serverIsAvailable();
-        } catch (err) {
-            available = false;
-        }
-        if (available) {
-            const resp = await softwarePut("/100doc/milestones", toUpdateMilestones, jwt);
-            const added: boolean = isResponseOk(resp);
-            if (!added) {
-                updatedMilestonesDb = false;
-            } else {
-                updatedMilestonesDb = true;
-                toUpdateMilestones = [];
-                return;
-            }
-        } else {
+
+        const resp = await softwarePut("/100doc/milestones", toUpdateMilestones, jwt);
+        const added: boolean = isResponseOk(resp);
+        if (!added) {
             updatedMilestonesDb = false;
+        } else {
+            updatedMilestonesDb = true;
+            toUpdateMilestones = [];
+            return;
         }
     } else {
         updatedMilestonesDb = false;

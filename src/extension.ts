@@ -17,7 +17,7 @@ import {
     resetPreviousLogIfEmpty
 } from "./utils/LogsUtil";
 import { syncLogs } from "./utils/LogSync";
-import { reevaluateSummary, deleteSummaryJson } from "./utils/SummaryUtil";
+import { syncSummary, deleteSummaryJson } from "./utils/SummaryUtil";
 import {
     checkMilestonesPayload,
     sentMilestonesDb,
@@ -29,7 +29,7 @@ import {
     deleteMilestonePayloadJson
 } from "./utils/MilestonesDbUtil";
 import { createLogsPayloadJson, deleteLogsPayloadJson } from "./utils/LogsDbUtils";
-import { pushSummaryToDb, fetchSummary } from "./utils/SummaryDbUtil";
+import { fetchSummary } from "./utils/SummaryDbUtil";
 import {
     displayReadmeIfNotExists,
     isLoggedIn,
@@ -96,9 +96,6 @@ export function initializePlugin() {
         }
         fetchMilestones(null, true);
 
-        // fetches and updates the user summary in the db
-        pushSummaryToDb();
-
         // sets interval jobs
         initializeIntervalJobs();
     } else {
@@ -112,15 +109,18 @@ export function initializePlugin() {
 function initializeIntervalJobs() {
     setLogOutInterval();
 
+    // every 5 minutes perform the following
     five_minute_interval = setInterval(() => {
         if (checkIfNameChanged()) {
             logOut();
         } else {
+            // make sure the last log isn't empty
             resetPreviousLogIfEmpty();
 
+            // check for new milestones
             checkForMilestones();
 
-            // milestones
+            // milestones creation check setting bools like sentMilestonesDb and updatedMilestonesDb
             checkMilestonesPayload();
 
             if (!sentMilestonesDb) {
@@ -129,12 +129,11 @@ function initializeIntervalJobs() {
             if (!updatedMilestonesDb) {
                 pushUpdatedMilestones();
             }
+
             fetchMilestones();
 
-            // summary
-            pushSummaryToDb();
-
-            reevaluateSummary();
+            // syncs the Summary info (hours, lines, etc) to the file
+            syncSummary();
         }
     }, one_min_millis * 5);
 
@@ -157,16 +156,26 @@ function initializeIntervalJobs() {
 
 function checkForMilestones() {
     // updates logs with latest metrics and checks for milestones
-    updateLogsMilestonesAndMetrics([]);
+
+    // this updates existing logs metrics or adds placeholder log
+    updateLogsMilestonesAndMetrics();
+
+    // checks to see if there are any new achieved milestones
     checkCodeTimeMetricsMilestonesAchieved();
+
+    // checks to see if there are any new language milestones achieved
     checkLanguageMilestonesAchieved();
+
+    // checks to see if there are any day milestones achived
     checkDaysMilestones();
 }
 
 function initializeLogInCheckInterval() {
     init_interval = setInterval(() => {
         if (isLoggedIn()) {
+
             setName();
+
             syncLogs();
 
             // milestones
@@ -178,9 +187,6 @@ function initializeLogInCheckInterval() {
                 pushUpdatedMilestones();
             }
             fetchMilestones(null, true);
-
-            // fetches and updates the user summary in the db
-            pushSummaryToDb();
 
             // update the summary on init
             fetchSummary();

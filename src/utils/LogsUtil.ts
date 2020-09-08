@@ -10,43 +10,36 @@ import {
     getSummaryTotalHours,
     setSummaryCurrentHours,
     setSummaryTotalHours,
-    reevaluateSummary
 } from "./SummaryUtil";
 import { window, commands } from "vscode";
 import { pushMilestonesToDb } from "./MilestonesDbUtil";
 import { toUpdateLogsPush } from "./LogsDbUtils";
 import { createLog, updateLog } from "./LogSync";
 import { HOURS_THRESHOLD } from "./Constants";
-import { getFileDataAsJson } from "../managers/FileManager";
+import { getFileDataAsJson, getFile } from "../managers/FileManager";
 const moment = require("moment-timezone");
 let dateLogMessage: Date | any = undefined;
 
-export function getLogsJson(): string {
-    let file = getSoftwareDir();
-    if (isWindows()) {
-        file += "\\logs.json";
-    } else {
-        file += "/logs.json";
-    }
-    return file;
+export function getLogsFilePath(): string {
+    return getFile("logs.json");
 }
 
 export function checkLogsJson(): boolean {
-    const filepath = getLogsJson();
-    try {
-        if (fs.existsSync(filepath)) {
-            return true;
-        } else {
-            fs.writeFileSync(filepath, '{"logs": []}');
-            return true;
+    const filepath = getLogsFilePath();
+    if (!fs.existsSync(filepath)) {
+        // create empty logs
+        const logs: Array<Log> = [];
+        try {
+            fs.writeFileSync(filepath, JSON.stringify(logs, null, 2));
+        } catch (e) {
+            return false;
         }
-    } catch (err) {
-        return false;
     }
+    return true;
 }
 
 export function deleteLogsJson() {
-    const filepath = getLogsJson();
+    const filepath = getLogsFilePath();
     const fileExists = fs.existsSync(filepath);
     if (fileExists) {
         fs.unlinkSync(filepath);
@@ -56,18 +49,18 @@ export function deleteLogsJson() {
 export function getAllLogObjects(): Array<Log> {
     const exists = checkLogsJson();
     if (exists) {
-        const filepath = getLogsJson();
-        const rawLogs = getFileDataAsJson(filepath, { logs: [] });
-        return rawLogs.logs;
+        const filepath = getLogsFilePath();
+        const logs = getFileDataAsJson(filepath);
+        return logs;
     }
     return [];
 }
 
 function writeToLogsJson(logs: Array<Log>) {
     const sendLogs = { logs };
-    const filepath = getLogsJson();
+    const filepath = getLogsFilePath();
     try {
-        fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 4));
+        fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 2));
     } catch (err) {
         console.log(err);
     }
@@ -258,7 +251,7 @@ export async function addLogToJson(
 
 export function getLatestLogEntryNumber(): number {
     const logs = getAllLogObjects();
-    return logs.length;
+    return logs ? logs.length : 0;
 }
 
 export function getMostRecentLogObject(): Log | any {
@@ -361,7 +354,7 @@ export async function editLogEntry(
     updateLog(log);
 }
 
-function checkIfLogIsEmpty(log: Log): boolean {
+function isLogEmpty(log: Log): boolean {
     return (
         log.codetime_metrics.hours === 0 &&
         log.codetime_metrics.keystrokes === 0 &&
@@ -373,19 +366,25 @@ function checkIfLogIsEmpty(log: Log): boolean {
     );
 }
 
+/**
+ * If the last log is empty (no title, keystrokes, etc) then set the log date
+ */
 export async function resetPreviousLogIfEmpty() {
     const logDate = new Date();
     let logs = getAllLogObjects();
-    if (logs.length > 0 && checkIfLogIsEmpty(logs[logs.length - 1])) {
-        logs[logs.length - 1].date = logDate.valueOf();
-        writeToLogsJson(logs);
-        reevaluateSummary();
-        updateLog(logs[logs.length - 1]);
-        return;
+    if (logs.length > 0) {
+        // get the last log
+        const log: Log = logs[logs.length - 1];
+        if (log && isLogEmpty(log)) {
+            log.date = logDate.valueOf();
+            logs[logs.length - 1] = log;
+            // update the rest of the info like end of day and persist to the backend
+            updateLog(log);
+        }
     }
 }
 
-export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) {
+export async function updateLogsMilestonesAndMetrics(milestones: Array<number> = []) {
     const logDate = new Date();
     let logs = getAllLogObjects();
 
@@ -405,63 +404,63 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number>) 
         log.links = [""];
         logs.push(log);
 
-        writeToLogsJson(logs);
-        updateSummaryJson();
         createLog(log);
-        return;
-    }
+    } else if (logs && logs.length) {
 
-    // date exists
-    for (let i = logs.length - 1; i >= 0; i--) {
-        const dateOb = new Date(logs[i].date);
-        // Checking if date matches
-        if (compareDates(dateOb, logDate)) {
-            const metrics = getSessionCodetimeMetrics();
-            // checks if new day and fresh start
-            const checkForJump: boolean = i === logs.length - 1 && i > 0 && logs[i].codetime_metrics.hours === 0;
+        // date exists
+        for (let i = logs.length - 1; i >= 0; i--) {
+            const dateOb = new Date(logs[i].date);
+            // Checking if date matches
+            if (compareDates(dateOb, logDate)) {
+                const metrics = getSessionCodetimeMetrics();
+                // checks if new day and fresh start
+                const checkForJump: boolean = i === logs.length - 1 && i > 0 && logs[i].codetime_metrics.hours === 0;
 
-            // If user added extra hours, we don't want to reduce those
-            logs[i].codetime_metrics.hours = Math.max(
-                logs[i].codetime_metrics.hours,
-                parseFloat((metrics.minutes / 60).toFixed(1))
-            );
-            logs[i].codetime_metrics.keystrokes = metrics.keystrokes;
-            logs[i].codetime_metrics.lines_added = metrics.linesAdded;
+                // If user added extra hours, we don't want to reduce those
+                logs[i].codetime_metrics.hours = Math.max(
+                    logs[i].codetime_metrics.hours,
+                    parseFloat((metrics.minutes / 60).toFixed(1))
+                );
+                logs[i].codetime_metrics.keystrokes = metrics.keystrokes;
+                logs[i].codetime_metrics.lines_added = metrics.linesAdded;
 
-            if (checkForJump) {
-                // checks for irregular jumps
-                if (logs[i].codetime_metrics.hours === logs[i - 1].codetime_metrics.hours) {
-                    logs[i].codetime_metrics.hours = 0;
+                if (checkForJump) {
+                    // checks for irregular jumps
+                    if (logs[i].codetime_metrics.hours === logs[i - 1].codetime_metrics.hours) {
+                        logs[i].codetime_metrics.hours = 0;
+                    }
+                    if (logs[i].codetime_metrics.keystrokes === logs[i - 1].codetime_metrics.keystrokes) {
+                        logs[i].codetime_metrics.keystrokes = 0;
+                    }
+                    if (logs[i].codetime_metrics.lines_added === logs[i - 1].codetime_metrics.lines_added) {
+                        logs[i].codetime_metrics.lines_added = 0;
+                    }
                 }
-                if (logs[i].codetime_metrics.keystrokes === logs[i - 1].codetime_metrics.keystrokes) {
-                    logs[i].codetime_metrics.keystrokes = 0;
+
+                logs[i].milestones = logs[i].milestones.concat(milestones);
+
+
+                toUpdateLogsPush(logs[i]);
+                if (
+                    (!dateLogMessage || !compareDates(dateLogMessage, new Date())) &&
+                    logs[i].codetime_metrics.hours > HOURS_THRESHOLD &&
+                    logs[i].codetime_metrics.hours < HOURS_THRESHOLD + 0.1 &&
+                    logs[i].title === "No Title"
+                ) {
+                    window
+                        .showInformationMessage("Don't forget to add and share today's log.", "Add Log")
+                        .then(selection => {
+                            dateLogMessage = new Date();
+                            if (selection === "Add Log") {
+                                commands.executeCommand("DoC.addLog");
+                            }
+                        });
                 }
-                if (logs[i].codetime_metrics.lines_added === logs[i - 1].codetime_metrics.lines_added) {
-                    logs[i].codetime_metrics.lines_added = 0;
-                }
+                return;
             }
-
-            logs[i].milestones = logs[i].milestones.concat(milestones);
-
-            writeToLogsJson(logs);
-            updateSummaryJson();
-            toUpdateLogsPush(logs[i]);
-            if (
-                (!dateLogMessage || !compareDates(dateLogMessage, new Date())) &&
-                logs[i].codetime_metrics.hours > HOURS_THRESHOLD &&
-                logs[i].codetime_metrics.hours < HOURS_THRESHOLD + 0.1 &&
-                logs[i].title === "No Title"
-            ) {
-                window
-                    .showInformationMessage("Don't forget to add and share today's log.", "Add Log")
-                    .then(selection => {
-                        dateLogMessage = new Date();
-                        if (selection === "Add Log") {
-                            commands.executeCommand("DoC.addLog");
-                        }
-                    });
-            }
-            return;
         }
     }
+
+    writeToLogsJson(logs);
+    updateSummaryJson();
 }

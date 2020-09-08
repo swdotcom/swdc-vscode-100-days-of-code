@@ -11,7 +11,7 @@ export function getFile(name: string) {
 	return `${file_path}/${name}`;
 }
 
-export function getFileDataAsJson(filepath: string, defaultData: any = null): any {
+export function getFileDataAsJson(filepath: string): any {
 	if (fs.existsSync(filepath)) {
 		try {
 			const content: string = fs.readFileSync(filepath, "utf-8");
@@ -20,7 +20,7 @@ export function getFileDataAsJson(filepath: string, defaultData: any = null): an
 			console.log("File not found: " + filepath);
 		}
 	}
-	return defaultData;
+	return null;
 }
 
 export function getSummaryJsonFilePath() {
