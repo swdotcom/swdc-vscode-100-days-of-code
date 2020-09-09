@@ -38,7 +38,7 @@ export async function updateLog(log: Log) {
     updateLocalLogs(logs);
     // push changes to server
     const preparedLog = await prepareLogForServerUpdate(log);
-    updateExistingLogOnServer(preparedLog);
+    await updateExistingLogOnServer(preparedLog);
 }
 
 // pulls logs from the server and saves them locally. This will be run periodically.

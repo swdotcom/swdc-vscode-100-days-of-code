@@ -349,7 +349,7 @@ export async function editLogEntry(
         summaryTotalHours += log.codetime_metrics.hours;
         setSummaryTotalHours(summaryTotalHours);
     }
-    updateLog(log);
+    await updateLog(log);
 }
 
 function isLogEmpty(log: Log): boolean {

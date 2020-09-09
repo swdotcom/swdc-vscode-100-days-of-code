@@ -57,7 +57,7 @@ export function createCommands(): { dispose: () => void } {
                 currentPanel.onDidDispose(() => {
                     currentPanel = undefined;
                 });
-                currentPanel.webview.onDidReceiveMessage(message => {
+                currentPanel.webview.onDidReceiveMessage(async message => {
                     switch (message.command) {
                         case "editLog":
                             const dayUpdate = message.value;
@@ -69,6 +69,8 @@ export function createCommands(): { dispose: () => void } {
                                 dayUpdate.links,
                                 dayUpdate.hours
                             );
+                            await syncLogs();
+                            commands.executeCommand("DoC.viewLogs");
                             break;
                         case "addLog":
                             TrackerManager.getInstance().trackUIInteraction(

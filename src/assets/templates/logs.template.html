@@ -139,8 +139,8 @@
             background-color: ${this.editButtonColor};
             border-color: rgba(0,0,0,0);
             vertical-align: middle;
+            margin: 0;
             visibility: hidden;
-            margin: 5px;
         }
         .cardHeaderDeleteLogButton {
             cursor: pointer;
@@ -153,8 +153,8 @@
             background-color: ${this.editButtonColor};
             border-color: rgba(0,0,0,0);
             vertical-align: middle;
+            margin: 0;
             visibility: hidden;
-            margin: 5px;
         }
         .cardHeaderShareButton {
             cursor: pointer;
@@ -466,13 +466,17 @@
                     content.style.maxHeight = null;
                     dropDownIcon.style.transform = "rotate(180deg)";
                     editButton.style.visibility = "hidden";
+                    editButton.style.margin = "0px";
                     deleteButton.style.visibility = "hidden";
+                    deleteButton.style.margin = "0px";
                     shareButton.style.transform = "translate(40px, -18px)";
                 } else {
                     content.style.maxHeight = content.scrollHeight + "px";
                     dropDownIcon.style.transform = "rotate(0deg)";
                     editButton.style.visibility = "visible";
+                    editButton.style.margin = "5px";
                     deleteButton.style.visibility = "visible";
+                    deleteButton.style.margin = "5px";
                     shareButton.style.transform = "translate(-48px, -18px)";
                 }
             });
@@ -633,6 +637,27 @@
                     .slice(0, -1);
                 vscode.postMessage({ command: "incrementShare", value: dayNumberValue });
             });
+        }
+
+        // expand the 1st card in the list
+        const logCards = document.getElementsByClassName("logCard");
+        if (logCards && logCards.length) {
+            // HTMLDivElement
+            const logCard = logCards[0];
+            const cardHeader = logCard.firstChild.nextSibling;
+            const cardContent = cardHeader.nextSibling.nextSibling;
+            cardContent.style.maxHeight = cardContent.scrollHeight + "px";
+
+            const shareButton = logCard.getElementsByClassName("cardHeaderShareButton")[0];
+            const editButton = logCard.getElementsByClassName("cardHeaderEditLogButton")[0];
+            const deleteButton = logCard.getElementsByClassName("cardHeaderDeleteLogButton")[0];
+            const dropDownIcon = logCard.getElementsByClassName("cardHeaderDropDownButton")[0];
+            dropDownIcon.style.transform = "rotate(0deg)";
+            editButton.style.visibility = "visible";
+            editButton.style.margin = "5px";
+            deleteButton.style.visibility = "visible";
+            deleteButton.style.margin = "5px";
+            shareButton.style.transform = "translate(-48px, -18px)";
         }
     </script>
 </html>
