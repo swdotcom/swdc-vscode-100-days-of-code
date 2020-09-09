@@ -58,17 +58,22 @@ export function createCommands(): { dispose: () => void } {
                     currentPanel = undefined;
                 });
                 currentPanel.webview.onDidReceiveMessage(async message => {
+                    if (!isLoggedIn()) {
+                        displayLoginPromptIfNotLoggedIn();
+                    }
+
                     switch (message.command) {
                         case "editLog":
                             const dayUpdate = message.value;
 
-                            editLogEntry(
+                            await editLogEntry(
                                 parseInt(dayUpdate.day_number),
                                 dayUpdate.title,
                                 dayUpdate.description,
                                 dayUpdate.links,
                                 dayUpdate.hours
                             );
+
                             await syncLogs();
                             commands.executeCommand("DoC.viewLogs");
                             break;
@@ -82,11 +87,7 @@ export function createCommands(): { dispose: () => void } {
                                 "Add Log"
                             );
 
-                            if (isLoggedIn()) {
-                                commands.executeCommand("DoC.addLog");
-                            } else if (!isLoggedIn()) {
-                                displayLoginPromptIfNotLoggedIn();
-                            }
+                            commands.executeCommand("DoC.addLog");
                             break;
                         case "incrementShare":
                             TrackerManager.getInstance().trackUIInteraction(
@@ -101,7 +102,14 @@ export function createCommands(): { dispose: () => void } {
                             checkSharesMilestones();
                             break;
                         case "deleteLog":
-                            commands.executeCommand("DoC.deleteLog", message.value);
+                            const selection = await window.showInformationMessage(
+                                "Are you sure you want to delete this log?",
+                                { modal: true },
+                                ...["Yes"]
+                            );
+                            if (selection && selection === "Yes") {
+                                commands.executeCommand("DoC.deleteLog", message.value);
+                            }
                             break;
                     }
                 });
@@ -265,10 +273,7 @@ export function createCommands(): { dispose: () => void } {
                 let log;
                 currentPanel.webview.onDidReceiveMessage(async message => {
                     switch (message.command) {
-                        case "cancel":
-                            commands.executeCommand("DoC.viewLogs");
-                            break;
-
+                        // no need to add a cancel, just show the logs as a default
                         case "log":
                             if (isLoggedIn()) {
                                 log = message.value;
@@ -283,13 +288,13 @@ export function createCommands(): { dispose: () => void } {
                                 );
                                 checkLanguageMilestonesAchieved();
                                 checkDaysMilestones();
+                                await syncLogs();
                             } else {
                                 displayLoginPromptIfNotLoggedIn();
                             }
-                            await syncLogs();
-                            commands.executeCommand("DoC.viewLogs");
                             break;
                     }
+                    commands.executeCommand("DoC.viewLogs");
                 });
             }
 

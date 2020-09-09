@@ -7,6 +7,8 @@ import { fetchAllMilestones } from "./MilestonesDbUtil";
 import { Log } from "../models/Log";
 import { commands, window } from "vscode";
 
+let currently_deleting_log_date: number = -1;
+
 // creates a new log locally and on the server
 export async function createLog(log: Log) {
     // get all log objects
@@ -14,10 +16,10 @@ export async function createLog(log: Log) {
     // add the new log
     const updatedLogs = [...logs, log];
     // write back to the local file
-    updateLocalLogs(updatedLogs);
+    saveLogsToFile(updatedLogs);
     // push the new log to the server
     const preparedLog = await prepareLogForServerUpdate(log);
-    pushNewLogToServer(preparedLog);
+    await pushNewLogToServer(preparedLog);
 }
 
 // updates a log locally and on the server
@@ -35,7 +37,7 @@ export async function updateLog(log: Log) {
     // replace
     logs[index] = log;
     // write back to local
-    updateLocalLogs(logs);
+    saveLogsToFile(logs);
     // push changes to server
     const preparedLog = await prepareLogForServerUpdate(log);
     await updateExistingLogOnServer(preparedLog);
@@ -47,7 +49,7 @@ export async function syncLogs() {
     if (serverLogs) {
         const formattedLogs = formatLogs(serverLogs);
         await addMilestonesToLogs(formattedLogs);
-        updateLocalLogs(formattedLogs);
+        saveLogsToFile(formattedLogs);
     }
 }
 
@@ -125,7 +127,7 @@ function prepareLogForServerUpdate(log: Log) {
 async function pushNewLogToServer(log: {}) {
     const jwt = getItem("jwt");
     if (jwt) {
-        softwarePost("/100doc/logs", [log], jwt);
+        await softwarePost("/100doc/logs", [log], jwt);
     }
 }
 
@@ -133,13 +135,8 @@ async function pushNewLogToServer(log: {}) {
 async function updateExistingLogOnServer(log: {}) {
     const jwt = getItem("jwt");
     if (jwt) {
-        softwarePut("/100doc/logs", [log], jwt);
+        await softwarePut("/100doc/logs", [log], jwt);
     }
-}
-
-// pull logs from the server into local
-async function updateLocalLogs(logs: Array<Log>) {
-    saveLogsToFile(logs);
 }
 
 async function getLocalLogsFromFile() {
@@ -179,8 +176,13 @@ function checkIfLocalFileExists(filepath: string): boolean {
 }
 
 export async function deleteLogDay(unix_date: number) {
+    if (currently_deleting_log_date !== -1) {
+        window.showInformationMessage("Currently waiting to delete the requested log, please wait.");
+        return;
+    }
     const jwt = getItem("jwt");
     if (jwt) {
+        currently_deleting_log_date = unix_date;
         const resp = await softwareDelete("/100doc/logs", { unix_dates: [unix_date] }, jwt);
         if (isResponseOk(resp)) {
             window.showInformationMessage("Your log has been successfully deleted.");
@@ -192,5 +194,6 @@ export async function deleteLogDay(unix_date: number) {
             await syncLogs();
             commands.executeCommand("DoC.viewLogs");
         }
+        currently_deleting_log_date = -1;
     }
 }
