@@ -239,7 +239,7 @@ export async function addLogToJson(
     if (logExists) {
         return updateLog(log);
     } else {
-        createLog(log);
+        await createLog(log);
     }
 
     updateSummaryJson();

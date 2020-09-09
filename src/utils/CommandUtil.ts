@@ -80,8 +80,7 @@ export function createCommands(): { dispose: () => void } {
                                 "Add Log"
                             );
 
-                            if (currentPanel && isLoggedIn()) {
-                                currentPanel.dispose();
+                            if (isLoggedIn()) {
                                 commands.executeCommand("DoC.addLog");
                             } else if (!isLoggedIn()) {
                                 displayLoginPromptIfNotLoggedIn();
@@ -138,18 +137,15 @@ export function createCommands(): { dispose: () => void } {
                 currentPanel.webview.onDidReceiveMessage(message => {
                     switch (message.command) {
                         case "Logs":
-                            if (currentPanel) {
-                                currentPanel.dispose();
-                                commands.executeCommand("DoC.viewLogs");
-                                TrackerManager.getInstance().trackUIInteraction(
-                                    "click",
-                                    "100doc_logs_btn",
-                                    "100doc_dashboard_view",
-                                    "",
-                                    "",
-                                    "View Logs"
-                                );
-                            }
+                            commands.executeCommand("DoC.viewLogs");
+                            TrackerManager.getInstance().trackUIInteraction(
+                                "click",
+                                "100doc_logs_btn",
+                                "100doc_dashboard_view",
+                                "",
+                                "",
+                                "View Logs"
+                            );
                             break;
                         case "ShareProgress":
                             TrackerManager.getInstance().trackUIInteraction(
@@ -162,18 +158,15 @@ export function createCommands(): { dispose: () => void } {
                             );
                             break;
                         case "Milestones":
-                            if (currentPanel) {
-                                currentPanel.dispose();
-                                commands.executeCommand("DoC.viewMilestones");
-                                TrackerManager.getInstance().trackUIInteraction(
-                                    "click",
-                                    "100doc_milestones_btn",
-                                    "100doc_dashboard_view",
-                                    "",
-                                    "",
-                                    "View Milestones"
-                                );
-                            }
+                            commands.executeCommand("DoC.viewMilestones");
+                            TrackerManager.getInstance().trackUIInteraction(
+                                "click",
+                                "100doc_milestones_btn",
+                                "100doc_dashboard_view",
+                                "",
+                                "",
+                                "View Milestones"
+                            );
                             break;
                         case "Certificate":
                             window
@@ -271,17 +264,14 @@ export function createCommands(): { dispose: () => void } {
                 currentPanel.webview.onDidReceiveMessage(async message => {
                     switch (message.command) {
                         case "cancel":
-                            if (currentPanel) {
-                                currentPanel.dispose();
-                            }
                             commands.executeCommand("DoC.viewLogs");
                             break;
 
                         case "log":
-                            if (currentPanel && isLoggedIn()) {
+                            if (isLoggedIn()) {
                                 log = message.value;
                                 // this posts the log create/update to the server as well
-                                addLogToJson(
+                                await addLogToJson(
                                     log.title,
                                     log.description,
                                     log.hours,
@@ -291,10 +281,8 @@ export function createCommands(): { dispose: () => void } {
                                 );
                                 checkLanguageMilestonesAchieved();
                                 checkDaysMilestones();
-                                currentPanel.dispose();
-                            } else if (currentPanel) {
+                            } else {
                                 displayLoginPromptIfNotLoggedIn();
-                                currentPanel.dispose();
                             }
                             await syncLogs();
                             commands.executeCommand("DoC.viewLogs");
