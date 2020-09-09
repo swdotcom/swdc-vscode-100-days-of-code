@@ -152,9 +152,6 @@ function initializeIntervalJobs() {
 function checkForMilestones() {
     // updates logs with latest metrics and checks for milestones
 
-    // this updates existing logs metrics or adds placeholder log
-    // updateLogsMilestonesAndMetrics();
-
     // checks to see if there are any new achieved milestones
     checkCodeTimeMetricsMilestonesAchieved();
 

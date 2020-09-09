@@ -1,7 +1,7 @@
 import { compareDates } from "./Util";
 import path = require("path");
 import fs = require("fs");
-import { getMostRecentLogObject, getLatestLogEntryNumber, updateLogsMilestonesAndMetrics } from "./LogsUtil";
+import { getMostRecentLogObject, getLatestLogEntryNumber } from "./LogsUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import { Log } from "../models/Log";
 import { monthNames } from "./Constants";
@@ -29,7 +29,6 @@ function getStyleColorsBasedOnMode(): any {
 }
 
 export function getUpdatedAddLogHtmlString(): string {
-    updateLogsMilestonesAndMetrics();
     const log: Log = getMostRecentLogObject();
     const dateOb = new Date();
     const date = dateOb.getDate();

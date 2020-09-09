@@ -2,13 +2,8 @@ import { compareDates } from "./Util";
 import fs = require("fs");
 import { window, commands } from "vscode";
 import path = require("path");
-import { updateLogsMilestonesAndMetrics } from "./LogsUtil";
 import { Summary } from "../models/Summary";
-import {
-    updateSummaryMilestones,
-    incrementSummaryShare,
-    updateSummaryLanguages,
-} from "./SummaryUtil";
+import { updateSummaryMilestones, incrementSummaryShare, updateSummaryLanguages } from "./SummaryUtil";
 import { getLanguages } from "./LanguageUtil";
 import { pushMilestonesToDb } from "./MilestonesDbUtil";
 import { HOURS_THRESHOLD } from "./Constants";
@@ -61,7 +56,6 @@ export function getMilestonesByDate(date: number): Array<number> {
 }
 
 export function compareWithLocalMilestones(milestoneData: any) {
-
     if (milestoneData && milestoneData.length) {
         // goes through each milestone and updates based on db data
         const localMilestoneData = getAllMilestones();
@@ -78,7 +72,6 @@ export function compareWithLocalMilestones(milestoneData: any) {
             if (appMilestoneIds && appMilestoneIds.length) {
                 // find the matching milestone
                 for (const milestoneId of appMilestoneIds) {
-
                     const milestoneIdx = milestones.findIndex((n: any) => n.id === milestoneId);
                     const matchingMilestone = milestoneIdx !== -1 ? milestones[milestoneIdx] : null;
                     if (matchingMilestone) {
@@ -413,9 +406,6 @@ function achievedMilestonesJson(ids: Array<number>): void {
     }
 
     if (updatedIds.length > 0) {
-        // updates logs
-        updateLogsMilestonesAndMetrics(updatedIds);
-
         // updates summary
         let totalMilestonesAchieved = 0;
         for (let i = 0; i < milestones.length; i++) {
@@ -466,7 +456,6 @@ export function getTotalMilestonesAchieved(): number {
     }
     return totalMilestonesAchieved;
 }
-
 
 export function getAllMilestones(): any {
     // Checks if the file exists and if not, creates a new file
