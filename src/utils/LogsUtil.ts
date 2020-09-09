@@ -3,7 +3,6 @@ import fs = require("fs");
 import { CodetimeMetrics } from "../models/CodetimeMetrics";
 import { Log } from "../models/Log";
 import { getMilestonesByDate, checkIfDaily } from "./MilestonesUtil";
-import { getSessionCodetimeMetrics } from "./MetricUtil";
 import {
     incrementSummaryShare,
     updateSummaryJson,
@@ -11,14 +10,10 @@ import {
     setSummaryCurrentHours,
     setSummaryTotalHours
 } from "./SummaryUtil";
-import { window, commands } from "vscode";
 import { pushMilestonesToDb } from "./MilestonesDbUtil";
-import { toUpdateLogsPush } from "./LogsDbUtils";
 import { createLog, updateLog } from "./LogSync";
-import { HOURS_THRESHOLD } from "./Constants";
 import { getFileDataAsJson, getFile } from "../managers/FileManager";
 const moment = require("moment-timezone");
-let dateLogMessage: Date | any = undefined;
 
 export function getLogsFilePath(): string {
     return getFile("logs.json");
