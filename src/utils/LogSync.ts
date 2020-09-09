@@ -46,7 +46,7 @@ export async function syncLogs() {
     const serverLogs = await fetchLogsFromServer();
     if (serverLogs) {
         const formattedLogs = formatLogs(serverLogs);
-        addMilestonesToLogs(formattedLogs);
+        await addMilestonesToLogs(formattedLogs);
         updateLocalLogs(formattedLogs);
     }
 }
