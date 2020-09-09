@@ -96,7 +96,7 @@ export function createCommands(): { dispose: () => void } {
                                 "blue",
                                 "",
                                 "Add Log"
-                            )
+                            );
 
                             if (currentPanel && isLoggedIn()) {
                                 currentPanel.dispose();
@@ -113,9 +113,12 @@ export function createCommands(): { dispose: () => void } {
                                 "",
                                 "share",
                                 ""
-                            )
+                            );
                             updateLogShare(message.value);
                             checkSharesMilestones();
+                            break;
+                        case "deleteLog":
+                            console.log("delete log request: ", message.value);
                             break;
                     }
                 });
@@ -166,10 +169,10 @@ export function createCommands(): { dispose: () => void } {
                                     "click",
                                     "100doc_logs_btn",
                                     "100doc_dashboard_view",
-                                    '',
-                                    '',
-                                    'View Logs'
-                                )
+                                    "",
+                                    "",
+                                    "View Logs"
+                                );
                             }
                             break;
                         case "ShareProgress":
@@ -180,7 +183,7 @@ export function createCommands(): { dispose: () => void } {
                                 "blue",
                                 "",
                                 "Share progress"
-                            )
+                            );
                             break;
                         case "Milestones":
                             if (currentPanel) {
@@ -190,10 +193,10 @@ export function createCommands(): { dispose: () => void } {
                                     "click",
                                     "100doc_milestones_btn",
                                     "100doc_dashboard_view",
-                                    '',
-                                    '',
-                                    'View Milestones'
-                                )
+                                    "",
+                                    "",
+                                    "View Milestones"
+                                );
                             }
                             break;
                         case "Certificate":
@@ -272,7 +275,7 @@ export function createCommands(): { dispose: () => void } {
                                 "",
                                 "share",
                                 ""
-                            )
+                            );
                             updateMilestoneShare(message.value);
                             checkSharesMilestones();
                             break;
