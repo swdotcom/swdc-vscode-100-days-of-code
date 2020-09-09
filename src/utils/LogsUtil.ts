@@ -51,16 +51,15 @@ export function getAllLogObjects(): Array<Log> {
     if (exists) {
         const filepath = getLogsFilePath();
         const logs = getFileDataAsJson(filepath);
-        return logs;
+        return logs || [];
     }
     return [];
 }
 
-function writeToLogsJson(logs: Array<Log>) {
-    const sendLogs = { logs };
+function writeToLogsJson(logs: Array<Log> = []) {
     const filepath = getLogsFilePath();
     try {
-        fs.writeFileSync(filepath, JSON.stringify(sendLogs, null, 2));
+        fs.writeFileSync(filepath, JSON.stringify(logs, null, 2));
     } catch (err) {
         console.log(err);
     }
@@ -99,19 +98,21 @@ export function getLogsSummary(): any {
             previousDate = logs[i].date;
         }
 
+        const lastLog = logs[logs.length - 1];
+
         // checks if last log is today
-        if (compareDates(new Date(logs[logs.length - 1].date), new Date())) {
-            currentHours = logs[logs.length - 1].codetime_metrics.hours;
-            currentKeystrokes = logs[logs.length - 1].codetime_metrics.keystrokes;
-            currentLines = logs[logs.length - 1].codetime_metrics.lines_added;
+        if (compareDates(new Date(lastLog.date), new Date())) {
+            currentHours = lastLog.codetime_metrics.hours;
+            currentKeystrokes = lastLog.codetime_metrics.keystrokes;
+            currentLines = lastLog.codetime_metrics.lines_added;
             totalDays++;
         } else {
-            totalHours += logs[logs.length - 1].codetime_metrics.hours;
-            totalLinesAdded += logs[logs.length - 1].codetime_metrics.lines_added;
-            totalKeystrokes += logs[logs.length - 1].codetime_metrics.keystrokes;
+            totalHours += lastLog.codetime_metrics.hours;
+            totalLinesAdded += lastLog.codetime_metrics.lines_added;
+            totalKeystrokes += lastLog.codetime_metrics.keystrokes;
             totalDays++;
         }
-        if (compareDates(new Date(previousDate + hours24), new Date(logs[logs.length - 1].date))) {
+        if (compareDates(new Date(previousDate + hours24), new Date(lastLog.date))) {
             current_streak++;
             if (current_streak > longest_streak) {
                 longest_streak = current_streak;
@@ -120,7 +121,7 @@ export function getLogsSummary(): any {
             current_streak = 0;
         }
 
-        currentDate = logs[logs.length - 1].date;
+        currentDate = lastLog.date;
     }
 
     return {
@@ -255,19 +256,21 @@ export function getLatestLogEntryNumber(): number {
 }
 
 export function getMostRecentLogObject(): Log | any {
-    let logs = getAllLogObjects();
+    const logs = getAllLogObjects();
     if (logs.length > 0) {
         return logs[logs.length - 1];
     } else {
-        return;
+        return new Log();
     }
 }
 
 export function getLogDateRange(): Array<number> {
     const logs = getAllLogObjects();
     let dates = [];
-    dates.push(logs[0].date);
-    dates.push(logs[logs.length - 1].date);
+    if (logs.length) {
+        dates.push(logs[0].date);
+        dates.push(logs[logs.length - 1].date);
+    }
     return dates;
 }
 
@@ -404,8 +407,6 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number> =
         log.links = [""];
         logs.push(log);
 
-        updateSummaryJson();
-        createLog(log);
     } else if (logs && logs.length) {
         // date exists
         for (let i = logs.length - 1; i >= 0; i--) {
@@ -460,6 +461,8 @@ export async function updateLogsMilestonesAndMetrics(milestones: Array<number> =
         }
     }
 
-    writeToLogsJson(logs);
+    if (logs.length) {
+        writeToLogsJson(logs);
+    }
     updateSummaryJson();
 }

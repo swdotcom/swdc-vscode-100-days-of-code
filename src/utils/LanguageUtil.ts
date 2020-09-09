@@ -1,25 +1,19 @@
-import { getSoftwareDir, isWindows, compareDates } from "./Util";
+import { compareDates } from "./Util";
 import fs = require("fs");
+import { getFile, getFileDataAsJson } from "../managers/FileManager";
 
 function getFileSummaryJson() {
-    let file = getSoftwareDir();
-    if (isWindows()) {
-        file += "\\fileChangeSummary.json";
-    } else {
-        file += "/fileChangeSummary.json";
-    }
-    return file;
+    return getFile("fileChangeSummary.json");
 }
 
 export function getLanguages() {
-    const fileSummary = getFileSummaryJson();
+    const fileSummary = getFileDataAsJson(getFileSummaryJson());
 
     let languages: Array<string> = [];
     if (fileSummary) {
         const dateNow = new Date();
 
-        let key: string;
-        for (key in fileSummary) {
+        for (const key in fileSummary) {
             const endTime = fileSummary[key]["end"] * 1000; // seconds to milliseconds
             // checks if edited today
             if (compareDates(dateNow, new Date(endTime))) {
