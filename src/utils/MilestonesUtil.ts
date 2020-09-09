@@ -46,10 +46,13 @@ export function getMilestonesByDate(date: number): Array<number> {
 
     // finds milestones achieved on date give and returns them
     const sendMilestones: Array<number> = [];
-    let milestones = getAllMilestones();
-    for (let i = 0; i < milestones.length; i++) {
-        if (milestones[i].achieved && compareDates(new Date(milestones[i].date_achieved), dateOb)) {
-            sendMilestones.push(milestones[i].id);
+    const milestoneData = getAllMilestones();
+    if (milestoneData && milestoneData.milestones) {
+        const milestones = milestoneData.milestones;
+        for (let i = 0; i < milestones.length; i++) {
+            if (milestones[i].achieved && compareDates(new Date(milestones[i].date_achieved), dateOb)) {
+                sendMilestones.push(milestones[i].id);
+            }
         }
     }
     return sendMilestones;
@@ -110,14 +113,17 @@ export function compareWithLocalMilestones(milestoneData: any) {
 
 export function checkIfMilestonesAchievedOnDate(date: number): boolean {
     const dateData = new Date(date);
-    let milestones = getAllMilestones();
+    let milestonesData = getAllMilestones();
     let count = 0;
-    for (let i = 0; i < milestones.length; i++) {
-        if (milestones[i].achieved && compareDates(new Date(milestones[i].date_achieved), dateData)) {
-            count++;
-            // ensures that more than one milestone was achieved that day
-            if (count > 1) {
-                return true;
+    if (milestonesData && milestonesData.milestones) {
+        const milestones = milestonesData.milestones;
+        for (let i = 0; i < milestones.length; i++) {
+            if (milestones[i].achieved && compareDates(new Date(milestones[i].date_achieved), dateData)) {
+                count++;
+                // ensures that more than one milestone was achieved that day
+                if (count > 1) {
+                    return true;
+                }
             }
         }
     }
@@ -355,12 +361,13 @@ export function getMilestoneById(id: number): Milestone | any {
         return {};
     }
     const milestoneData = getAllMilestones();
-    return milestoneData ? milestoneData.milestones.find((n: any) => n.id === id) : null;
+    return milestoneData && milestoneData.milestones ? milestoneData.milestones.find((n: any) => n.id === id) : null;
 }
 
 function achievedMilestonesJson(ids: Array<number>): void {
     let updatedIds = [];
-    let milestones = getAllMilestones();
+    const milestonesData = getAllMilestones();
+    const milestones = milestonesData.milestones || [];
     const dateNow = new Date();
     for (let i = 0; i < ids.length; i++) {
         const id = ids[i];
@@ -446,8 +453,8 @@ export function updateMilestoneShare(id: number): void {
 }
 
 export function getTotalMilestonesAchieved(): number {
-    const milestones = getAllMilestones();
-
+    const milestoneData = getAllMilestones();
+    const milestones = milestoneData.milestones || [];
     let totalMilestonesAchieved = 0;
     for (let milestone of milestones) {
         if (milestone.achieved) {
@@ -457,19 +464,24 @@ export function getTotalMilestonesAchieved(): number {
     return totalMilestonesAchieved;
 }
 
+/**
+ * This returns the milestones data
+ * {milestones: []}
+ */
 export function getAllMilestones(): any {
     // Checks if the file exists and if not, creates a new file
     if (!checkMilestonesJson()) {
         window.showErrorMessage("Cannot access Milestone file! Please contact cody@software.com for help.");
-        return [];
+        return { milestones: [] };
     }
     const filepath = getMilestonesJsonFilePath();
-    const milestones = getFileDataAsJson(filepath);
-    return milestones || { milestones: [] };
+    const milestoneData = getFileDataAsJson(filepath);
+    return milestoneData || { milestones: [] };
 }
 
 export function getThreeMostRecentMilestones(): Array<number> {
-    let milestones: Array<any> = getAllMilestones();
+    const milestoneData = getAllMilestones();
+    const milestones = milestoneData.milestones || [];
     milestones.sort((a: any, b: any) => {
         // sorting in descending order of date_achieved
         if (a.achieved && b.achieved) {
