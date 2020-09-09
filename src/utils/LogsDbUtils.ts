@@ -67,35 +67,6 @@ export function deleteLogsPayloadJson() {
     }
 }
 
-export async function fetchLogs() {
-    const jwt = getItem("jwt");
-    if (jwt) {
-        const logs = await softwareGet("/100doc/logs", jwt).then(resp => {
-            if (isResponseOk(resp)) {
-                const rawLogs = resp.data;
-                let logs: Array<Log> = [];
-                rawLogs.forEach((element: any) => {
-                    let log = new Log();
-                    log.title = element.title;
-                    log.description = element.description;
-                    log.day_number = element.day_number;
-                    log.codetime_metrics.hours = parseFloat((element.minutes / 60).toFixed(2));
-                    log.codetime_metrics.keystrokes = element.keystrokes;
-                    log.codetime_metrics.lines_added = element.lines_added;
-                    log.date = element.unix_date * 1000; // seconds --> milliseconds
-                    log.links = element.ref_links;
-                    logs.push(log);
-                });
-                // sorts log in ascending order
-                logs.sort((a: Log, b: Log) => {
-                    return a.day_number - b.day_number;
-                });
-                return logs;
-            }
-        });
-    }
-}
-
 export function toCreateLogsPush(log: Log) {
     const date = new Date();
     const offset_minutes = date.getTimezoneOffset();
