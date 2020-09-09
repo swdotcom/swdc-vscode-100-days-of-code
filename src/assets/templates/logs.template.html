@@ -142,6 +142,20 @@
             visibility: hidden;
             margin: 5px;
         }
+        .cardHeaderDeleteLogButton {
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 18px;
+            border-radius: 2px;
+            text-align: center;
+            color: ${this.cardTextColor};
+            background-color: ${this.editButtonColor};
+            border-color: rgba(0,0,0,0);
+            vertical-align: middle;
+            visibility: hidden;
+            margin: 5px;
+        }
         .cardHeaderShareButton {
             cursor: pointer;
             position: absolute;
@@ -445,18 +459,35 @@
             dropDownButtons[i].addEventListener("click", function () {
                 var shareButton = this.parentNode.getElementsByClassName("cardHeaderShareButton")[0];
                 var editButton = this.parentNode.getElementsByClassName("cardHeaderEditLogButton")[0];
+                var deleteButton = this.parentNode.getElementsByClassName("cardHeaderDeleteLogButton")[0];
                 var dropDownIcon = this;
                 var content = this.parentNode.parentNode.nextElementSibling;
                 if (content.style.maxHeight) {
                     content.style.maxHeight = null;
                     dropDownIcon.style.transform = "rotate(180deg)";
                     editButton.style.visibility = "hidden";
+                    deleteButton.style.visibility = "hidden";
                     shareButton.style.transform = "translate(40px, -18px)";
                 } else {
                     content.style.maxHeight = content.scrollHeight + "px";
                     dropDownIcon.style.transform = "rotate(0deg)";
                     editButton.style.visibility = "visible";
+                    deleteButton.style.visibility = "visible";
                     shareButton.style.transform = "translate(-48px, -18px)";
+                }
+            });
+        }
+
+        var deleteButtons = document.getElementsByClassName("cardHeaderDeleteLogButton");
+
+        for (let i = 0; i < deleteButtons.length; i++) {
+            deleteButtons[i].addEventListener("click", arg => {
+                if (arg && arg.target) {
+                    let date_val = arg.target.getAttribute("data-val");
+                    if (date_val && !isNaN(date_val)) {
+                        const unix_date = date_val / 1000;
+                        vscode.postMessage({ command: "deleteLog", value: parseInt(unix_date, 10) });
+                    }
                 }
             });
         }

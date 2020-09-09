@@ -15,10 +15,12 @@ import { displayReadmeIfNotExists, displayLoginPromptIfNotLoggedIn, isLoggedIn }
 import { getUpdatedMilestonesHtmlString } from "./MilestonesTemplateUtil";
 import { getUpdatedLogsHtml } from "./LogsTemplateUtil";
 import { TrackerManager } from "../managers/TrackerManager";
+import { deleteLogDay, syncLogs } from "./LogSync";
 
 export function createCommands(): { dispose: () => void } {
     let cmds: any[] = [];
     let currentPanel: WebviewPanel | undefined = undefined;
+    let currentTitle: string = "";
 
     const Doc100SftwProvider = new Tree100DoCProvider();
     const Doc100SftwTreeView: TreeView<TreeNode> = window.createTreeView("100DoC-tree", {
@@ -42,39 +44,19 @@ export function createCommands(): { dispose: () => void } {
 
     cmds.push(
         commands.registerCommand("DoC.viewLogs", () => {
-            if (currentPanel) {
-                if (currentPanel.title !== "Logs") {
-                    currentPanel.dispose();
-                    commands.executeCommand("DoC.viewLogs");
-                } else {
-                    // have to implement this check for worst case scenario
-                    if (currentPanel) {
-                        currentPanel.webview.html = getUpdatedLogsHtml();
-                    }
+            const generatedHtml = getUpdatedLogsHtml();
 
-                    currentPanel.reveal(ViewColumn.One);
-                }
-            } else {
-                currentPanel = window.createWebviewPanel("Logs", "Logs", ViewColumn.One, {
-                    enableScripts: true
+            const title = "Logs";
+            if (currentPanel && title !== currentTitle) {
+                // dipose the previous one
+                currentPanel.dispose();
+            }
+
+            if (!currentPanel) {
+                currentPanel = window.createWebviewPanel("100doc", title, ViewColumn.One, { enableScripts: true });
+                currentPanel.onDidDispose(() => {
+                    currentPanel = undefined;
                 });
-
-                if (currentPanel) {
-                    currentPanel.webview.html = getUpdatedLogsHtml();
-                    displayLoginPromptIfNotLoggedIn();
-                }
-
-                const logInterval = setInterval(() => {
-                    // updates only in the background
-                    if (currentPanel && !currentPanel.active) {
-                        // updateLogsHtml();
-                        // have to implement this check for worst case scenario
-                        if (currentPanel) {
-                            currentPanel.webview.html = getUpdatedLogsHtml();
-                        }
-                    }
-                }, 60000);
-
                 currentPanel.webview.onDidReceiveMessage(message => {
                     switch (message.command) {
                         case "editLog":
@@ -118,46 +100,40 @@ export function createCommands(): { dispose: () => void } {
                             checkSharesMilestones();
                             break;
                         case "deleteLog":
-                            console.log("delete log request: ", message.value);
+                            commands.executeCommand("DoC.deleteLog", message.value);
                             break;
                     }
                 });
-
-                currentPanel.onDidDispose(() => {
-                    clearInterval(logInterval);
-                    currentPanel = undefined;
-                });
             }
+            currentPanel.webview.html = generatedHtml;
+            currentPanel.reveal(ViewColumn.One);
+
+            displayLoginPromptIfNotLoggedIn();
+        })
+    );
+
+    cmds.push(
+        commands.registerCommand("DoC.deleteLog", (unix_day: number) => {
+            // send the delete request
+            deleteLogDay(unix_day);
         })
     );
 
     cmds.push(
         commands.registerCommand("DoC.viewDashboard", () => {
-            if (currentPanel) {
-                if (currentPanel.title !== "Dashboard") {
-                    currentPanel.dispose();
-                    commands.executeCommand("DoC.viewDashboard");
-                } else {
-                    if (currentPanel) {
-                        currentPanel.webview.html = getUpdatedDashboardHtmlString();
-                    }
-                    currentPanel.reveal(ViewColumn.One);
-                }
-            } else {
-                currentPanel = window.createWebviewPanel("Dashboard", "Dashboard", ViewColumn.One, {
-                    enableScripts: true
+            const generatedHtml = getUpdatedDashboardHtmlString();
+
+            const title = "Dashboard";
+            if (currentPanel && title !== currentTitle) {
+                // dipose the previous one
+                currentPanel.dispose();
+            }
+
+            if (!currentPanel) {
+                currentPanel = window.createWebviewPanel("100doc", title, ViewColumn.One, { enableScripts: true });
+                currentPanel.onDidDispose(() => {
+                    currentPanel = undefined;
                 });
-
-                if (currentPanel) {
-                    currentPanel.webview.html = getUpdatedDashboardHtmlString();
-                    displayLoginPromptIfNotLoggedIn();
-                }
-
-                const dashboardInterval = setInterval(() => {
-                    if (currentPanel) {
-                        currentPanel.webview.html = getUpdatedDashboardHtmlString();
-                    }
-                }, 60000);
 
                 currentPanel.webview.onDidReceiveMessage(message => {
                     switch (message.command) {
@@ -219,12 +195,12 @@ export function createCommands(): { dispose: () => void } {
                                 });
                     }
                 });
-
-                currentPanel.onDidDispose(() => {
-                    clearInterval(dashboardInterval);
-                    currentPanel = undefined;
-                });
             }
+
+            currentPanel.webview.html = generatedHtml;
+            currentPanel.reveal(ViewColumn.One);
+
+            displayLoginPromptIfNotLoggedIn();
         })
     );
 
@@ -236,34 +212,19 @@ export function createCommands(): { dispose: () => void } {
                 checkDaysMilestones();
             }
 
-            if (currentPanel) {
-                if (currentPanel.title !== "Milestones") {
-                    currentPanel.dispose();
-                    commands.executeCommand("DoC.viewMilestones");
-                } else {
-                    // have to implement this check for worst case scenario
-                    if (currentPanel) {
-                        currentPanel.webview.html = getUpdatedMilestonesHtmlString();
-                    }
-                    currentPanel.reveal(ViewColumn.One);
-                }
-            } else {
-                currentPanel = window.createWebviewPanel("Milestones", "Milestones", ViewColumn.One, {
-                    enableScripts: true
+            const generatedHtml = getUpdatedMilestonesHtmlString();
+
+            const title = "Milestones";
+            if (currentPanel && title !== currentTitle) {
+                // dipose the previous one
+                currentPanel.dispose();
+            }
+
+            if (!currentPanel) {
+                currentPanel = window.createWebviewPanel("100doc", title, ViewColumn.One, { enableScripts: true });
+                currentPanel.onDidDispose(() => {
+                    currentPanel = undefined;
                 });
-
-                // have to implement this check for worst case scenario
-                if (currentPanel) {
-                    currentPanel.webview.html = getUpdatedMilestonesHtmlString();
-                    displayLoginPromptIfNotLoggedIn();
-                }
-
-                const milestoneInterval = setInterval(() => {
-                    // have to implement this check for worst case scenario
-                    if (currentPanel) {
-                        currentPanel.webview.html = getUpdatedMilestonesHtmlString();
-                    }
-                }, 60000);
 
                 currentPanel.webview.onDidReceiveMessage(message => {
                     switch (message.command) {
@@ -281,44 +242,33 @@ export function createCommands(): { dispose: () => void } {
                             break;
                     }
                 });
-
-                currentPanel.onDidDispose(() => {
-                    clearInterval(milestoneInterval);
-                    currentPanel = undefined;
-                });
             }
+
+            currentPanel.webview.html = generatedHtml;
+            currentPanel.reveal(ViewColumn.One);
+
+            displayLoginPromptIfNotLoggedIn();
         })
     );
 
     cmds.push(
         commands.registerCommand("DoC.addLog", () => {
-            if (currentPanel) {
-                if (currentPanel.title !== "Add Daily Progress Log") {
-                    currentPanel.dispose();
-                    commands.executeCommand("DoC.addLog");
-                } else {
-                    // have to implement this check for worst case scenario
-                    if (currentPanel) {
-                        currentPanel.webview.html = getUpdatedAddLogHtmlString();
-                    }
+            const generatedHtml = getUpdatedAddLogHtmlString();
 
-                    currentPanel.reveal(ViewColumn.One);
-                }
-            } else {
-                currentPanel = window.createWebviewPanel(
-                    "Add Daily Progress Log",
-                    "Add Daily Progress Log",
-                    ViewColumn.One,
-                    { enableScripts: true }
-                );
+            const title = "Add Daily Progress Log";
+            if (currentPanel && title !== currentTitle) {
+                // dipose the previous one
+                currentPanel.dispose();
+            }
 
-                if (currentPanel) {
-                    currentPanel.webview.html = getUpdatedAddLogHtmlString();
-                }
-
+            if (!currentPanel) {
+                currentPanel = window.createWebviewPanel("100doc", title, ViewColumn.One, { enableScripts: true });
+                currentPanel.onDidDispose(() => {
+                    currentPanel = undefined;
+                });
                 // handle submit or cancel
                 let log;
-                currentPanel.webview.onDidReceiveMessage(message => {
+                currentPanel.webview.onDidReceiveMessage(async message => {
                     switch (message.command) {
                         case "cancel":
                             if (currentPanel) {
@@ -330,6 +280,7 @@ export function createCommands(): { dispose: () => void } {
                         case "log":
                             if (currentPanel && isLoggedIn()) {
                                 log = message.value;
+                                // this posts the log create/update to the server as well
                                 addLogToJson(
                                     log.title,
                                     log.description,
@@ -341,20 +292,19 @@ export function createCommands(): { dispose: () => void } {
                                 checkLanguageMilestonesAchieved();
                                 checkDaysMilestones();
                                 currentPanel.dispose();
-                                commands.executeCommand("DoC.viewLogs");
                             } else if (currentPanel) {
                                 displayLoginPromptIfNotLoggedIn();
                                 currentPanel.dispose();
-                                commands.executeCommand("DoC.viewLogs");
                             }
+                            await syncLogs();
+                            commands.executeCommand("DoC.viewLogs");
                             break;
                     }
                 });
-
-                currentPanel.onDidDispose(() => {
-                    currentPanel = undefined;
-                });
             }
+
+            currentPanel.webview.html = generatedHtml;
+            currentPanel.reveal(ViewColumn.One);
         })
     );
 

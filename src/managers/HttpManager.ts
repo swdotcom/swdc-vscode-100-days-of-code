@@ -79,10 +79,10 @@ export async function softwarePost(api: string, payload: any, jwt: string) {
 /**
  * perform a delete request
  */
-export async function softwareDelete(api: string, jwt: string) {
+export async function softwareDelete(api: string, payload: {}, jwt: string) {
     beApi.defaults.headers.common["Authorization"] = jwt;
     return beApi
-        .delete(api)
+        .delete(api, { data: payload })
         .then(resp => {
             return resp;
         })

@@ -1,11 +1,11 @@
 import fs = require("fs");
 const moment = require("moment-timezone");
 import { getItem } from "./Util";
-import { softwareGet, isResponseOk, softwarePost, softwarePut } from "../managers/HttpManager";
-import { getSoftwareDir, isWindows } from "./Util";
-import { getFileDataAsJson } from "../managers/FileManager";
+import { softwareGet, isResponseOk, softwarePost, softwarePut, softwareDelete } from "../managers/HttpManager";
+import { getFileDataAsJson, getFile } from "../managers/FileManager";
 import { fetchAllMilestones } from "./MilestonesDbUtil";
 import { Log } from "../models/Log";
+import { commands, window } from "vscode";
 
 // creates a new log locally and on the server
 export async function createLog(log: Log) {
@@ -139,13 +139,12 @@ async function updateExistingLogOnServer(log: {}) {
 
 // pull logs from the server into local
 async function updateLocalLogs(logs: Array<Log>) {
-    const localLogsJson = await getLocalLogsJson();
-    saveLogsToFile(logs, localLogsJson);
+    saveLogsToFile(logs);
 }
 
 async function getLocalLogsFromFile() {
-    const localLogsJson = getLocalLogsJson();
-    const localLogs = await getLogsFromFile(localLogsJson);
+    const filePath = getLogFilePath();
+    const localLogs = await getLogsFromFile(filePath);
     return localLogs;
 }
 
@@ -158,22 +157,17 @@ function getLogsFromFile(filepath: string): Array<Log> {
     return logs;
 }
 
-function saveLogsToFile(logs: Array<Log>, filepath: string) {
+function saveLogsToFile(logs: Array<Log> = []) {
+    const filePath = getLogFilePath();
     try {
-        fs.writeFileSync(filepath, JSON.stringify(logs, null, 2));
+        fs.writeFileSync(filePath, JSON.stringify(logs, null, 2));
     } catch (err) {
         console.log(err);
     }
 }
 
-function getLocalLogsJson(): string {
-    let file = getSoftwareDir();
-    if (isWindows()) {
-        file += "\\logs.json";
-    } else {
-        file += "/logs.json";
-    }
-    return file;
+function getLogFilePath(): string {
+    return getFile("logs.json");
 }
 
 function checkIfLocalFileExists(filepath: string): boolean {
@@ -181,5 +175,22 @@ function checkIfLocalFileExists(filepath: string): boolean {
         return true;
     } else {
         return false;
+    }
+}
+
+export async function deleteLogDay(unix_date: number) {
+    const jwt = getItem("jwt");
+    if (jwt) {
+        const resp = await softwareDelete("/100doc/logs", { unix_dates: [unix_date] }, jwt);
+        if (isResponseOk(resp)) {
+            window.showInformationMessage("Your log has been successfully deleted.");
+            // delete the log
+            let logs: Array<Log> = await getLocalLogsFromFile();
+            // delete the log based on the dayNum
+            logs = logs.filter((n: Log) => n.date !== unix_date);
+            saveLogsToFile(logs);
+            await syncLogs();
+            commands.executeCommand("DoC.viewLogs");
+        }
     }
 }
