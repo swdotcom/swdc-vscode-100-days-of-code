@@ -131,13 +131,17 @@
             height: 20px;
             content:url('https://100-days-of-code.s3-us-west-1.amazonaws.com/icons8-refresh.svg');
         }
+        button:disabled {
+            opacity: 0.1;
+            cursor: wait;
+        }
     </style>
     <body>
         <div class="top">
             <h1>Milestones</h1>
             <a
-                ><button class="viewRefreshButton" id="milestonesRefresh">
-                    <img class="viewRefreshButtonIcon" alt="Refresh" /></button
+                ><button class="viewRefreshButton" id="milestonesRefresh" title="Refresh" alt="Refresh">
+                    <img class="viewRefreshButtonIcon" /></button
             ></a>
         </div>
         <div>${this.recents} ${this.allMilestones}</div>
@@ -155,7 +159,11 @@
 
         const refreshButton = document.getElementById("milestonesRefresh");
         refreshButton.addEventListener("click", function () {
+            refreshButton.disabled = true;
             vscode.postMessage({ command: "refreshView", value: "milestones" });
+            setTimeout(() => {
+                refreshButton.disabled = false;
+            }, 2000);
         });
     </script>
 </html>

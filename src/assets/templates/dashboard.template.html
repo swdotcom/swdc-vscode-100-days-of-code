@@ -354,6 +354,10 @@
             height: 20px;
             content:url('https://100-days-of-code.s3-us-west-1.amazonaws.com/icons8-refresh.svg');
         }
+        button:disabled {
+            opacity: 0.1;
+            cursor: wait;
+        }
     </style>
     <body>
         <div id="head">
@@ -362,8 +366,8 @@
                 ><button id="shareProgress" title="Share dashboard metrics on Twitter">Share progress</button></a
             >
             <a
-                ><button class="viewRefreshButton" id="dashboardRefresh">
-                    <img class="viewRefreshButtonIcon" alt="Refresh" /></button
+                ><button class="viewRefreshButton" id="dashboardRefresh" title="Refresh" alt="Refresh">
+                    <img class="viewRefreshButtonIcon" /></button
             ></a>
             <button id="certificate">Get your Certificate</button>
         </div>
@@ -484,7 +488,11 @@
         });
 
         refreshButton.addEventListener("click", function () {
+            refreshButton.disabled = true;
             vscode.postMessage({ command: "refreshView", value: "dashboard" });
+            setTimeout(() => {
+                refreshButton.disabled = false;
+            }, 2000);
         });
     </script>
 </html>

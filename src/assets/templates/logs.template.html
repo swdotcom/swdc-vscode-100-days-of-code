@@ -417,13 +417,17 @@
             height: 20px;
             content:url('https://100-days-of-code.s3-us-west-1.amazonaws.com/icons8-refresh.svg');
         }
+        button:disabled {
+            opacity: 0.1;
+            cursor: wait;
+        }
     </style>
     <body>
         <div id="top">
             <h1>Logs</h1>
             <a
-                ><button class="viewRefreshButton" id="logsRefresh">
-                    <img class="viewRefreshButtonIcon" alt="Refresh" /></button
+                ><button class="viewRefreshButton" id="logsRefresh" title="Refresh" alt="Refresh">
+                    <img class="viewRefreshButtonIcon" /></button
             ></a>
             <button id="addLog">Add Log</button>
         </div>
@@ -483,7 +487,11 @@
 
         const refreshButton = document.getElementById("logsRefresh");
         refreshButton.addEventListener("click", function () {
+            refreshButton.disabled = true;
             vscode.postMessage({ command: "refreshView", value: "logs" });
+            setTimeout(() => {
+                refreshButton.disabled = false;
+            }, 2000);
         });
 
         var dropDownButtons = document.getElementsByClassName("cardHeaderDropDownButton");
