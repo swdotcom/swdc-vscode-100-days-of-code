@@ -398,17 +398,33 @@
         #editLogSubmitButton {
             cursor: pointer;
             font-size: 16px;
-            line-height: 25px;
+            line-height: 20px;
             color: ${this.cardTextColor};
             background: #00b4ee;
             border: 3px solid #00b4ee;
             box-sizing: border-box;
             border-radius: 2px;
         }
+        .viewRefreshButton {
+            cursor: pointer;
+            position: absolute;
+            background-color: rgba(0,0,0,0);
+            border-color: rgba(0,0,0,0);
+            margin-top: -12px;
+        }
+        .viewRefreshButtonIcon {
+            width: 20px;
+            height: 20px;
+            content:url('https://100-days-of-code.s3-us-west-1.amazonaws.com/icons8-refresh.svg');
+        }
     </style>
     <body>
         <div id="top">
             <h1>Logs</h1>
+            <a
+                ><button class="viewRefreshButton" id="logsRefresh">
+                    <img class="viewRefreshButtonIcon" alt="Refresh" /></button
+            ></a>
             <button id="addLog">Add Log</button>
         </div>
 
@@ -464,6 +480,11 @@
                 vscode.postMessage({ command: "addLog" });
             });
         }
+
+        const refreshButton = document.getElementById("logsRefresh");
+        refreshButton.addEventListener("click", function () {
+            vscode.postMessage({ command: "refreshView", value: "logs" });
+        });
 
         var dropDownButtons = document.getElementsByClassName("cardHeaderDropDownButton");
 

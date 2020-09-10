@@ -343,15 +343,28 @@
         .inf {
         	font-size: larger;
         }
+        .viewRefreshButton {
+            cursor: pointer;
+            position: absolute;
+            background-color: rgba(0,0,0,0);
+            border-color: rgba(0,0,0,0);
+        }
+        .viewRefreshButtonIcon {
+            width: 20px;
+            height: 20px;
+            content:url('https://100-days-of-code.s3-us-west-1.amazonaws.com/icons8-refresh.svg');
+        }
     </style>
     <body>
         <div id="head">
             <h1 class="inline">100 Days of Code Dashboard</h1>
             <a href="${this.twitterShareUrl}"
-                ><button id="shareProgress" title="Share dashboard metrics on Twitter">
-                    Share progress
-                </button></a
+                ><button id="shareProgress" title="Share dashboard metrics on Twitter">Share progress</button></a
             >
+            <a
+                ><button class="viewRefreshButton" id="dashboardRefresh">
+                    <img class="viewRefreshButtonIcon" alt="Refresh" /></button
+            ></a>
             <button id="certificate">Get your Certificate</button>
         </div>
         <div id="topMetrics">
@@ -433,25 +446,19 @@
                 <div id="milestones">
                     <div id="milestoneTitle">Recent Milestones</div>
                     <button id="viewMilestones">View milestones</button>
-                    <div class="milestoneCardGroup">
-                        ${this.milestoneHtml}
-                    </div>
+                    <div class="milestoneCardGroup">${this.milestoneHtml}</div>
                 </div>
             </div>
             <div id="chart">
                 <div id="chartTitle">Days Coded: ${this.days} days</div>
                 <div id="chartXMin"></div>
-                <div class="chartYLabel" style="bottom: 45px;">${this.min} hr</div>
+                <div class="chartYLabel" style="bottom: 45px">${this.min} hr</div>
                 <div id="chartXMid"></div>
-                <div class="chartYLabel" style="bottom: 170px;">${this.mid} hr</div>
+                <div class="chartYLabel" style="bottom: 170px">${this.mid} hr</div>
                 <div id="chartXMax"></div>
-                <div class="chartYLabel" style="bottom: 295px;">${this.max} hr</div>
-                <div id="chartBarContainer">
-                    ${this.barsHtml}
-                </div>
-                <div id="chartDateBar">
-                    ${this.xAxisDates}
-                </div>
+                <div class="chartYLabel" style="bottom: 295px">${this.max} hr</div>
+                <div id="chartBarContainer">${this.barsHtml}</div>
+                <div id="chartDateBar">${this.xAxisDates}</div>
             </div>
         </div>
     </body>
@@ -461,6 +468,7 @@
         const logsButton = document.getElementById("viewLogs");
         const certificate = document.getElementById("certificate");
         const shareProgressButton = document.getElementById("shareProgress");
+        const refreshButton = document.getElementById("dashboardRefresh");
 
         certificate.addEventListener("click", function () {
             vscode.postMessage({ command: "Certificate" });
@@ -472,7 +480,11 @@
             vscode.postMessage({ command: "Milestones" });
         });
         shareProgressButton.addEventListener("click", function () {
-            vscode.postMessage({ command: "ShareProgress" })
+            vscode.postMessage({ command: "ShareProgress" });
+        });
+
+        refreshButton.addEventListener("click", function () {
+            vscode.postMessage({ command: "refreshView", value: "dashboard" });
         });
     </script>
 </html>

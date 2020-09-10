@@ -18,6 +18,11 @@
             color: rgba(255, 255, 255, 0.05);
             background-color: ${this.cardBackgroundColor};
         }
+        .top {
+            display: flex;
+            width: 100%;
+            align-items: center;
+        }
         .inf {
             font-size: larger;
         }
@@ -114,10 +119,28 @@
         .hiddenId {
             visibility: hidden;
         }
+        .viewRefreshButton {
+            cursor: pointer;
+            position: absolute;
+            background-color: rgba(0,0,0,0);
+            border-color: rgba(0,0,0,0);
+            margin-top: -12px;
+        }
+        .viewRefreshButtonIcon {
+            width: 20px;
+            height: 20px;
+            content:url('https://100-days-of-code.s3-us-west-1.amazonaws.com/icons8-refresh.svg');
+        }
     </style>
     <body>
-        <h1>Milestones</h1>
-        ${this.recents} ${this.allMilestones}
+        <div class="top">
+            <h1>Milestones</h1>
+            <a
+                ><button class="viewRefreshButton" id="milestonesRefresh">
+                    <img class="viewRefreshButtonIcon" alt="Refresh" /></button
+            ></a>
+        </div>
+        <div>${this.recents} ${this.allMilestones}</div>
     </body>
     <script>
         const vscode = acquireVsCodeApi();
@@ -129,5 +152,10 @@
                 vscode.postMessage({ command: "incrementShare", value: hiddenId });
             });
         }
+
+        const refreshButton = document.getElementById("milestonesRefresh");
+        refreshButton.addEventListener("click", function () {
+            vscode.postMessage({ command: "refreshView", value: "milestones" });
+        });
     </script>
 </html>

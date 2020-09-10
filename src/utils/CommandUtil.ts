@@ -13,6 +13,8 @@ import { getUpdatedAddLogHtmlString } from "./addLogUtil";
 import { getUpdatedDashboardHtmlString, getCertificateHtmlString } from "./DashboardUtil";
 import { displayReadmeIfNotExists, displayLoginPromptIfNotLoggedIn, isLoggedIn } from "./Util";
 import { getUpdatedMilestonesHtmlString } from "./MilestonesTemplateUtil";
+import { fetchSummary } from "./SummaryDbUtil";
+import { fetchAllMilestones } from "./MilestonesDbUtil";
 import { getUpdatedLogsHtml } from "./LogsTemplateUtil";
 import { TrackerManager } from "../managers/TrackerManager";
 import { deleteLogDay, syncLogs } from "./LogSync";
@@ -129,6 +131,11 @@ export function createCommands(): { dispose: () => void } {
                                 commands.executeCommand("DoC.deleteLog", message.value);
                             }
                             break;
+                        case "refreshView":
+                            // refresh the logs then show it again
+                            await syncLogs();
+                            commands.executeCommand("DoC.viewLogs");
+                            break;
                     }
                 });
             }
@@ -163,7 +170,7 @@ export function createCommands(): { dispose: () => void } {
                     currentPanel = undefined;
                 });
 
-                currentPanel.webview.onDidReceiveMessage(message => {
+                currentPanel.webview.onDidReceiveMessage(async message => {
                     switch (message.command) {
                         case "Logs":
                             commands.executeCommand("DoC.viewLogs");
@@ -215,6 +222,11 @@ export function createCommands(): { dispose: () => void } {
                                         panel.reveal(ViewColumn.One);
                                     }
                                 });
+                        case "refreshView":
+                            // refresh the logs then show it again
+                            await fetchSummary();
+                            commands.executeCommand("DoC.viewDashboard");
+                            break;
                     }
                 });
             }
@@ -249,7 +261,7 @@ export function createCommands(): { dispose: () => void } {
                     currentPanel = undefined;
                 });
 
-                currentPanel.webview.onDidReceiveMessage(message => {
+                currentPanel.webview.onDidReceiveMessage(async message => {
                     switch (message.command) {
                         case "incrementShare":
                             TrackerManager.getInstance().trackUIInteraction(
@@ -262,6 +274,11 @@ export function createCommands(): { dispose: () => void } {
                             );
                             updateMilestoneShare(message.value);
                             checkSharesMilestones();
+                            break;
+                        case "refreshView":
+                            // refresh the milestones
+                            await fetchAllMilestones();
+                            commands.executeCommand("DoC.viewMilestones");
                             break;
                     }
                 });
