@@ -17,10 +17,27 @@ import { getUpdatedLogsHtml } from "./LogsTemplateUtil";
 import { TrackerManager } from "../managers/TrackerManager";
 import { deleteLogDay, syncLogs } from "./LogSync";
 
+let currentTitle: string = "";
+
+export function reloadCurrentView() {
+    if (currentTitle) {
+        switch (currentTitle) {
+            case "Logs":
+                commands.executeCommand("DoC.viewLogs");
+                break;
+            case "Dashboard":
+                commands.executeCommand("DoC.viewDashboard");
+                break;
+            case "Milestones":
+                commands.executeCommand("DoC.viewMilestones");
+                break;
+        }
+    }
+}
+
 export function createCommands(): { dispose: () => void } {
     let cmds: any[] = [];
     let currentPanel: WebviewPanel | undefined = undefined;
-    let currentTitle: string = "";
 
     const Doc100SftwProvider = new Tree100DoCProvider();
     const Doc100SftwTreeView: TreeView<TreeNode> = window.createTreeView("100DoC-tree", {
@@ -51,6 +68,7 @@ export function createCommands(): { dispose: () => void } {
                 // dipose the previous one
                 currentPanel.dispose();
             }
+            currentTitle = title;
 
             if (!currentPanel) {
                 currentPanel = window.createWebviewPanel("100doc", title, ViewColumn.One, { enableScripts: true });
@@ -137,6 +155,7 @@ export function createCommands(): { dispose: () => void } {
                 // dipose the previous one
                 currentPanel.dispose();
             }
+            currentTitle = title;
 
             if (!currentPanel) {
                 currentPanel = window.createWebviewPanel("100doc", title, ViewColumn.One, { enableScripts: true });
@@ -222,6 +241,7 @@ export function createCommands(): { dispose: () => void } {
                 // dipose the previous one
                 currentPanel.dispose();
             }
+            currentTitle = title;
 
             if (!currentPanel) {
                 currentPanel = window.createWebviewPanel("100doc", title, ViewColumn.One, { enableScripts: true });
@@ -263,6 +283,7 @@ export function createCommands(): { dispose: () => void } {
                 // dipose the previous one
                 currentPanel.dispose();
             }
+            currentTitle = title;
 
             if (!currentPanel) {
                 currentPanel = window.createWebviewPanel("100doc", title, ViewColumn.One, { enableScripts: true });
