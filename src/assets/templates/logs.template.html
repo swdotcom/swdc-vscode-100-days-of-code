@@ -139,7 +139,7 @@
             background-color: ${this.editButtonColor};
             border-color: rgba(0,0,0,0);
             vertical-align: middle;
-            margin: 0;
+            margin: 5px;
             visibility: hidden;
         }
         .cardHeaderDeleteLogButton {
@@ -153,7 +153,7 @@
             background-color: ${this.editButtonColor};
             border-color: rgba(0,0,0,0);
             vertical-align: middle;
-            margin: 0;
+            margin: 5px;
             visibility: hidden;
         }
         .cardHeaderShareButton {
@@ -218,7 +218,6 @@
             align-items: center;
             background: ${this.cardBackgroundColor};
             border-radius: 2px;
-            display: flex;
             flex-direction: column;
             justify-content: space-around;
             padding-top: 26px;
@@ -360,6 +359,13 @@
             color: ${this.cardTextColor};
             resize: none;
         }
+        .dayError {
+            display: none;
+            color:rgba(228, 15, 26);
+        }
+        #editDayNumberSelect {
+            width: 40px;
+        }
         #editLogsHoursSelect {
             width: 40px;
         }
@@ -410,6 +416,11 @@
             <div id="editLogCardContent">
                 <div id="head1">Edit log</div>
                 <div id="editLogsDayAndDate" class="head2 date"></div>
+                <!--
+                <div class="head2">Day</div>
+                <div class="dayError" id="editDayNumberErrorField"></div>
+                <input type="number" class="text" id="editDayNumberSelect" />
+                -->
                 <div class="head2">Title</div>
                 <textarea id="editLogsTitle" class="text" placeholder="Title for today's work log" rows="1"></textarea>
                 <div class="head2">Description</div>
@@ -457,43 +468,71 @@
 
         for (let i = 0; i < dropDownButtons.length; i++) {
             dropDownButtons[i].addEventListener("click", function () {
-                var shareButton = this.parentNode.getElementsByClassName("cardHeaderShareButton")[0];
-                var editButton = this.parentNode.getElementsByClassName("cardHeaderEditLogButton")[0];
-                var deleteButton = this.parentNode.getElementsByClassName("cardHeaderDeleteLogButton")[0];
-                var dropDownIcon = this;
-                var content = this.parentNode.parentNode.nextElementSibling;
+                const shareButton = this.parentNode.getElementsByClassName("cardHeaderShareButton")[0];
+                const editButton = this.parentNode.getElementsByClassName("cardHeaderEditLogButton")[0];
+                // const deleteButton = this.parentNode.getElementsByClassName("cardHeaderDeleteLogButton")[0];
+                const dropDownIcon = this;
+                const content = this.parentNode.parentNode.nextElementSibling;
                 if (content.style.maxHeight) {
                     content.style.maxHeight = null;
                     dropDownIcon.style.transform = "rotate(180deg)";
                     editButton.style.visibility = "hidden";
-                    editButton.style.margin = "0px";
-                    deleteButton.style.visibility = "hidden";
-                    deleteButton.style.margin = "0px";
+                    // deleteButton.style.visibility = "hidden";
                     shareButton.style.transform = "translate(40px, -18px)";
+                    shareButton.style.left = "-15px";
                 } else {
                     content.style.maxHeight = content.scrollHeight + "px";
                     dropDownIcon.style.transform = "rotate(0deg)";
                     editButton.style.visibility = "visible";
-                    editButton.style.margin = "5px";
-                    deleteButton.style.visibility = "visible";
-                    deleteButton.style.margin = "5px";
+                    // deleteButton.style.visibility = "visible";
                     shareButton.style.transform = "translate(-48px, -18px)";
+                    shareButton.style.left = "0px";
                 }
             });
         }
 
-        var deleteButtons = document.getElementsByClassName("cardHeaderDeleteLogButton");
+        /**
+        const deleteButtons = document.getElementsByClassName("cardHeaderDeleteLogButton");
 
         for (let i = 0; i < deleteButtons.length; i++) {
             deleteButtons[i].addEventListener("click", arg => {
-                if (arg && arg.target) {
-                    let date_val = arg.target.getAttribute("data-val");
-                    if (date_val && !isNaN(date_val)) {
+                if (arg && arg.currentTarget) {
+                    const date_val = arg.currentTarget.getAttribute("data-val");
+                    if (date_val) {
                         const unix_date = date_val / 1000;
                         vscode.postMessage({ command: "deleteLog", value: parseInt(unix_date, 10) });
                     }
                 }
             });
+        }
+        **/
+
+        var days = [];
+
+        // expand the 1st card in the list
+        const logCards = document.getElementsByClassName("logCard");
+        if (logCards && logCards.length) {
+            // HTMLDivElement
+            const logCard = logCards[0];
+            const cardContent = logCard.getElementsByClassName("cardContent")[0];
+            cardContent.style.maxHeight = cardContent.scrollHeight + "px";
+
+            const shareButton = logCard.getElementsByClassName("cardHeaderShareButton")[0];
+            const editButton = logCard.getElementsByClassName("cardHeaderEditLogButton")[0];
+            // const deleteButton = logCard.getElementsByClassName("cardHeaderDeleteLogButton")[0];
+            const dropDownIcon = logCard.getElementsByClassName("cardHeaderDropDownButton")[0];
+            dropDownIcon.style.transform = "rotate(0deg)";
+            editButton.style.visibility = "visible";
+            // deleteButton.style.visibility = "visible";
+            shareButton.style.transform = "translate(-48px, -18px)";
+
+            // set the day numbers that are found
+            for (let i = 0; i < logCards.length; i++) {
+                const card = logCards[i];
+
+                const day = card.getAttribute("data-val");
+                days.push(day);
+            }
         }
 
         var editButtons = document.getElementsByClassName("cardHeaderEditLogButton");
@@ -534,6 +573,8 @@
                 linksField.value = linksString;
                 let hoursField = document.getElementById("editLogsHoursSelect");
                 hoursField.value = hours;
+                let dayNumberField = document.getElementById("editDayNumberSelect");
+                dayNumberField.value = dayNumber;
                 let metricsText = document.getElementById("metricsText");
                 metricsText.innerHTML =
                     "You’ve logged " +
@@ -548,12 +589,20 @@
         cancelButton.addEventListener("click", function () {
             let editLogsForm = document.getElementById("editLogCard");
             editLogsForm.style.visibility = "hidden";
+
+            const dayErrorElement = document.getElementById("editDayNumberErrorField");
+            const editDayNumberSelectField = document.getElementById("editDayNumberSelect");
+
+            editDayNumberSelectField.style.borderColor = null;
+            editDayNumberSelectField.value = null;
+            dayErrorElement.style.display = "none";
+            dayErrorElement.innerHTML = "";
         });
 
         var submitButton = document.getElementById("editLogSubmitButton");
         submitButton.addEventListener("click", function () {
             let dayAndDateTitle = document.getElementById("editLogsDayAndDate");
-            const dayNumber = dayAndDateTitle.innerHTML.split(" ")[1];
+            let dayNumber = dayAndDateTitle.innerHTML.split(" ")[1];
             let titleField = document.getElementById("editLogsTitle");
             const title = titleField.value;
             let descriptionField = document.getElementById("editLogsDescription");
@@ -562,18 +611,27 @@
             const links = linksField.value.replace(" ", "").split(",");
             const logCards = document.getElementsByClassName("logCard");
             let logCard = logCards[logCards.length - dayNumber];
-            let cardHeader = logCard.firstChild.nextSibling;
-            let dayAndTitle = cardHeader.firstChild.nextSibling.firstChild.nextSibling;
-            dayAndTitle.innerHTML = "Day " + dayNumber + ": " + title;
-            let cardContent = cardHeader.nextSibling.nextSibling;
-            let cardDescription = cardContent.firstChild.nextSibling.firstChild.nextSibling.firstChild.nextSibling;
-            let linksRoot =
-                cardContent.firstChild.nextSibling.firstChild.nextSibling.nextSibling.nextSibling.firstChild
-                    .nextSibling;
+
+            // get the card header
+            const cardHeader = logCard.getElementsByClassName("cardHeader")[0];
+            // get the card subject
+            const cardSubject = logCard.getElementByClassName("cardSubject")[0];
+            cardSubject.innerHTML = "Day " + dayNumber + ": " + title;
+
+            // get the card content
+            const cardContent = logCard.getElementsByClassName("cardContent")[0];
+
+            // get the card description
+            const cardDescription = logCard.getElementsByClassName("cardText")[0];
+
+            // get the links root
+            const linksRoot = lgoCard.getElementByClassName("linksRoot")[0];
+
             let allOldLinks = linksRoot.childNodes;
             for (let j = allOldLinks.length - 1; j >= 0; j--) {
                 allOldLinks[j].remove();
             }
+
             if (links.length > 0) {
                 for (let j = 0; j < links.length; j++) {
                     let link = links[j];
@@ -592,6 +650,34 @@
                 div.append(text);
                 linksRoot.append(a);
             }
+
+            const dayErrorElement = document.getElementById("editDayNumberErrorField");
+            const editDayNumberSelectField = document.getElementById("editDayNumberSelect");
+            const editedDayNumber = parseFloat(editDayNumberSelectField.value);
+            // set the dayNumber if its not beyond the current day and it hasn't already been used
+            if (!isNaN(editedDayNumber) && editedDayNumber !== dayNumber) {
+                editDayNumberSelectField.style.borderColor = null;
+                dayErrorElement.style.display = "none";
+                dayErrorElement.innerHTML = "";
+
+                let errMsg = null;
+                if (editedDayNumber > Math.max(...days)) {
+                    errMsg = "Day should be less than the number of logged days";
+                } else if (days.includes(editedDayNumber)) {
+                    errMsg = "Day should be less than the number of logged days";
+                } else if (editedDayNumber <= 0) {
+                    errMsg = "Day must be greater than or equal to 1";
+                }
+
+                if (errMsg) {
+                    editDayNumberSelectField.style.borderColor = "red";
+                    dayErrorElement.style.display = "block";
+                    dayErrorElement.innerHTML = errMsg;
+                    return;
+                }
+                dayNumber = editedDayNumber;
+            }
+
             const editHoursAmount = parseFloat(document.getElementById("editLogsHoursSelect").value);
             let cardHoursMetric = logCard.getElementsByClassName("cardMetricText")[1];
             let cardHoursAveragePercent = logCard.getElementsByClassName("cardMetricText")[2];
@@ -631,33 +717,14 @@
 
         let shareButtons = document.getElementsByClassName("cardHeaderShareButton");
         for (let i = 0; i < shareButtons.length; i++) {
-            shareButtons[i].addEventListener("click", function () {
-                const dayNumberValue = this.parentNode.parentNode.parentNode.firstChild.nextSibling.firstChild.nextSibling.innerHTML
-                    .split(" ")[1]
-                    .slice(0, -1);
-                vscode.postMessage({ command: "incrementShare", value: dayNumberValue });
+            shareButtons[i].addEventListener("click", function (arg) {
+                if (arg && arg.currentTarget) {
+                    let day_number = arg.currentTarget.getAttribute("data-val");
+                    if (day_number) {
+                        vscode.postMessage({ command: "incrementShare", value: parseInt(day_number, 10) });
+                    }
+                }
             });
-        }
-
-        // expand the 1st card in the list
-        const logCards = document.getElementsByClassName("logCard");
-        if (logCards && logCards.length) {
-            // HTMLDivElement
-            const logCard = logCards[0];
-            const cardHeader = logCard.firstChild.nextSibling;
-            const cardContent = cardHeader.nextSibling.nextSibling;
-            cardContent.style.maxHeight = cardContent.scrollHeight + "px";
-
-            const shareButton = logCard.getElementsByClassName("cardHeaderShareButton")[0];
-            const editButton = logCard.getElementsByClassName("cardHeaderEditLogButton")[0];
-            const deleteButton = logCard.getElementsByClassName("cardHeaderDeleteLogButton")[0];
-            const dropDownIcon = logCard.getElementsByClassName("cardHeaderDropDownButton")[0];
-            dropDownIcon.style.transform = "rotate(0deg)";
-            editButton.style.visibility = "visible";
-            editButton.style.margin = "5px";
-            deleteButton.style.visibility = "visible";
-            deleteButton.style.margin = "5px";
-            shareButton.style.transform = "translate(-48px, -18px)";
         }
     </script>
 </html>
