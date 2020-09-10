@@ -573,8 +573,8 @@
                 linksField.value = linksString;
                 let hoursField = document.getElementById("editLogsHoursSelect");
                 hoursField.value = hours;
-                let dayNumberField = document.getElementById("editDayNumberSelect");
-                dayNumberField.value = dayNumber;
+                /* let dayNumberField = document.getElementById("editDayNumberSelect");
+                dayNumberField.value = dayNumber; */
                 let metricsText = document.getElementById("metricsText");
                 metricsText.innerHTML =
                     "You’ve logged " +
@@ -590,13 +590,13 @@
             let editLogsForm = document.getElementById("editLogCard");
             editLogsForm.style.visibility = "hidden";
 
-            const dayErrorElement = document.getElementById("editDayNumberErrorField");
+            /* const dayErrorElement = document.getElementById("editDayNumberErrorField");
             const editDayNumberSelectField = document.getElementById("editDayNumberSelect");
 
             editDayNumberSelectField.style.borderColor = null;
             editDayNumberSelectField.value = null;
             dayErrorElement.style.display = "none";
-            dayErrorElement.innerHTML = "";
+            dayErrorElement.innerHTML = ""; */
         });
 
         var submitButton = document.getElementById("editLogSubmitButton");

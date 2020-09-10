@@ -59,7 +59,7 @@ export function activate(ctx: vscode.ExtensionContext) {
     ctx.subscriptions.push(createCommands());
 }
 
-export function initializePlugin() {
+export async function initializePlugin() {
     // checks if all the files exist
     checkLogsJson();
     checkMilestonesJson();
@@ -79,7 +79,7 @@ export function initializePlugin() {
     if (isLoggedIn()) {
         setName();
 
-        syncLogs();
+        await syncLogs();
 
         // milestones
         checkMilestonesPayload();
@@ -126,6 +126,9 @@ function initializeIntervalJobs() {
             }
 
             fetchAllMilestones();
+
+            // sync the logs
+            syncLogs();
 
             // syncs the Summary info (hours, lines, etc) to the file
             syncSummary();

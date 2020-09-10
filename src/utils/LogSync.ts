@@ -44,28 +44,22 @@ export async function updateLog(log: Log) {
 }
 
 // pulls logs from the server and saves them locally. This will be run periodically.
+// logs have a format like [ { day_number: 1, date: ... }, ... ]
 export async function syncLogs() {
-    const serverLogs = await fetchLogsFromServer();
+    const jwt = getItem("jwt");
+    let serverLogs = null;
+    if (jwt) {
+        const resp = await softwareGet("/100doc/logs", jwt);
+        if (isResponseOk(resp)) {
+            serverLogs = resp.data;
+        }
+    }
+
     if (serverLogs) {
         const formattedLogs = formatLogs(serverLogs);
         await addMilestonesToLogs(formattedLogs);
         saveLogsToFile(formattedLogs);
     }
-}
-
-// returns an array of logs from the server
-// logs have a format like [ { day_number: 1, date: ... }, ... ]
-async function fetchLogsFromServer() {
-    let logs: [] = [];
-    const jwt = getItem("jwt");
-    if (jwt) {
-        await softwareGet("/100doc/logs", jwt).then(resp => {
-            if (isResponseOk(resp)) {
-                logs = resp.data;
-            }
-        });
-    }
-    return logs;
 }
 
 // formats logs from the server into the local log model format before saving locally
