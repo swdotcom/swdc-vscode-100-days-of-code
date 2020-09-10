@@ -47,7 +47,7 @@ export async function updateLog(log: Log) {
 // logs have a format like [ { day_number: 1, date: ... }, ... ]
 export async function syncLogs() {
     const jwt = getItem("jwt");
-    let serverLogs = null;
+    let serverLogs: Array<Log> = getLocalLogsFromFile();
     if (jwt) {
         const resp = await softwareGet("/100doc/logs", jwt);
         if (isResponseOk(resp)) {
@@ -64,18 +64,19 @@ export async function syncLogs() {
 
 // formats logs from the server into the local log model format before saving locally
 // logs have a format like [ { day_number: 1, date: ... }, ... ]
-function formatLogs(logs: []) {
+function formatLogs(logs: Array<Log>) {
     let formattedLogs: Array<Log> = [];
+
     logs.forEach((log: any) => {
         let formattedLog = new Log();
         formattedLog.title = log.title;
         formattedLog.description = log.description;
         formattedLog.day_number = log.day_number;
-        formattedLog.codetime_metrics.hours = parseFloat((log.minutes / 60).toFixed(2));
+        formattedLog.codetime_metrics.hours = log.minutes ? parseFloat((log.minutes / 60).toFixed(2)) : 0;
         formattedLog.codetime_metrics.keystrokes = log.keystrokes;
         formattedLog.codetime_metrics.lines_added = log.lines_added;
-        formattedLog.date = log.unix_date * 1000; // seconds --> milliseconds
-        formattedLog.links = log.ref_links;
+        formattedLog.date = log.unix_date ? log.unix_date * 1000 : 0; // seconds --> milliseconds
+        formattedLog.links = log.ref_links || [];
         formattedLogs.push(formattedLog);
     });
     // sorts logs in ascending order
@@ -133,17 +134,13 @@ async function updateExistingLogOnServer(log: {}) {
     }
 }
 
-async function getLocalLogsFromFile() {
+function getLocalLogsFromFile(): Array<Log> {
     const filePath = getLogFilePath();
-    const localLogs = await getLogsFromFile(filePath);
-    return localLogs;
-}
 
-function getLogsFromFile(filepath: string): Array<Log> {
     let logs: Array<Log> = [];
-    const exists = checkIfLocalFileExists(filepath);
+    const exists = checkIfLocalFileExists(filePath);
     if (exists) {
-        logs = getFileDataAsJson(filepath);
+        logs = getFileDataAsJson(filePath);
     }
     return logs;
 }
