@@ -610,12 +610,15 @@
             let linksField = document.getElementById("editLogsLinks");
             const links = linksField.value.replace(" ", "").split(",");
             const logCards = document.getElementsByClassName("logCard");
-            let logCard = logCards[logCards.length - dayNumber];
+            const cardIdx = logCards.length - dayNumber;
+
+            // get the log card to get everything else from the card
+            const logCard = logCards[cardIdx];
 
             // get the card header
             const cardHeader = logCard.getElementsByClassName("cardHeader")[0];
             // get the card subject
-            const cardSubject = logCard.getElementByClassName("cardSubject")[0];
+            const cardSubject = logCard.getElementsByClassName("cardSubject")[0];
             cardSubject.innerHTML = "Day " + dayNumber + ": " + title;
 
             // get the card content
@@ -625,7 +628,7 @@
             const cardDescription = logCard.getElementsByClassName("cardText")[0];
 
             // get the links root
-            const linksRoot = lgoCard.getElementByClassName("linksRoot")[0];
+            const linksRoot = logCard.getElementsByClassName("linksRoot")[0];
 
             let allOldLinks = linksRoot.childNodes;
             for (let j = allOldLinks.length - 1; j >= 0; j--) {
@@ -651,10 +654,11 @@
                 linksRoot.append(a);
             }
 
+            // set the dayNumber if its not beyond the current day and it hasn't already been used
+            /**
             const dayErrorElement = document.getElementById("editDayNumberErrorField");
             const editDayNumberSelectField = document.getElementById("editDayNumberSelect");
             const editedDayNumber = parseFloat(editDayNumberSelectField.value);
-            // set the dayNumber if its not beyond the current day and it hasn't already been used
             if (!isNaN(editedDayNumber) && editedDayNumber !== dayNumber) {
                 editDayNumberSelectField.style.borderColor = null;
                 dayErrorElement.style.display = "none";
@@ -677,8 +681,10 @@
                 }
                 dayNumber = editedDayNumber;
             }
+            **/
 
             const editHoursAmount = parseFloat(document.getElementById("editLogsHoursSelect").value);
+
             let cardHoursMetric = logCard.getElementsByClassName("cardMetricText")[1];
             let cardHoursAveragePercent = logCard.getElementsByClassName("cardMetricText")[2];
             let cardAverageHoursMetric = parseFloat(
