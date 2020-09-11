@@ -134,6 +134,10 @@ export function createCommands(): { dispose: () => void } {
                         case "refreshView":
                             // refresh the logs then show it again
                             await syncLogs();
+                            if (currentPanel) {
+                                // dipose the previous one
+                                currentPanel.dispose();
+                            }
                             commands.executeCommand("DoC.viewLogs");
                             break;
                     }
@@ -225,6 +229,10 @@ export function createCommands(): { dispose: () => void } {
                         case "refreshView":
                             // refresh the logs then show it again
                             await fetchSummary();
+                            if (currentPanel) {
+                                // dipose the previous one
+                                currentPanel.dispose();
+                            }
                             commands.executeCommand("DoC.viewDashboard");
                             break;
                     }
@@ -278,6 +286,10 @@ export function createCommands(): { dispose: () => void } {
                         case "refreshView":
                             // refresh the milestones
                             await fetchAllMilestones();
+                            if (currentPanel) {
+                                // dipose the previous one
+                                currentPanel.dispose();
+                            }
                             commands.executeCommand("DoC.viewMilestones");
                             break;
                     }
