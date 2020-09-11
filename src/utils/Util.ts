@@ -2,6 +2,17 @@ import { commands, ViewColumn, Uri, window, extensions } from "vscode";
 import { getLatestLogEntryNumber } from "./LogsUtil";
 import { _100_DAYS_OF_CODE_PLUGIN_ID, _100_DAYS_OF_CODE_EXT_ID } from "./Constants";
 import { softwarePost, isResponseOk } from "../managers/HttpManager";
+import { syncLogs } from "./LogSync";
+import {
+    checkMilestonesPayload,
+    pushUpdatedMilestones,
+    fetchMilestones,
+    sentMilestonesDb,
+    updatedMilestonesDb,
+    pushNewMilestones
+} from "./MilestonesDbUtil";
+import { fetchSummary } from "./SummaryDbUtil";
+import { reloadCurrentView } from "./CommandUtil";
 
 const fs = require("fs");
 const os = require("os");
@@ -10,6 +21,10 @@ const { exec } = require("child_process");
 
 const alpha = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
+let check_logon_interval: NodeJS.Timeout;
+let check_login_interval_max_times = 40;
+let current_check_login_interval_count = 0;
+let checking_login = false;
 let workspace_name: any = null;
 let _name = "";
 
@@ -216,8 +231,8 @@ export function getLocalREADMEFile() {
 }
 
 export function displayReadmeIfNotExists(override = false) {
-    const logsEmpty = getLatestLogEntryNumber() <= 0;
-    if (logsEmpty || override) {
+    const logEntryLen = getLatestLogEntryNumber();
+    if (logEntryLen === 0 || override) {
         const readmeUri = Uri.file(getLocalREADMEFile());
 
         commands.executeCommand("markdown.showPreview", readmeUri, ViewColumn.One, { locked: true });
@@ -231,7 +246,7 @@ export function getItem(key: string) {
 }
 
 export function getJwt(prefix = false) {
-    const jwt = getItem('jwt');
+    const jwt = getItem("jwt");
     if (!jwt || prefix) {
         return jwt;
     } else {
@@ -290,15 +305,58 @@ export function displayLoginPromptIfNotLoggedIn() {
                         case "Log in with GitHub":
                             commands.executeCommand("codetime.githubLogin");
                             break;
-                        case "Log in with Email":
+                        default:
                             commands.executeCommand("codetime.codeTimeLogin");
                             break;
-                        default:
-                            break;
+                    }
+
+                    if (!checking_login) {
+                        setTimeout(() => initializeLogInCheckInterval(), 8000);
                     }
                 }
             });
     }
+}
+
+function initializeLogInCheckInterval() {
+    checking_login = true;
+    check_logon_interval = setInterval(async () => {
+        const loggedIn = isLoggedIn();
+        const passedTimeThreshold = current_check_login_interval_count >= check_login_interval_max_times;
+
+        if (loggedIn) {
+            window.showInformationMessage("Loading account logs and milestones...");
+
+            setName();
+
+            await syncLogs();
+
+            // milestones
+            checkMilestonesPayload();
+            if (!sentMilestonesDb) {
+                pushNewMilestones();
+            }
+            if (!updatedMilestonesDb) {
+                pushUpdatedMilestones();
+            }
+
+            await fetchMilestones();
+
+            // update the summary on init
+            fetchSummary();
+
+            clearInterval(check_logon_interval);
+
+            checking_login = false;
+
+            reloadCurrentView();
+        } else if (passedTimeThreshold) {
+            clearInterval(check_logon_interval);
+
+            checking_login = false;
+        }
+        current_check_login_interval_count++;
+    }, 9000);
 }
 
 export function setName() {

@@ -166,15 +166,17 @@ function getMilestonesText(milestones: Array<number>): string {
         if (milestoneIndex < milestoneNum) {
             let milestoneId = milestones[milestoneIndex];
             let milestone = getMilestoneById(milestoneId);
-            milestonesText += [
-                `\t\t\t\t\t\t<div class="cardMilestone">`,
-                `\t\t\t\t\t\t\t<span class="tooltiptext">`,
-                `\t\t\t\t\t\t\t\t<div style="font-weight: bold;">${milestone.title}</div>`,
-                `\t\t\t\t\t\t\t\t<div>${milestone.description}</div>`,
-                `\t\t\t\t\t\t\t</span>`,
-                `\t\t\t\t\t\t\t<img class="cardMilestoneIcon" src="${milestone.icon}" alt="${milestone.title}">`,
-                `\t\t\t\t\t\t</div>\n`
-            ].join("\n");
+            if (milestone) {
+                milestonesText += [
+                    `\t\t\t\t\t\t<div class="cardMilestone">`,
+                    `\t\t\t\t\t\t\t<span class="tooltiptext">`,
+                    `\t\t\t\t\t\t\t\t<div style="font-weight: bold;">${milestone.title}</div>`,
+                    `\t\t\t\t\t\t\t\t<div>${milestone.description}</div>`,
+                    `\t\t\t\t\t\t\t</span>`,
+                    `\t\t\t\t\t\t\t<img class="cardMilestoneIcon" src="${milestone.icon}" alt="${milestone.title}">`,
+                    `\t\t\t\t\t\t</div>\n`
+                ].join("\n");
+            }
         } else {
             milestonesText += [`\t\t\t\t\t\t<div class="cardMilestone">`, `\t\t\t\t\t\t</div>\n`].join("\n");
         }
@@ -215,7 +217,7 @@ function getLogCard(
     const linksText = getLinksText(day.links);
     const milestonesText = getMilestonesText(day.milestones);
     return [
-        `\t<div class="logCard">`,
+        `\t<div class="logCard" data-val="${day.day_number}">`,
         `\t\t<div class="cardHeader">`,
         `\t\t\t<div class="cardHeaderTextSection">`,
         `\t\t\t\t<div class="cardSubject">Day ${day.day_number}: ${day.title}</div>`,
@@ -224,8 +226,7 @@ function getLogCard(
         `\t\t\t\t</div>`,
         `\t\t\t</div>`,
         `\t\t\t<div class="cardHeaderButtonSection">`,
-        `\t\t\t\t<a href="${twitterShareUrl}" title="Share this on Twitter"><button class="cardHeaderShareButton"><img class="cardHeaderShareButtonIcon" src=${shareIconLink} alt="Share"></button></a>`,
-        `\t\t\t\t<button class="cardHeaderEditLogButton">Edit Log</button>`,
+        `\t\t\t\t<a href="${twitterShareUrl}" title="Share this on Twitter"><button class="cardHeaderShareButton" data-val="${day.day_number}"><img class="cardHeaderShareButtonIcon" src=${shareIconLink} alt="Share"></button></a>`,
         `\t\t\t\t<button class="cardHeaderDropDownButton"><img class="cardHeaderDropDownButtonIcon" src=${dropDownPath} alt="Drop Down"></button>`,
         `\t\t\t</div>`,
         `\t\t</div>`,
@@ -236,7 +237,7 @@ function getLogCard(
         `\t\t\t\t\t<br>`,
         `\t\t\t\t</div>`,
         `\t\t\t\t<div class="cardTextGroup">`,
-        `\t\t\t\t\t<div>\n`,
+        `\t\t\t\t\t<div class="linksRoot">\n`,
         `${linksText}`,
         `\t\t\t\t\t</div>`,
         `\t\t\t\t</div>`,

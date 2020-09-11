@@ -3,7 +3,8 @@ import { api_endpoint } from "../utils/Constants";
 
 // build the axios api base url
 const beApi = axios.create({
-    baseURL: `${api_endpoint}`
+    baseURL: `${api_endpoint}`,
+    timeout: 5000
 });
 
 export async function serverIsAvailable() {
@@ -79,10 +80,10 @@ export async function softwarePost(api: string, payload: any, jwt: string) {
 /**
  * perform a delete request
  */
-export async function softwareDelete(api: string, jwt: string) {
+export async function softwareDelete(api: string, payload: {}, jwt: string) {
     beApi.defaults.headers.common["Authorization"] = jwt;
     return beApi
-        .delete(api)
+        .delete(api, { data: payload })
         .then(resp => {
             return resp;
         })

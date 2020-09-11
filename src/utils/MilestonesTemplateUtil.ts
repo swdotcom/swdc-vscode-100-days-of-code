@@ -36,89 +36,92 @@ function getStyleColorsBasedOnMode(): any {
 export function getUpdatedMilestonesHtmlString(): string {
     const { cardTextColor, cardBackgroundColor, cardGrayedLevel, cardGrayedLevelFont } = getStyleColorsBasedOnMode();
 
-    const milestones = getAllMilestones();
+    const milestoneData = getAllMilestones();
 
     // for adding to the html string later
     let recents: string = "";
     let allMilestones: string = "\n\t\t<hr>\n\t\t<h2>All Milestones</h2>\n";
 
     // share icon
-    for (let i = 0; i < milestones.length; i++) {
-        const milestone = milestones[i];
-        const id: number = milestone.id;
-        const title: string = milestone.title;
-        const description: string = milestone.description;
-        const level: number = milestone.level;
-        const achieved: boolean = milestone.achieved;
-        const shareIcon: string = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+    if (milestoneData && milestoneData.milestones) {
+        const milestones = milestoneData.milestones;
+        for (let i = 0; i < milestones.length; i++) {
+            const milestone = milestones[i];
+            const id: number = milestone.id;
+            const title: string = milestone.title;
+            const description: string = milestone.description;
+            const level: number = milestone.level;
+            const achieved: boolean = milestone.achieved;
+            const shareIcon: string = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
 
-        let icon: string;
-        let dateAchieved: number = 0;
-        const shareLink = generateShareUrl(i + 1, title, description);
-        // If achieved, card must be colored. Otherwise, card should be gray
+            let icon: string;
+            let dateAchieved: number = 0;
+            const shareLink = generateShareUrl(i + 1, title, description);
+            // If achieved, card must be colored. Otherwise, card should be gray
 
-        // for adding gray scale effect class into html
-        let grayedCard: string = "";
-        let grayedLevel: string = "";
+            // for adding gray scale effect class into html
+            let grayedCard: string = "";
+            let grayedLevel: string = "";
 
-        // can only share if achieved
-        let shareHtml: string = "";
+            // can only share if achieved
+            let shareHtml: string = "";
 
-        // can only have date if achieved
-        let dateHtml: string = "";
+            // can only have date if achieved
+            let dateHtml: string = "";
 
-        // Re: If achieved, card must be colored. Otherwise, card should be gray
-        if (achieved) {
-            icon = milestone.icon;
-            dateAchieved = milestone.date_achieved;
-            shareHtml = `\t\t\t<a href="${shareLink}" title="Share this on Twitter"><img src="${shareIcon}" class="milestoneShare" alt="Share"/></a>`;
+            // Re: If achieved, card must be colored. Otherwise, card should be gray
+            if (achieved) {
+                icon = milestone.icon;
+                dateAchieved = milestone.date_achieved;
+                shareHtml = `\t\t\t<a href="${shareLink}" title="Share this on Twitter"><img src="${shareIcon}" class="milestoneShare" alt="Share"/></a>`;
 
-            // getting date in mm/dd/yyyy format
-            let dateOb = new Date(dateAchieved);
+                // getting date in mm/dd/yyyy format
+                let dateOb = new Date(dateAchieved);
 
-            const dayNum = dateOb.getDate();
-            const month = monthNames[dateOb.getMonth()];
-            const year = dateOb.getFullYear();
+                const dayNum = dateOb.getDate();
+                const month = monthNames[dateOb.getMonth()];
+                const year = dateOb.getFullYear();
 
-            dateHtml = `\t\t\t<div class="date">${month} ${dayNum}, ${year}</div>`;
-        } else {
-            icon = milestone.gray_icon;
-            grayedCard = "grayed";
-            grayedLevel = "grayedLevel";
-        }
-
-        // if level 0, no level tag on top.
-        // if level 6, replace it with ∞
-        let levelHtml: string = "";
-        if (level > 0 && level < 6) {
-            levelHtml = `\t\t\t<div class="milestoneCardLevel ${grayedLevel}">Level ${level}</div>`;
-        } else if (level === 6) {
-            levelHtml = `\t\t\t<div class="milestoneCardLevel ${grayedLevel}">Level <span class="inf">∞</span></div>`;
-        }
-
-        const milestoneCardHtml: string = [
-            `\t\t<div class="milestoneCard ${grayedCard}">`,
-            `\t\t\t<div class="hiddenId">${id}</div>`,
-            `${levelHtml}`,
-            `${shareHtml}`,
-            `\t\t\t<div class="milestoneTitle">${title}</div>`,
-            `\t\t\t<img class="logo" src=${icon} alt="Icon">`,
-            `\t\t\t<div class="milestoneDesc">${description}</div>`,
-            `${dateHtml}`,
-            `\t\t</div>\n`
-        ].join("\n");
-
-        // Checks for the same date
-        const dateNow = new Date();
-        const dateOb = new Date(dateAchieved);
-        if (compareDates(dateOb, dateNow)) {
-            if (recents === "") {
-                recents += `\n\t\t<h2>Today's Milestones</h2>\n`;
+                dateHtml = `\t\t\t<div class="date">${month} ${dayNum}, ${year}</div>`;
+            } else {
+                icon = milestone.gray_icon;
+                grayedCard = "grayed";
+                grayedLevel = "grayedLevel";
             }
-            recents += milestoneCardHtml;
-        }
 
-        allMilestones += milestoneCardHtml;
+            // if level 0, no level tag on top.
+            // if level 6, replace it with ∞
+            let levelHtml: string = "";
+            if (level > 0 && level < 6) {
+                levelHtml = `\t\t\t<div class="milestoneCardLevel ${grayedLevel}">Level ${level}</div>`;
+            } else if (level === 6) {
+                levelHtml = `\t\t\t<div class="milestoneCardLevel ${grayedLevel}">Level <span class="inf">∞</span></div>`;
+            }
+
+            const milestoneCardHtml: string = [
+                `\t\t<div class="milestoneCard ${grayedCard}">`,
+                `\t\t\t<div class="hiddenId">${id}</div>`,
+                `${levelHtml}`,
+                `${shareHtml}`,
+                `\t\t\t<div class="milestoneTitle">${title}</div>`,
+                `\t\t\t<img class="logo" src=${icon} alt="Icon">`,
+                `\t\t\t<div class="milestoneDesc">${description}</div>`,
+                `${dateHtml}`,
+                `\t\t</div>\n`
+            ].join("\n");
+
+            // Checks for the same date
+            const dateNow = new Date();
+            const dateOb = new Date(dateAchieved);
+            if (compareDates(dateOb, dateNow)) {
+                if (recents === "") {
+                    recents += `\n\t\t<h2>Today's Milestones</h2>\n`;
+                }
+                recents += milestoneCardHtml;
+            }
+
+            allMilestones += milestoneCardHtml;
+        }
     }
 
     // If no milestones earned today

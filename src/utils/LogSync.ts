@@ -1,11 +1,13 @@
 import fs = require("fs");
 const moment = require("moment-timezone");
 import { getItem } from "./Util";
-import { serverIsAvailable, softwareGet, isResponseOk, softwarePost, softwarePut } from "../managers/HttpManager";
-import { getSoftwareDir, isWindows } from "./Util";
-import { getFileDataAsJson } from "../managers/FileManager";
-import { fetchMilestones } from "./MilestonesDbUtil";
+import { softwareGet, isResponseOk, softwarePost, softwarePut, softwareDelete } from "../managers/HttpManager";
+import { getFileDataAsJson, getFile } from "../managers/FileManager";
+import { fetchAllMilestones } from "./MilestonesDbUtil";
 import { Log } from "../models/Log";
+import { commands, window } from "vscode";
+
+let currently_deleting_log_date: number = -1;
 
 // creates a new log locally and on the server
 export async function createLog(log: Log) {
@@ -14,10 +16,10 @@ export async function createLog(log: Log) {
     // add the new log
     const updatedLogs = [...logs, log];
     // write back to the local file
-    updateLocalLogs(updatedLogs);
+    saveLogsToFile(updatedLogs);
     // push the new log to the server
     const preparedLog = await prepareLogForServerUpdate(log);
-    pushNewLogToServer(preparedLog);
+    await pushNewLogToServer(preparedLog);
 }
 
 // updates a log locally and on the server
@@ -25,66 +27,56 @@ export async function updateLog(log: Log) {
     // get all log objects
     const logs = await getLocalLogsFromFile();
     // find and update the log object
-    const logEndOfDay = moment(log.date).endOf("day");
+    const logEndOfDay = moment(log.date).endOf("day").format("MM DD YYYY");
     const logDayNumber = log.day_number;
     const index = logs.findIndex(n => {
-        let endOfDay = moment(n.date).endOf("day");
+        let endOfDay = moment(n.date).endOf("day").format("MM DD YYYY");
         let dayNumber = n.day_number;
         return logEndOfDay === endOfDay && logDayNumber === dayNumber;
     });
-    if (index) {
-        // replace
-        logs[index] = log;
-    }
+    // replace
+    logs[index] = log;
     // write back to local
-    updateLocalLogs(logs);
+    saveLogsToFile(logs);
     // push changes to server
     const preparedLog = await prepareLogForServerUpdate(log);
-    updateExistingLogOnServer(preparedLog);
+    await updateExistingLogOnServer(preparedLog);
 }
 
 // pulls logs from the server and saves them locally. This will be run periodically.
+// logs have a format like [ { day_number: 1, date: ... }, ... ]
 export async function syncLogs() {
-    const serverLogs = await fetchLogsFromServer();
+    const jwt = getItem("jwt");
+    let serverLogs: Array<Log> = getLocalLogsFromFile();
+    if (jwt) {
+        const resp = await softwareGet("/100doc/logs", jwt);
+        if (isResponseOk(resp)) {
+            serverLogs = resp.data;
+        }
+    }
+
     if (serverLogs) {
         const formattedLogs = formatLogs(serverLogs);
-        addMilestonesToLogs(formattedLogs);
-        updateLocalLogs(formattedLogs);
+        await addMilestonesToLogs(formattedLogs);
+        saveLogsToFile(formattedLogs);
     }
-}
-
-// returns an array of logs from the server
-// logs have a format like [ { day_number: 1, date: ... }, ... ]
-async function fetchLogsFromServer() {
-    let logs: [] = [];
-    const jwt = getItem("jwt");
-    if (!jwt) return;
-
-    const available = await serverIsAvailable();
-    if (available) {
-        await softwareGet("/100doc/logs", jwt).then(resp => {
-            if (isResponseOk(resp)) {
-                logs = resp.data;
-            }
-        });
-    }
-    return logs;
 }
 
 // formats logs from the server into the local log model format before saving locally
 // logs have a format like [ { day_number: 1, date: ... }, ... ]
-function formatLogs(logs: []) {
+function formatLogs(logs: Array<Log>) {
     let formattedLogs: Array<Log> = [];
+
     logs.forEach((log: any) => {
         let formattedLog = new Log();
         formattedLog.title = log.title;
         formattedLog.description = log.description;
         formattedLog.day_number = log.day_number;
-        formattedLog.codetime_metrics.hours = parseFloat((log.minutes / 60).toFixed(2));
+        formattedLog.codetime_metrics.hours = log.minutes ? parseFloat((log.minutes / 60).toFixed(2)) : 0;
         formattedLog.codetime_metrics.keystrokes = log.keystrokes;
         formattedLog.codetime_metrics.lines_added = log.lines_added;
-        formattedLog.date = log.unix_date * 1000; // seconds --> milliseconds
-        formattedLog.links = log.ref_links;
+        formattedLog.date = log.unix_date ? log.unix_date * 1000 : 0; // seconds --> milliseconds
+        formattedLog.links = log.ref_links || [];
         formattedLogs.push(formattedLog);
     });
     // sorts logs in ascending order
@@ -97,9 +89,9 @@ function formatLogs(logs: []) {
 // joins milestones to each log
 async function addMilestonesToLogs(logs: Array<Log>) {
     // fetch all the milestones at once and then add them to each log iteratively below
-    const milestones = await fetchMilestones(null, true);
+    const milestones = await fetchAllMilestones();
     logs.forEach(async log => {
-        let foundMilestones = milestones.find(e => e.day_number === log.day_number);
+        let foundMilestones = milestones ? milestones.find((e: any) => e.day_number === log.day_number) : null;
         if (foundMilestones && foundMilestones.milestones) {
             log.milestones = foundMilestones.milestones;
         }
@@ -129,63 +121,41 @@ function prepareLogForServerUpdate(log: Log) {
 // push new local logs to the server
 async function pushNewLogToServer(log: {}) {
     const jwt = getItem("jwt");
-    if (!jwt) return;
-
-    const available = await serverIsAvailable();
-    if (available) {
-        softwarePost("/100doc/logs", [log], jwt);
+    if (jwt) {
+        await softwarePost("/100doc/logs", [log], jwt);
     }
 }
 
 // push new local logs to the server
 async function updateExistingLogOnServer(log: {}) {
     const jwt = getItem("jwt");
-    if (!jwt) return;
-
-    const available = await serverIsAvailable();
-    if (available) {
-        softwarePut("/100doc/logs", [log], jwt);
+    if (jwt) {
+        await softwarePut("/100doc/logs", [log], jwt);
     }
 }
 
-// pull logs from the server into local
-async function updateLocalLogs(logs: Array<Log>) {
-    const localLogsJson = await getLocalLogsJson();
-    saveLogsToFile(logs, localLogsJson);
-}
+function getLocalLogsFromFile(): Array<Log> {
+    const filePath = getLogFilePath();
 
-async function getLocalLogsFromFile() {
-    const localLogsJson = getLocalLogsJson();
-    const localLogs = await getLogsFromFile(localLogsJson);
-    return localLogs;
-}
-
-function getLogsFromFile(filepath: string): Array<Log> {
     let logs: Array<Log> = [];
-    const exists = checkIfLocalFileExists(filepath);
+    const exists = checkIfLocalFileExists(filePath);
     if (exists) {
-        const logsData = getFileDataAsJson(filepath, { logs: [] });
-        logs = logsData.logs;
+        logs = getFileDataAsJson(filePath);
     }
     return logs;
 }
 
-function saveLogsToFile(logs: Array<Log>, filepath: string) {
+function saveLogsToFile(logs: Array<Log> = []) {
+    const filePath = getLogFilePath();
     try {
-        fs.writeFileSync(filepath, JSON.stringify(logs, null, 4));
+        fs.writeFileSync(filePath, JSON.stringify(logs, null, 2));
     } catch (err) {
         console.log(err);
     }
 }
 
-function getLocalLogsJson(): string {
-    let file = getSoftwareDir();
-    if (isWindows()) {
-        file += "\\logs.json";
-    } else {
-        file += "/logs.json";
-    }
-    return file;
+function getLogFilePath(): string {
+    return getFile("logs.json");
 }
 
 function checkIfLocalFileExists(filepath: string): boolean {
@@ -193,5 +163,28 @@ function checkIfLocalFileExists(filepath: string): boolean {
         return true;
     } else {
         return false;
+    }
+}
+
+export async function deleteLogDay(unix_date: number) {
+    if (currently_deleting_log_date !== -1) {
+        window.showInformationMessage("Currently waiting to delete the requested log, please wait.");
+        return;
+    }
+    const jwt = getItem("jwt");
+    if (jwt) {
+        currently_deleting_log_date = unix_date;
+        const resp = await softwareDelete("/100doc/logs", { unix_dates: [unix_date] }, jwt);
+        if (isResponseOk(resp)) {
+            window.showInformationMessage("Your log has been successfully deleted.");
+            // delete the log
+            let logs: Array<Log> = await getLocalLogsFromFile();
+            // delete the log based on the dayNum
+            logs = logs.filter((n: Log) => n.date !== unix_date);
+            saveLogsToFile(logs);
+            await syncLogs();
+            commands.executeCommand("DoC.viewLogs");
+        }
+        currently_deleting_log_date = -1;
     }
 }

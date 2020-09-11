@@ -2,7 +2,7 @@
     "name": "swdc-100-days-of-code",
     "displayName": "100 Days of Code",
     "description": "100 Days of Code helps you reach your goals and complete the #100DaysOfCode Challenge.",
-    "version": "1.0.8",
+    "version": "1.0.9",
     "publisher": "softwaredotcom",
     "icon": "resources/100-days-of-code-icon.png",
     "scripts": {
@@ -90,7 +90,7 @@
         "moment-timezone": "^0.5.28",
         "open": "^7.0.3",
         "querystring": "^0.2.0",
-        "swdc-tracker": "1.0.23"
+        "swdc-tracker": "1.3.2"
     },
     "extensionDependencies": [
         "softwaredotcom.swdc-vscode"

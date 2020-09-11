@@ -5,7 +5,7 @@ import { getLanguages } from "./LanguageUtil";
 import { Summary } from "../models/Summary";
 import { Log } from "../models/Log";
 import { getTotalMilestonesAchieved, getThreeMostRecentMilestones } from "./MilestonesUtil";
-import { pushUpdatedSummary } from "./SummaryDbUtil";
+import { pushNewSummary, pushUpdatedSummary } from "./SummaryDbUtil";
 import { getSummaryJsonFilePath, fetchSummaryJsonFileData } from "../managers/FileManager";
 
 
@@ -17,22 +17,22 @@ export function deleteSummaryJson() {
     }
 }
 
-export function compareLocalSummary(dbSummary: any) {
+export function compareLocalSummary(summaryFromApp: any) {
     let summary: Summary = fetchSummaryJsonFileData();
 
     // updates local summary if and only if db is as updated
-    if (dbSummary.days >= summary.days) {
+    if (summaryFromApp.days > summary.days || summaryFromApp.hours > summary.hours || summaryFromApp.keystrokes > summary.keystrokes) {
         const currentLog = getMostRecentLogObject();
-        summary.days = dbSummary.days;
-        summary.hours = dbSummary.hours > summary.hours ? dbSummary.hours : summary.hours;
-        summary.keystrokes = dbSummary.keystrokes > summary.keystrokes ? dbSummary.keystrokes : summary.keystrokes;
-        summary.lines_added = dbSummary.lines_added > summary.lines_added ? dbSummary.lines_added : summary.lines_added;
+        summary.days = summaryFromApp.days;
+        summary.hours = summaryFromApp.hours > summary.hours ? summaryFromApp.hours : summary.hours;
+        summary.keystrokes = summaryFromApp.keystrokes > summary.keystrokes ? summaryFromApp.keystrokes : summary.keystrokes;
+        summary.lines_added = summaryFromApp.lines_added > summary.lines_added ? summaryFromApp.lines_added : summary.lines_added;
         summary.longest_streak =
-            dbSummary.longest_streak > summary.longest_streak ? dbSummary.longest_streak : summary.longest_streak;
-        summary.milestones = dbSummary.milestones > summary.milestones ? dbSummary.milestones : summary.milestones;
-        summary.shares = dbSummary.shares > summary.shares ? dbSummary.shares : summary.shares;
+            summaryFromApp.longest_streak > summary.longest_streak ? summaryFromApp.longest_streak : summary.longest_streak;
+        summary.milestones = summaryFromApp.milestones > summary.milestones ? summaryFromApp.milestones : summary.milestones;
+        summary.shares = summaryFromApp.shares > summary.shares ? summaryFromApp.shares : summary.shares;
         summary.languages =
-            dbSummary.languages.length > summary.languages.length ? dbSummary.languages : summary.languages;
+            summaryFromApp.languages.length > summary.languages.length ? summaryFromApp.languages : summary.languages;
         if (currentLog && compareDates(new Date(currentLog.date), new Date())) {
             summary.currentHours = currentLog.codetime_metrics.hours;
             summary.currentKeystrokes = currentLog.codetime_metrics.keystrokes;
@@ -41,10 +41,9 @@ export function compareLocalSummary(dbSummary: any) {
 
         writeToSummaryJson(summary);
     }
-    reevaluateSummary();
 }
 
-export function reevaluateSummary() {
+export function syncSummary() {
     // Aggregating log data
     const aggregateLogData = getLogsSummary();
 
@@ -301,8 +300,15 @@ export function getAverageHoursLevel(avgHour: number): number {
 
 function writeToSummaryJson(summary: Summary) {
     const filepath = getSummaryJsonFilePath();
+    const summaryExists = fs.existsSync(filepath);
     try {
-        fs.writeFileSync(filepath, JSON.stringify(summary, null, 4));
+        fs.writeFileSync(filepath, JSON.stringify(summary, null, 2));
+
+        if (!summaryExists) {
+            pushNewSummary();
+        } else {
+            pushUpdatedSummary();
+        }
     } catch (err) {
         console.log(err);
     }

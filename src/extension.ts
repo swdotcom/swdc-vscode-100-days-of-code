@@ -9,27 +9,20 @@ import {
     checkDaysMilestones,
     deleteMilestoneJson
 } from "./utils/MilestonesUtil";
-import {
-    checkLogsJson,
-    updateLogsMilestonesAndMetrics,
-    getLatestLogEntryNumber,
-    deleteLogsJson,
-    resetPreviousLogIfEmpty
-} from "./utils/LogsUtil";
+import { checkLogsJson, getLatestLogEntryNumber, deleteLogsJson, resetPreviousLogIfEmpty } from "./utils/LogsUtil";
 import { syncLogs } from "./utils/LogSync";
-import { reevaluateSummary, deleteSummaryJson } from "./utils/SummaryUtil";
+import { syncSummary, deleteSummaryJson } from "./utils/SummaryUtil";
 import {
     checkMilestonesPayload,
     sentMilestonesDb,
     pushNewMilestones,
     updatedMilestonesDb,
     pushUpdatedMilestones,
-    fetchMilestones,
     createMilestonesPayloadJson,
-    deleteMilestonePayloadJson
+    deleteMilestonePayloadJson,
+    fetchAllMilestones
 } from "./utils/MilestonesDbUtil";
 import { createLogsPayloadJson, deleteLogsPayloadJson } from "./utils/LogsDbUtils";
-import { pushSummaryToDb, fetchSummary } from "./utils/SummaryDbUtil";
 import {
     displayReadmeIfNotExists,
     isLoggedIn,
@@ -45,7 +38,6 @@ import { TrackerManager } from "./managers/TrackerManager";
 const tracker: TrackerManager = TrackerManager.getInstance();
 
 let five_minute_interval: NodeJS.Timeout;
-let one_hour_interval: NodeJS.Timeout;
 let init_interval: NodeJS.Timeout;
 let log_out_interval: NodeJS.Timeout;
 
@@ -64,7 +56,7 @@ export function activate(ctx: vscode.ExtensionContext) {
     ctx.subscriptions.push(createCommands());
 }
 
-export function initializePlugin() {
+export async function initializePlugin() {
     // checks if all the files exist
     checkLogsJson();
     checkMilestonesJson();
@@ -84,7 +76,7 @@ export function initializePlugin() {
     if (isLoggedIn()) {
         setName();
 
-        syncLogs();
+        await syncLogs();
 
         // milestones
         checkMilestonesPayload();
@@ -94,15 +86,10 @@ export function initializePlugin() {
         if (!updatedMilestonesDb) {
             pushUpdatedMilestones();
         }
-        fetchMilestones(null, true);
-
-        // fetches and updates the user summary in the db
-        pushSummaryToDb();
+        fetchAllMilestones();
 
         // sets interval jobs
         initializeIntervalJobs();
-    } else {
-        initializeLogInCheckInterval();
     }
 
     // initialize tracker
@@ -112,15 +99,18 @@ export function initializePlugin() {
 function initializeIntervalJobs() {
     setLogOutInterval();
 
+    // every 5 minutes perform the following
     five_minute_interval = setInterval(() => {
         if (checkIfNameChanged()) {
             logOut();
         } else {
+            // make sure the last log isn't empty
             resetPreviousLogIfEmpty();
 
+            // check for new milestones
             checkForMilestones();
 
-            // milestones
+            // milestones creation check setting bools like sentMilestonesDb and updatedMilestonesDb
             checkMilestonesPayload();
 
             if (!sentMilestonesDb) {
@@ -129,68 +119,29 @@ function initializeIntervalJobs() {
             if (!updatedMilestonesDb) {
                 pushUpdatedMilestones();
             }
-            fetchMilestones();
 
-            // summary
-            pushSummaryToDb();
+            fetchAllMilestones();
 
-            reevaluateSummary();
+            // sync the logs
+            syncLogs();
+
+            // syncs the Summary info (hours, lines, etc) to the file
+            syncSummary();
         }
     }, one_min_millis * 5);
-
-    one_hour_interval = setInterval(() => {
-        if (checkIfNameChanged()) {
-            logOut();
-        } else {
-            syncLogs();
-            if (updatedMilestonesDb && sentMilestonesDb) {
-                fetchMilestones(null, true);
-            } else if (!sentMilestonesDb) {
-                pushNewMilestones();
-            } else {
-                pushUpdatedMilestones();
-            }
-        }
-        sendHeartbeat("HOURLY");
-    }, one_min_millis * 60);
 }
 
 function checkForMilestones() {
     // updates logs with latest metrics and checks for milestones
-    updateLogsMilestonesAndMetrics([]);
+
+    // checks to see if there are any new achieved milestones
     checkCodeTimeMetricsMilestonesAchieved();
+
+    // checks to see if there are any new language milestones achieved
     checkLanguageMilestonesAchieved();
+
+    // checks to see if there are any day milestones achived
     checkDaysMilestones();
-}
-
-function initializeLogInCheckInterval() {
-    init_interval = setInterval(() => {
-        if (isLoggedIn()) {
-            setName();
-            syncLogs();
-
-            // milestones
-            checkMilestonesPayload();
-            if (!sentMilestonesDb) {
-                pushNewMilestones();
-            }
-            if (!updatedMilestonesDb) {
-                pushUpdatedMilestones();
-            }
-            fetchMilestones(null, true);
-
-            // fetches and updates the user summary in the db
-            pushSummaryToDb();
-
-            // update the summary on init
-            fetchSummary();
-
-            clearInterval(init_interval);
-
-            // sets interval jobs
-            initializeIntervalJobs();
-        }
-    }, 10000);
 }
 
 function setLogOutInterval() {
@@ -204,7 +155,6 @@ function setLogOutInterval() {
 function logOut() {
     // reset updates
     clearInterval(five_minute_interval);
-    clearInterval(one_hour_interval);
     clearInterval(init_interval);
 
     // reset files
@@ -213,9 +163,6 @@ function logOut() {
     deleteLogsJson();
     deleteLogsPayloadJson();
     deleteSummaryJson();
-
-    // restart init
-    initializeLogInCheckInterval();
 }
 
 export function deactivate(ctx: vscode.ExtensionContext) {
@@ -225,7 +172,6 @@ export function deactivate(ctx: vscode.ExtensionContext) {
 
     // clearing the the intervals for processes
     clearInterval(five_minute_interval);
-    clearInterval(one_hour_interval);
     clearInterval(init_interval);
     clearInterval(log_out_interval);
 }

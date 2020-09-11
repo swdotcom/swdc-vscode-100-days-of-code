@@ -1,20 +1,11 @@
 import { compareLocalSummary } from "./SummaryUtil";
 import { Summary } from "../models/Summary";
-import { serverIsAvailable, softwarePost, softwarePut, softwareGet, isResponseOk } from "../managers/HttpManager";
+import { softwarePost, softwarePut, softwareGet, isResponseOk } from "../managers/HttpManager";
 import { getItem } from "./Util";
 import fs = require("fs");
-import { getSummaryJsonFilePath, fetchSummaryJsonFileData } from "../managers/FileManager";
+import { fetchSummaryJsonFileData } from "../managers/FileManager";
 
-export async function pushSummaryToDb() {
-    // checks if summary exists and updates/creates it
-    if (!fs.existsSync(getSummaryJsonFilePath())) {
-        pushNewSummary();
-    } else {
-        pushUpdatedSummary();
-    }
-}
-
-async function pushNewSummary() {
+export async function pushNewSummary() {
     // get the summary from the JSON
     const summary: Summary = fetchSummaryJsonFileData();
 
@@ -32,15 +23,7 @@ async function pushNewSummary() {
     };
     const jwt = getItem("jwt");
     if (jwt) {
-        let available = false;
-        try {
-            available = await serverIsAvailable();
-        } catch (err) {
-            available = false;
-        }
-        if (available) {
-            const resp = await softwarePost("/100doc/summary", toCreateSummary, jwt);
-        }
+        await softwarePost("/100doc/summary", toCreateSummary, jwt);
     }
 }
 
@@ -68,33 +51,26 @@ export async function pushUpdatedSummary() {
 export async function fetchSummary(): Promise<boolean> {
     const jwt = getItem("jwt");
     if (jwt) {
-        let available = false;
-        try {
-            available = await serverIsAvailable();
-        } catch (err) {
-            available = false;
-        }
-        if (available) {
-            const summary = await softwareGet("/100doc/summary", jwt).then(resp => {
-                if (isResponseOk(resp) && resp.data) {
-                    const rawSummary = resp.data;
-                    let summary = {
-                        days: rawSummary.days,
-                        hours: rawSummary.minutes / 60,
-                        keystrokes: rawSummary.keystrokes,
-                        lines_added: rawSummary.lines_added,
-                        longest_streak: rawSummary.longest_streak,
-                        milestones: rawSummary.milestones,
-                        shares: rawSummary.shares,
-                        languages: rawSummary.languages
-                    };
-                    return summary;
-                }
-            });
-            if (summary) {
-                compareLocalSummary(summary);
-                return true;
+
+        const summary = await softwareGet("/100doc/summary", jwt).then(resp => {
+            if (isResponseOk(resp) && resp.data) {
+                const rawSummary = resp.data;
+                let summary = {
+                    days: rawSummary.days,
+                    hours: rawSummary.minutes / 60,
+                    keystrokes: rawSummary.keystrokes,
+                    lines_added: rawSummary.lines_added,
+                    longest_streak: rawSummary.longest_streak,
+                    milestones: rawSummary.milestones,
+                    shares: rawSummary.shares,
+                    languages: rawSummary.languages
+                };
+                return summary;
             }
+        });
+        if (summary) {
+            compareLocalSummary(summary);
+            return true;
         }
     }
     return false;
