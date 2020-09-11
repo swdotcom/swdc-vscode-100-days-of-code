@@ -26,6 +26,11 @@
             cursor: pointer;
             visibility: ${this.addLogVisibility};
         }
+        .logHeader {
+            display: flex;
+            position: absolute;
+            right: 24px;
+        }
         .logCard {
             display: inline-block;
             background: ${this.cardBackgroundColor};
@@ -122,11 +127,12 @@
         }
         .cardHeaderButtonSection {
             position: absolute;
-            display: inline-flex;
-            height: 100%;
-            right: 3px;
+            display: flex;
+            flex-direction: row;
+            right: 2px;
+            padding-top: 4px;
             vertical-align: middle;
-            align-items: center;
+            align-items: end;
         }
         .cardHeaderEditLogButton {
             cursor: pointer;
@@ -138,9 +144,8 @@
             color: ${this.cardTextColor};
             background-color: ${this.editButtonColor};
             border-color: rgba(0,0,0,0);
-            vertical-align: middle;
-            margin: 5px;
-            visibility: hidden;
+            margin-right: 4px;
+            /* visibility: hidden; */
         }
         .cardHeaderDeleteLogButton {
             cursor: pointer;
@@ -158,12 +163,8 @@
         }
         .cardHeaderShareButton {
             cursor: pointer;
-            position: absolute;
             background-color: rgba(0,0,0,0);
             border-color: rgba(0,0,0,0);
-            transform: translate(40px, -18px);
-            margin: 5px;
-            margin-left: -15px;
         }
         .cardHeaderShareButtonIcon {
             width: 20px;
@@ -174,7 +175,6 @@
             background-color: rgba(0,0,0,0);
             border-color: rgba(0,0,0,0);
             transform: rotate(180deg);
-            margin: 5px;
         }
         .cardHeaderDropDownButtonIcon {
             width: 16px;
@@ -415,7 +415,7 @@
         .viewRefreshButtonIcon {
             width: 20px;
             height: 20px;
-            content:url('https://100-days-of-code.s3-us-west-1.amazonaws.com/icons8-refresh.svg');
+            content:url('https://100-days-of-code.s3-us-west-1.amazonaws.com/refresh.svg');
         }
         button:disabled {
             opacity: 0.1;
@@ -429,7 +429,9 @@
                 ><button class="viewRefreshButton" id="logsRefresh" title="Refresh" alt="Refresh">
                     <img class="viewRefreshButtonIcon" /></button
             ></a>
-            <button id="addLog">Add Log</button>
+            <div class="logHeader">
+                <button id="addLog">Add Log</button>
+            </div>
         </div>
 
         ${this.logsHtml}
@@ -506,17 +508,17 @@
                 if (content.style.maxHeight) {
                     content.style.maxHeight = null;
                     dropDownIcon.style.transform = "rotate(180deg)";
-                    editButton.style.visibility = "hidden";
+                    // editButton.style.visibility = "hidden";
                     // deleteButton.style.visibility = "hidden";
-                    shareButton.style.transform = "translate(40px, -18px)";
-                    shareButton.style.left = "-15px";
+                    // shareButton.style.transform = "translate(40px, -18px)";
+                    // shareButton.style.left = "-15px";
                 } else {
                     content.style.maxHeight = content.scrollHeight + "px";
                     dropDownIcon.style.transform = "rotate(0deg)";
-                    editButton.style.visibility = "visible";
+                    // editButton.style.visibility = "visible";
                     // deleteButton.style.visibility = "visible";
-                    shareButton.style.transform = "translate(-48px, -18px)";
-                    shareButton.style.left = "0px";
+                    // shareButton.style.transform = "translate(-48px, -18px)";
+                    // shareButton.style.left = "0px";
                 }
             });
         }
@@ -555,7 +557,7 @@
             editButton.style.visibility = "visible";
             // deleteButton.style.visibility = "visible";
             shareButton.style.transform = "translate(-48px, -18px)";
-            shareButton.style.left = "0px";
+            // shareButton.style.left = "0px";
 
             // set the day numbers that are found
             for (let i = 0; i < logCards.length; i++) {
