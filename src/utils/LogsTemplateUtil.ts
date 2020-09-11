@@ -226,7 +226,7 @@ function getLogCard(
         `\t\t\t\t</div>`,
         `\t\t\t</div>`,
         `\t\t\t<div class="cardHeaderButtonSection">`,
-        `\t\t\t\t<button class="cardHeaderShareButton" data-val="${day.day_number}"><img class="cardHeaderShareButtonIcon" src=${shareIconLink} alt="Share"><a href="${twitterShareUrl}" title="Share this on Twitter"></a></button>`,
+        `\t\t\t\t<a href="${twitterShareUrl}" title="Share this on Twitter"><button class="cardHeaderShareButton" data-val="${day.day_number}"><img class="cardHeaderShareButtonIcon" src=${shareIconLink} alt="Share"></button></a>`,
         `\t\t\t\t<button class="cardHeaderDropDownButton"><img class="cardHeaderDropDownButtonIcon" src=${dropDownPath} alt="Drop Down"></button>`,
         `\t\t\t</div>`,
         `\t\t</div>`,
