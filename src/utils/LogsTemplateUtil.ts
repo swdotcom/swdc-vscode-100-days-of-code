@@ -21,6 +21,7 @@ function getStyleColorsBasedOnMode(): any {
     let cardMetricBarSidesColor = "rgba(255,255,255,0.20)";
     let editButtonColor = "rgba(255,255,255,0.10)";
     let cardToolTipColor = "rgba(109, 109, 109, .9)";
+    let editPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/edit.svg";
     let dropDownPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Logs/dropDown.svg";
     let editLogCardColor = "#292929";
     let lightGrayColor = "#919eab";
@@ -38,6 +39,7 @@ function getStyleColorsBasedOnMode(): any {
         cardBackgroundColor,
         cardMetricBarSidesColor,
         cardToolTipColor,
+        editPath,
         dropDownPath,
         editLogCardColor,
         editButtonColor,
@@ -193,6 +195,7 @@ function getLogCard(
     formattedDate: string,
     twitterShareUrl: string,
     shareIconLink: string,
+    editPath: string,
     dropDownPath: string
 ): string {
     const {
@@ -227,6 +230,7 @@ function getLogCard(
         `\t\t\t</div>`,
         `\t\t\t<div class="cardHeaderButtonSection">`,
         `\t\t\t\t<a href="${twitterShareUrl}" title="Share this on Twitter"><button class="cardHeaderShareButton" data-val="${day.day_number}"><img class="cardHeaderShareButtonIcon" src=${shareIconLink} alt="Share"></button></a>`,
+        `\t\t\t\t<button class="cardHeaderEditButton"><img class="cardHeaderEditButtonIcon" src=${editPath} alt="Edit"></button>`,
         `\t\t\t\t<button class="cardHeaderDropDownButton"><img class="cardHeaderDropDownButtonIcon" src=${dropDownPath} alt="Drop Down"></button>`,
         `\t\t\t</div>`,
         `\t\t</div>`,
@@ -304,6 +308,7 @@ export function getUpdatedLogsHtml(): string {
         cardBackgroundColor,
         cardMetricBarSidesColor,
         cardToolTipColor,
+        editPath,
         dropDownPath,
         editLogCardColor,
         editButtonColor
@@ -353,7 +358,7 @@ export function getUpdatedLogsHtml(): string {
 
             const shareIconLink = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
 
-            logsHtml += getLogCard(day, formattedDate, twitterShareUrl, shareIconLink, dropDownPath);
+            logsHtml += getLogCard(day, formattedDate, twitterShareUrl, shareIconLink, editPath, dropDownPath);
         }
     }
 
@@ -363,6 +368,7 @@ export function getUpdatedLogsHtml(): string {
         cardBackgroundColor,
         cardMetricBarSidesColor,
         cardToolTipColor,
+        editPath,
         dropDownPath,
         editLogCardColor,
         editButtonColor,

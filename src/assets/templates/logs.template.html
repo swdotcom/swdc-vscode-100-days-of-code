@@ -141,11 +141,7 @@
             line-height: 18px;
             border-radius: 2px;
             text-align: center;
-            color: ${this.cardTextColor};
-            background-color: ${this.editButtonColor};
-            border-color: rgba(0,0,0,0);
             margin-right: 4px;
-            /* visibility: hidden; */
         }
         .cardHeaderDeleteLogButton {
             cursor: pointer;
@@ -169,6 +165,15 @@
         .cardHeaderShareButtonIcon {
             width: 20px;
             height: 20px;
+        }
+        .cardHeaderEditButton {
+            cursor: pointer;
+            background-color: rgba(0,0,0,0);
+            border-color: rgba(0,0,0,0);
+        }
+        .cardHeaderEditButtonIcon {
+            width: 16px;
+            height: 16px;
         }
         .cardHeaderDropDownButton {
             cursor: pointer;
@@ -501,7 +506,7 @@
         for (let i = 0; i < dropDownButtons.length; i++) {
             dropDownButtons[i].addEventListener("click", function () {
                 const shareButton = this.parentNode.getElementsByClassName("cardHeaderShareButton")[0];
-                const editButton = this.parentNode.getElementsByClassName("cardHeaderEditLogButton")[0];
+                const editButton = this.parentNode.getElementsByClassName("cardHeaderEditButton")[0];
                 // const deleteButton = this.parentNode.getElementsByClassName("cardHeaderDeleteLogButton")[0];
                 const dropDownIcon = this;
                 const content = this.parentNode.parentNode.nextElementSibling;
@@ -550,13 +555,13 @@
             cardContent.style.maxHeight = cardContent.scrollHeight + "px";
 
             const shareButton = logCard.getElementsByClassName("cardHeaderShareButton")[0];
-            const editButton = logCard.getElementsByClassName("cardHeaderEditLogButton")[0];
+            const editButton = logCard.getElementsByClassName("cardHeaderEditButton")[0];
             // const deleteButton = logCard.getElementsByClassName("cardHeaderDeleteLogButton")[0];
             const dropDownIcon = logCard.getElementsByClassName("cardHeaderDropDownButton")[0];
             dropDownIcon.style.transform = "rotate(0deg)";
-            editButton.style.visibility = "visible";
+            // editButton.style.visibility = "visible";
             // deleteButton.style.visibility = "visible";
-            shareButton.style.transform = "translate(-48px, -18px)";
+            // shareButton.style.transform = "translate(-48px, -18px)";
             // shareButton.style.left = "0px";
 
             // set the day numbers that are found
@@ -568,7 +573,8 @@
             }
         }
 
-        var editButtons = document.getElementsByClassName("cardHeaderEditLogButton");
+        var editButtons = document.getElementsByClassName("cardHeaderEditButton");
+        console.log(editButtons);
 
         for (let i = 0; i < editButtons.length; i++) {
             editButtons[i].addEventListener("click", function () {
