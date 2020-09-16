@@ -87,6 +87,7 @@
     },
     "dependencies": {
         "axios": "^0.19.2",
+        "file-it": "^1.0.24",
         "moment-timezone": "^0.5.28",
         "open": "^7.0.3",
         "querystring": "^0.2.0",

@@ -1,5 +1,4 @@
 import { commands, ViewColumn, Uri, window, extensions } from "vscode";
-import { getLatestLogEntryNumber } from "./LogsUtil";
 import { _100_DAYS_OF_CODE_PLUGIN_ID, _100_DAYS_OF_CODE_EXT_ID } from "./Constants";
 import { softwarePost, isResponseOk } from "../managers/HttpManager";
 import { syncLogs } from "./LogSync";
@@ -14,6 +13,7 @@ import {
 import { fetchSummary } from "./SummaryDbUtil";
 import { reloadCurrentView } from "./CommandUtil";
 
+const fileIt = require("file-it");
 const fs = require("fs");
 const os = require("os");
 const crypto = require("crypto");
@@ -231,11 +231,11 @@ export function getLocalREADMEFile() {
 }
 
 export function displayReadmeIfNotExists(override = false) {
-    const logEntryLen = getLatestLogEntryNumber();
-    if (logEntryLen === 0 || override) {
+    const displayedReadme = getItem("vscode_100doc_CtReadme");
+    if (!displayedReadme) {
         const readmeUri = Uri.file(getLocalREADMEFile());
-
         commands.executeCommand("markdown.showPreview", readmeUri, ViewColumn.One, { locked: true });
+        setItem("vscode_100doc_CtReadme", true);
     }
 }
 
@@ -243,6 +243,10 @@ export function getItem(key: string) {
     const jsonObj = getSoftwareSessionAsJson();
     let val = jsonObj[key] || null;
     return val;
+}
+
+export function setItem(key: string, value: any) {
+    fileIt.setJsonValue(getSoftwareSessionFile(), key, value);
 }
 
 export function getJwt(prefix = false) {
