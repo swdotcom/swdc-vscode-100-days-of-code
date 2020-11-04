@@ -22,7 +22,7 @@ import {
     deleteMilestonePayloadJson,
     fetchAllMilestones
 } from "./utils/MilestonesDbUtil";
-import { createLogsPayloadJson, deleteLogsPayloadJson } from "./utils/LogsDbUtils";
+import { deleteLogsPayloadJson } from "./utils/LogsDbUtils";
 import {
     displayReadmeIfNotExists,
     isLoggedIn,
@@ -90,6 +90,9 @@ export async function initializePlugin() {
 
         // sets interval jobs
         initializeIntervalJobs();
+
+        // clean up unused files
+        deleteLogsPayloadJson();
     }
 
     // initialize tracker
@@ -161,13 +164,11 @@ function logOut() {
     deleteMilestoneJson();
     deleteMilestonePayloadJson();
     deleteLogsJson();
-    deleteLogsPayloadJson();
     deleteSummaryJson();
 }
 
 export function deactivate(ctx: vscode.ExtensionContext) {
     // creating payload files to store payloads that weren't sent
-    createLogsPayloadJson();
     createMilestonesPayloadJson();
 
     // clearing the the intervals for processes
