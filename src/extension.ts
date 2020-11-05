@@ -29,8 +29,7 @@ import {
     setName,
     checkIfNameChanged,
     getPluginName,
-    getVersion,
-    sendHeartbeat
+    getVersion
 } from "./utils/Util";
 import { commands } from "vscode";
 import { TrackerManager } from "./managers/TrackerManager";
@@ -67,7 +66,6 @@ export async function initializePlugin() {
     // init condition
     if (getLatestLogEntryNumber() <= 0) {
         commands.executeCommand("DoC.revealTree");
-        sendHeartbeat("INSTALLED");
     }
 
     // try to send payloads that weren't sent
