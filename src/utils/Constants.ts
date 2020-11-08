@@ -4,10 +4,10 @@ export const _100_DAYS_OF_CODE_EXT_ID = "softwaredotcom.swdc-100-days-of-code";
 export const _100_DAYS_OF_CODE_PLUGIN_ID = 18;
 
 // API ENDPOINT
-export const api_endpoint = "http://localhost:5000";// "https://api.software.com";
+export const api_endpoint = "https://api.software.com";
 
 // DASHBOARD URL
-export const launch_url = "http://localhost:3000";// "https://app.software.com";
+export const launch_url = "https://app.software.com";
 
 export const monthNames = [
     "January",
