@@ -5,7 +5,6 @@ import path = require("path");
 import { Summary } from "../models/Summary";
 import { updateSummaryMilestones, incrementSummaryShare, updateSummaryLanguages } from "./SummaryUtil";
 import { getLanguages } from "./LanguageUtil";
-import { pushMilestonesToDb } from "./MilestonesDbUtil";
 import { HOURS_THRESHOLD } from "./Constants";
 import { Milestone } from "../models/Milestone";
 import { getFile, getFileDataAsJson, fetchSummaryJsonFileData } from "../managers/FileManager";
@@ -130,7 +129,7 @@ export function checkIfMilestonesAchievedOnDate(date: number): boolean {
     return false;
 }
 
-export function checkCodeTimeMetricsMilestonesAchieved(): void {
+export function checkCodeTimeMetricsMilestonesAchieved(): Array<number> {
     let achievedMilestones = [];
     const summary: Summary = fetchSummaryJsonFileData();
 
@@ -198,12 +197,13 @@ export function checkCodeTimeMetricsMilestonesAchieved(): void {
         achievedMilestones.push(37);
     }
 
-    if (achievedMilestones.length > 0) {
-        achievedMilestonesJson(achievedMilestones);
+    if (achievedMilestones.length) {
+        return achievedMilestonesJson(achievedMilestones);
     }
+    return [];
 }
 
-export function checkLanguageMilestonesAchieved(): void {
+export function checkLanguageMilestonesAchieved(): Array<number> {
     updateSummaryLanguages();
     const summary: Summary = fetchSummaryJsonFileData();
     const languages = getLanguages();
@@ -266,11 +266,12 @@ export function checkLanguageMilestonesAchieved(): void {
 
     const milestonesAchieved = Array.from(milestones);
     if (milestonesAchieved.length > 0) {
-        achievedMilestonesJson(milestonesAchieved);
+        return achievedMilestonesJson(milestonesAchieved);
     }
+    return [];
 }
 
-export function checkDaysMilestones(): void {
+export function checkDaysMilestones(): Array<number> {
     const summary: Summary = fetchSummaryJsonFileData();
 
     let days = summary.days;
@@ -315,8 +316,9 @@ export function checkDaysMilestones(): void {
     }
 
     if (achievedMilestones.length > 0) {
-        achievedMilestonesJson(achievedMilestones);
+        return achievedMilestonesJson(achievedMilestones);
     }
+    return [];
 }
 
 export function checkSharesMilestones(): void {
@@ -364,13 +366,12 @@ export function getMilestoneById(id: number): Milestone | any {
     return milestoneData && milestoneData.milestones ? milestoneData.milestones.find((n: any) => n.id === id) : null;
 }
 
-function achievedMilestonesJson(ids: Array<number>): void {
+function achievedMilestonesJson(ids: Array<number>): Array<number> {
     let updatedIds = [];
     const milestonesData = getAllMilestones();
     const milestones = milestonesData.milestones || [];
     const dateNow = new Date();
-    for (let i = 0; i < ids.length; i++) {
-        const id = ids[i];
+    for (let id of ids) {
 
         // Usually would never be triggered
         if (!checkIdRange(id) || !milestones[id - 1]) {
@@ -394,25 +395,16 @@ function achievedMilestonesJson(ids: Array<number>): void {
             milestones[id - 1].date_achieved = dateNow.valueOf();
             // For certificate
             if (id === 11) {
-                window
-                    .showInformationMessage(
-                        "Whoa! You just unlocked the #100DaysOfCode Certificate. Please view it on the 100 Days of Code Dashboard.",
-                        {
-                            modal: true
-                        },
-                        "View Dashboard"
-                    )
-                    .then(selection => {
-                        if (selection === "View Dashboard") {
-                            commands.executeCommand("DoC.viewDashboard");
-                        }
-                    });
+                const title = "View Dashboard";
+                const msg = "Whoa! You just unlocked the #100DaysOfCode Certificate. Please view it on the 100 Days of Code Dashboard.";
+                const commandCallback = "DoC.viewDashboard";
+                commands.executeCommand("DoC.showInfoMessage", title, msg, true /*isModal*/, commandCallback);
             }
             updatedIds.push(id);
         }
     }
 
-    if (updatedIds.length > 0) {
+    if (updatedIds.length) {
         // updates summary
         let totalMilestonesAchieved = 0;
         for (let i = 0; i < milestones.length; i++) {
@@ -425,17 +417,13 @@ function achievedMilestonesJson(ids: Array<number>): void {
         // write to milestones file
         writeToMilestoneJson(milestones);
 
-        // updates db
-        pushMilestonesToDb(dateNow.valueOf(), updatedIds);
-
-        window
-            .showInformationMessage("Hurray! You just achieved another milestone.", "View Milestones")
-            .then(selection => {
-                if (selection === "View Milestones") {
-                    commands.executeCommand("DoC.viewMilestones");
-                }
-            });
+        const title = "View Milestones";
+        const msg = "Hurray! You just achieved another milestone.";
+        const commandCallback = "DoC.viewMilestones";
+        commands.executeCommand("DoC.showInfoMessage", title, msg, false /*isModal*/, commandCallback);
+        return updatedIds;
     }
+    return [];
 }
 
 export function updateMilestoneShare(id: number): void {

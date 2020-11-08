@@ -1,16 +1,9 @@
 import { commands, ViewColumn, Uri, window, extensions } from "vscode";
 import { _100_DAYS_OF_CODE_PLUGIN_ID, _100_DAYS_OF_CODE_EXT_ID } from "./Constants";
 import { syncLogs } from "./LogSync";
-import {
-    checkMilestonesPayload,
-    pushUpdatedMilestones,
-    fetchMilestones,
-    sentMilestonesDb,
-    updatedMilestonesDb,
-    pushNewMilestones
-} from "./MilestonesDbUtil";
 import { fetchSummary } from "./SummaryDbUtil";
 import { reloadCurrentView } from "./CommandUtil";
+import { MilestoneEventManager } from "../managers/MilestoneEventManager";
 
 const fileIt = require("file-it");
 const fs = require("fs");
@@ -230,16 +223,7 @@ function initializeLogInCheckInterval() {
 
             await syncLogs();
 
-            // milestones
-            checkMilestonesPayload();
-            if (!sentMilestonesDb) {
-                pushNewMilestones();
-            }
-            if (!updatedMilestonesDb) {
-                pushUpdatedMilestones();
-            }
-
-            await fetchMilestones();
+            await MilestoneEventManager.getInstance().fetchMilestones();
 
             // update the summary on init
             fetchSummary();

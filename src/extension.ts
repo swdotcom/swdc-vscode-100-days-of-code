@@ -3,25 +3,12 @@
 import * as vscode from "vscode";
 import { createCommands } from "./utils/CommandUtil";
 import {
-    checkCodeTimeMetricsMilestonesAchieved,
     checkMilestonesJson,
-    checkLanguageMilestonesAchieved,
-    checkDaysMilestones,
     deleteMilestoneJson
 } from "./utils/MilestonesUtil";
 import { checkLogsJson, getLatestLogEntryNumber, deleteLogsJson, resetPreviousLogIfEmpty } from "./utils/LogsUtil";
 import { syncLogs } from "./utils/LogSync";
-import { syncSummary, deleteSummaryJson } from "./utils/SummaryUtil";
-import {
-    checkMilestonesPayload,
-    sentMilestonesDb,
-    pushNewMilestones,
-    updatedMilestonesDb,
-    pushUpdatedMilestones,
-    createMilestonesPayloadJson,
-    deleteMilestonePayloadJson,
-    fetchAllMilestones
-} from "./utils/MilestonesDbUtil";
+import { deleteSummaryJson } from "./utils/SummaryUtil";
 import { deleteLogsPayloadJson } from "./utils/LogsDbUtils";
 import {
     displayReadmeIfNotExists,
@@ -33,6 +20,7 @@ import {
 } from "./utils/Util";
 import { commands } from "vscode";
 import { TrackerManager } from "./managers/TrackerManager";
+import { MilestoneEventManager } from "./managers/MilestoneEventManager";
 
 const tracker: TrackerManager = TrackerManager.getInstance();
 
@@ -68,6 +56,9 @@ export async function initializePlugin() {
         commands.executeCommand("DoC.revealTree");
     }
 
+    // initialize the milestone event manager
+    const milestoneEventMgr: MilestoneEventManager = MilestoneEventManager.getInstance();
+
     // try to send payloads that weren't sent
     // and fetch data from the db as well
 
@@ -77,14 +68,7 @@ export async function initializePlugin() {
         await syncLogs();
 
         // milestones
-        checkMilestonesPayload();
-        if (!sentMilestonesDb) {
-            pushNewMilestones();
-        }
-        if (!updatedMilestonesDb) {
-            pushUpdatedMilestones();
-        }
-        fetchAllMilestones();
+        milestoneEventMgr.fetchAllMilestones();
 
         // sets interval jobs
         initializeIntervalJobs();
@@ -108,41 +92,10 @@ function initializeIntervalJobs() {
             // make sure the last log isn't empty
             resetPreviousLogIfEmpty();
 
-            // check for new milestones
-            checkForMilestones();
-
-            // milestones creation check setting bools like sentMilestonesDb and updatedMilestonesDb
-            checkMilestonesPayload();
-
-            if (!sentMilestonesDb) {
-                pushNewMilestones();
-            }
-            if (!updatedMilestonesDb) {
-                pushUpdatedMilestones();
-            }
-
-            fetchAllMilestones();
-
             // sync the logs
             syncLogs();
-
-            // syncs the Summary info (hours, lines, etc) to the file
-            syncSummary();
         }
     }, one_min_millis * 5);
-}
-
-function checkForMilestones() {
-    // updates logs with latest metrics and checks for milestones
-
-    // checks to see if there are any new achieved milestones
-    checkCodeTimeMetricsMilestonesAchieved();
-
-    // checks to see if there are any new language milestones achieved
-    checkLanguageMilestonesAchieved();
-
-    // checks to see if there are any day milestones achived
-    checkDaysMilestones();
 }
 
 function setLogOutInterval() {
@@ -166,8 +119,6 @@ function logOut() {
 }
 
 export function deactivate(ctx: vscode.ExtensionContext) {
-    // creating payload files to store payloads that weren't sent
-    createMilestonesPayloadJson();
 
     // clearing the the intervals for processes
     clearInterval(five_minute_interval);

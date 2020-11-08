@@ -4,7 +4,7 @@ import { api_endpoint } from "../utils/Constants";
 // build the axios api base url
 const beApi = axios.create({
     baseURL: `${api_endpoint}`,
-    timeout: 5000
+    timeout: 8000
 });
 
 export async function serverIsAvailable() {
