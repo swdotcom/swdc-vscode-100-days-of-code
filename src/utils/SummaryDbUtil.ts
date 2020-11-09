@@ -2,7 +2,6 @@ import { compareLocalSummary } from "./SummaryUtil";
 import { Summary } from "../models/Summary";
 import { softwarePost, softwarePut, softwareGet, isResponseOk } from "../managers/HttpManager";
 import { getItem } from "./Util";
-import fs = require("fs");
 import { fetchSummaryJsonFileData } from "../managers/FileManager";
 
 export async function pushNewSummary() {

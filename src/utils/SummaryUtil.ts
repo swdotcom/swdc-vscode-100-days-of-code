@@ -44,6 +44,7 @@ export function compareLocalSummary(summaryFromApp: any) {
 }
 
 export function syncSummary() {
+    console.log("Syncing 100 doc summary");
     // Aggregating log data
     const aggregateLogData = getLogsSummary();
 

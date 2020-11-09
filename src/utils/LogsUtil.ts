@@ -2,7 +2,6 @@ import { compareDates } from "./Util";
 import fs = require("fs");
 import { CodetimeMetrics } from "../models/CodetimeMetrics";
 import { Log } from "../models/Log";
-import { getMilestonesByDate, checkIfDaily } from "./MilestonesUtil";
 import {
     incrementSummaryShare,
     updateSummaryJson,
@@ -10,7 +9,6 @@ import {
     setSummaryCurrentHours,
     setSummaryTotalHours
 } from "./SummaryUtil";
-import { pushMilestonesToDb } from "./MilestonesDbUtil";
 import { createLog, updateLog } from "./LogSync";
 import { getFileDataAsJson, getFile } from "../managers/FileManager";
 const moment = require("moment-timezone");
@@ -175,32 +173,6 @@ export function setDailyMilestonesByDayNumber(dayNumber: number, newMilestones: 
     newMilestones = newMilestones.concat(log.milestones);
     newMilestones = Array.from(new Set(newMilestones));
     log.milestones = newMilestones;
-    writeToLogsJson(logs);
-}
-
-export function updateLogMilestonesByDates(dates: Array<number>) {
-    let logs = getAllLogObjects();
-    for (let date of dates) {
-        const dayNumber = getDayNumberFromDate(date);
-        let allMilestonesFromDay: Array<number> = getMilestonesByDate(date);
-        let milestones: Array<number> = [];
-
-        // Only keep daily milestones from logs
-        for (let milestone of logs[dayNumber - 1].milestones) {
-            if (checkIfDaily(milestone)) {
-                milestones.push(milestone);
-            }
-        }
-
-        // Add all other milestones earned that day to the daily ones
-        milestones = milestones.concat(allMilestonesFromDay);
-        milestones = Array.from(new Set(milestones));
-        logs[dayNumber - 1].milestones = milestones;
-
-        // updating the db as it goes on.
-        pushMilestonesToDb(date, milestones);
-    }
-
     writeToLogsJson(logs);
 }
 

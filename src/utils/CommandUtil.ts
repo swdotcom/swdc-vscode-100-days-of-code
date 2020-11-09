@@ -14,10 +14,10 @@ import { getUpdatedDashboardHtmlString, getCertificateHtmlString } from "./Dashb
 import { displayReadmeIfNotExists, displayLoginPromptIfNotLoggedIn, isLoggedIn } from "./Util";
 import { getUpdatedMilestonesHtmlString } from "./MilestonesTemplateUtil";
 import { fetchSummary } from "./SummaryDbUtil";
-import { fetchAllMilestones } from "./MilestonesDbUtil";
 import { getUpdatedLogsHtml } from "./LogsTemplateUtil";
 import { TrackerManager } from "../managers/TrackerManager";
 import { deleteLogDay, syncLogs } from "./LogSync";
+import { MilestoneEventManager } from "../managers/MilestoneEventManager";
 
 let currentTitle: string = "";
 
@@ -285,7 +285,7 @@ export function createCommands(): { dispose: () => void } {
                             break;
                         case "refreshView":
                             // refresh the milestones
-                            await fetchAllMilestones();
+                            await MilestoneEventManager.getInstance().fetchAllMilestones();
                             if (currentPanel) {
                                 // dipose the previous one
                                 currentPanel.dispose();
@@ -350,6 +350,24 @@ export function createCommands(): { dispose: () => void } {
 
             currentPanel.webview.html = generatedHtml;
             currentPanel.reveal(ViewColumn.One);
+        })
+    );
+
+    cmds.push(
+        commands.registerCommand("DoC.showInfoMessage", (tile: string, message: string, isModal: boolean, commandCallback: string) => {
+            window
+                .showInformationMessage(
+                    message,
+                    {
+                        modal: isModal
+                    },
+                    tile
+                )
+                .then(selection => {
+                    if (commandCallback && selection === tile) {
+                        commands.executeCommand(commandCallback);
+                    }
+                });
         })
     );
 
