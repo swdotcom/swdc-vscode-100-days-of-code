@@ -113,7 +113,6 @@ function logOut() {
 
     // reset files
     deleteMilestoneJson();
-    deleteMilestonePayloadJson();
     deleteLogsJson();
     deleteSummaryJson();
 }
