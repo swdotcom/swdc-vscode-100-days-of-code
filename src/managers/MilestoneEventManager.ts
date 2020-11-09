@@ -1,6 +1,6 @@
 import { TextDocument, TextDocumentChangeEvent, window, WindowState, workspace } from "vscode";
 import { getDayNumberFromDate } from "../utils/LogsUtil";
-import { checkCodeTimeMetricsMilestonesAchieved, checkDaysMilestones, checkLanguageMilestonesAchieved, compareWithLocalMilestones, getMilestonesByDate } from "../utils/MilestonesUtil";
+import { checkCodeTimeMetricsMilestonesAchieved, checkDaysMilestones, checkLanguageMilestonesAchieved, compareWithLocalMilestones, getTodaysLocalMilestones } from "../utils/MilestonesUtil";
 import { syncSummary } from "../utils/SummaryUtil";
 import { getItem, isLoggedIn } from "../utils/Util";
 import { isResponseOk, softwareGet, softwarePost } from "./HttpManager";
@@ -77,9 +77,9 @@ export class MilestoneEventManager {
 		const achievedDaysMilestones = checkDaysMilestones();
 
 		if (achievedDaysMilestones.length || achievedLangMilestones.length || achievedTimeMilestones.length) {
-			// get the current milestones so if its an update the milestone array
-			// has them all instead of getting replaced by net new milestones
-			const currentMilestones: Array<number> = getMilestonesByDate(new Date().valueOf()) || [];
+			// get the current milestones so if its an update, the milestone array
+			// has all milestones for this day instead of getting replaced by a new set of milestones
+			const currentMilestones: Array<number> = getTodaysLocalMilestones() || [];
 
 			// update the server
 			await this.upsertMilestones(currentMilestones);

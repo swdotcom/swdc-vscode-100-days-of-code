@@ -34,14 +34,8 @@ export function deleteMilestoneJson() {
     }
 }
 
-export function getMilestonesByDate(date: number): Array<number> {
-    // checks if date is sent is in the future
-    const dateOb = new Date(date);
-    const dateNowOb = new Date();
-    const dateNow = dateNowOb.valueOf();
-    if (dateNow < date) {
-        return [];
-    }
+export function getTodaysLocalMilestones(): Array<number> {
+    const now = new Date();
 
     // finds milestones achieved on date give and returns them
     const sendMilestones: Array<number> = [];
@@ -49,7 +43,7 @@ export function getMilestonesByDate(date: number): Array<number> {
     if (milestoneData && milestoneData.milestones) {
         const milestones = milestoneData.milestones;
         for (let i = 0; i < milestones.length; i++) {
-            if (milestones[i].achieved && compareDates(new Date(milestones[i].date_achieved), dateOb)) {
+            if (milestones[i].achieved && compareDates(new Date(milestones[i].date_achieved), now)) {
                 sendMilestones.push(milestones[i].id);
             }
         }
