@@ -1,6 +1,6 @@
 import swdcTracker from "swdc-tracker";
 import { api_endpoint } from "../utils/Constants";
-import { getJwt } from "../utils/Util";
+import { getJwt, isLoggedIn } from "../utils/Util";
 import { getPluginId, getPluginName, getVersion } from "../utils/Util";
 
 export class TrackerManager {
@@ -38,7 +38,8 @@ export class TrackerManager {
 		icon_name: string = "",
 		cta_text: string = ""
 	) {
-		if (!this.trackerReady) {
+		// only send events if the user is logged in via code time
+		if (!this.trackerReady || !isLoggedIn()) {
 			return;
 		}
 
