@@ -16,23 +16,6 @@ let current_check_login_interval_count = 0;
 let checking_login = false;
 let _name = "";
 
-export function getPluginId() {
-    return _100_DAYS_OF_CODE_PLUGIN_ID;
-}
-
-export function getPluginName() {
-    return _100_DAYS_OF_CODE_EXT_ID;
-}
-
-export function getVersion() {
-    const extension = extensions.getExtension(_100_DAYS_OF_CODE_EXT_ID);
-    if (extension) {
-        return extension.packageJSON.version;
-    } else {
-        return;
-    }
-}
-
 async function wrapExecPromise(cmd: string, projectDir: null | undefined) {
     let result = null;
     try {
@@ -256,4 +239,8 @@ export function checkIfNameChanged() {
     } else {
         return false;
     }
+}
+
+export function mergeArrays(array1: Array<any>, array2: Array<any>) {
+    return [...new Set({...array1 || [], ...array2 || []})];
 }

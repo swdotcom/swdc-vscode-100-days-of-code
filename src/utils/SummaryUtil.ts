@@ -1,11 +1,10 @@
-import { compareDates } from "./Util";
+import { compareDates, mergeArrays } from "./Util";
 import fs = require("fs");
 import { getMostRecentLogObject, checkIfOnStreak, getLogsSummary } from "./LogsUtil";
 import { getLanguages } from "./LanguageUtil";
 import { Summary } from "../models/Summary";
 import { Log } from "../models/Log";
 import { getTotalMilestonesAchieved, getThreeMostRecentMilestones } from "./MilestonesUtil";
-import { pushNewSummary, pushUpdatedSummary } from "./SummaryDbUtil";
 import { getSummaryJsonFilePath, fetchSummaryJsonFileData } from "../managers/FileManager";
 
 
@@ -31,8 +30,7 @@ export function compareLocalSummary(summaryFromApp: any) {
             summaryFromApp.longest_streak > summary.longest_streak ? summaryFromApp.longest_streak : summary.longest_streak;
         summary.milestones = summaryFromApp.milestones > summary.milestones ? summaryFromApp.milestones : summary.milestones;
         summary.shares = summaryFromApp.shares > summary.shares ? summaryFromApp.shares : summary.shares;
-        summary.languages =
-            summaryFromApp.languages.length > summary.languages.length ? summaryFromApp.languages : summary.languages;
+        summary.languages = mergeArrays(summaryFromApp.languages, summary.languages);
         if (currentLog && compareDates(new Date(currentLog.date), new Date())) {
             summary.currentHours = currentLog.codetime_metrics.hours;
             summary.currentKeystrokes = currentLog.codetime_metrics.keystrokes;
@@ -70,7 +68,6 @@ export function syncSummary() {
     summary.currentDate = aggregateLogData.currentDate;
 
     writeToSummaryJson(summary);
-    pushUpdatedSummary();
 }
 
 export function updateSummaryJson() {
@@ -304,12 +301,6 @@ function writeToSummaryJson(summary: Summary) {
     const summaryExists = fs.existsSync(filepath);
     try {
         fs.writeFileSync(filepath, JSON.stringify(summary, null, 2));
-
-        if (!summaryExists) {
-            pushNewSummary();
-        } else {
-            pushUpdatedSummary();
-        }
     } catch (err) {
         console.log(err);
     }
