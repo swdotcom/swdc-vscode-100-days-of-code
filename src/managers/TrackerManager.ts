@@ -1,7 +1,7 @@
 import swdcTracker from "swdc-tracker";
 import { api_endpoint } from "../utils/Constants";
 import { getJwt } from "../utils/Util";
-import { getPluginId, getPluginName, getVersion } from "../utils/Util";
+import { getPluginId, getPluginName, getVersion } from "../utils/PluginUtil";
 
 export class TrackerManager {
 	private static instance: TrackerManager;
@@ -53,7 +53,7 @@ export class TrackerManager {
 			plugin_id: getPluginId(),
 			plugin_name: getPluginName(),
 			plugin_version: getVersion()
-		}
+		};
 
 		swdcTracker.trackUIInteraction(payload)
 	}

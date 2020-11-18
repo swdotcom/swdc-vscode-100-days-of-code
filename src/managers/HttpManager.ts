@@ -1,11 +1,21 @@
 import axios from "axios";
 import { api_endpoint } from "../utils/Constants";
+import { getPluginId, getPluginName, getVersion, getOs, getOffsetSeconds } from "../utils/PluginUtil";
 
 // build the axios api base url
 const beApi = axios.create({
     baseURL: `${api_endpoint}`,
     timeout: 8000
 });
+
+beApi.defaults.headers.common["X-SWDC-Plugin-Id"] = getPluginId();
+beApi.defaults.headers.common["X-SWDC-Plugin-Name"] = getPluginName();
+beApi.defaults.headers.common["X-SWDC-Plugin-Version"] = getVersion();
+beApi.defaults.headers.common["X-SWDC-Plugin-OS"] = getOs();
+beApi.defaults.headers.common[
+    "X-SWDC-Plugin-TZ"
+] = Intl.DateTimeFormat().resolvedOptions().timeZone;
+beApi.defaults.headers.common["X-SWDC-Plugin-Offset"] = getOffsetSeconds() / 60;
 
 export async function serverIsAvailable() {
     return await softwareGet("/ping")

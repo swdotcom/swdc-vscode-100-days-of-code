@@ -15,12 +15,12 @@ import {
     isLoggedIn,
     setName,
     checkIfNameChanged,
-    getPluginName,
-    getVersion
 } from "./utils/Util";
+import { getPluginName, getVersion } from "./utils/PluginUtil";
 import { commands } from "vscode";
 import { TrackerManager } from "./managers/TrackerManager";
 import { MilestoneEventManager } from "./managers/MilestoneEventManager";
+import { fetchSummary } from "./utils/SummaryDbUtil";
 
 const tracker: TrackerManager = TrackerManager.getInstance();
 
@@ -75,6 +75,8 @@ export async function initializePlugin() {
 
         // clean up unused files
         deleteLogsPayloadJson();
+
+        fetchSummary();
     }
 
     // initialize tracker
