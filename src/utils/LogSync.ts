@@ -6,6 +6,7 @@ import { getFileDataAsJson, getFile } from "../managers/FileManager";
 import { Log } from "../models/Log";
 import { commands, window } from "vscode";
 import { MilestoneEventManager } from "../managers/MilestoneEventManager";
+import { getAllMilestones } from "./MilestonesUtil";
 
 let currently_deleting_log_date: number = -1;
 
@@ -89,7 +90,7 @@ function formatLogs(logs: Array<Log>) {
 // joins milestones to each log
 async function addMilestonesToLogs(logs: Array<Log>) {
     // fetch all the milestones at once and then add them to each log iteratively below
-    const milestones = await MilestoneEventManager.getInstance().fetchAllMilestones();
+    const milestones = getAllMilestones();
     logs.forEach(async log => {
         let foundMilestones = milestones ? milestones.find((e: any) => e.day_number === log.day_number) : null;
         if (foundMilestones && foundMilestones.milestones) {

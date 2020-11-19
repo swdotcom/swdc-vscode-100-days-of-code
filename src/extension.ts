@@ -65,18 +65,20 @@ export async function initializePlugin() {
     if (isLoggedIn()) {
         setName();
 
-        await syncLogs();
+        if (vscode.window.state.focused) {
+          await milestoneEventMgr.fetchAllMilestones();
 
-        // milestones
-        milestoneEventMgr.fetchAllMilestones();
+          await syncLogs();
+
+          // session summary
+          await fetchSummary();
+        }
 
         // sets interval jobs
         initializeIntervalJobs();
 
         // clean up unused files
         deleteLogsPayloadJson();
-
-        await fetchSummary();
     }
 
     // initialize tracker
