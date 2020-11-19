@@ -333,6 +333,7 @@ export function getUpdatedLogsHtml(): string {
         if (!compareDates(mostRecentLogDate, dateNow)) {
             addLogVisibility = "visible";
         }
+        for (let x = 0; x < 10; x++) {
         for (let i = logs.length - 1; i >= 0; i--) {
             // If today's log is unpopulated
             if (
@@ -360,6 +361,7 @@ export function getUpdatedLogsHtml(): string {
 
             logsHtml += getLogCard(day, formattedDate, twitterShareUrl, shareIconLink, editPath, dropDownPath);
         }
+    }
     }
 
     const templateVars = {
