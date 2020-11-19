@@ -1,4 +1,4 @@
-import { compareDates, mergeArrays } from "./Util";
+import { compareDates, mergeStringArrays } from "./Util";
 import fs = require("fs");
 import { getMostRecentLogObject, checkIfOnStreak, getLogsSummary } from "./LogsUtil";
 import { getLanguages } from "./LanguageUtil";
@@ -30,15 +30,16 @@ export function compareLocalSummary(summaryFromApp: any) {
             summaryFromApp.longest_streak > summary.longest_streak ? summaryFromApp.longest_streak : summary.longest_streak;
         summary.milestones = summaryFromApp.milestones > summary.milestones ? summaryFromApp.milestones : summary.milestones;
         summary.shares = summaryFromApp.shares > summary.shares ? summaryFromApp.shares : summary.shares;
-        summary.languages = mergeArrays(summaryFromApp.languages, summary.languages);
+
+        summary.languages = mergeStringArrays(summaryFromApp.languages, summary.languages);
         if (currentLog && compareDates(new Date(currentLog.date), new Date())) {
             summary.currentHours = currentLog.codetime_metrics.hours;
             summary.currentKeystrokes = currentLog.codetime_metrics.keystrokes;
             summary.currentLines = currentLog.codetime_metrics.lines_added;
         }
-
-        writeToSummaryJson(summary);
     }
+
+    writeToSummaryJson(summary);
 }
 
 export function syncSummary() {
@@ -298,7 +299,6 @@ export function getAverageHoursLevel(avgHour: number): number {
 
 function writeToSummaryJson(summary: Summary) {
     const filepath = getSummaryJsonFilePath();
-    const summaryExists = fs.existsSync(filepath);
     try {
         fs.writeFileSync(filepath, JSON.stringify(summary, null, 2));
     } catch (err) {

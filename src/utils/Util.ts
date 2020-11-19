@@ -241,6 +241,8 @@ export function checkIfNameChanged() {
     }
 }
 
-export function mergeArrays(array1: Array<any>, array2: Array<any>) {
-    return [...new Set({...array1 || [], ...array2 || []})];
+export function mergeStringArrays(array1: string[], array2: string[]) {
+    array1 = array1 || [];
+    array2 = array2 || [];
+    return [...new Set([...array1, ...array2])];
 }

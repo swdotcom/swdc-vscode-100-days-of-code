@@ -76,7 +76,7 @@ export async function initializePlugin() {
         // clean up unused files
         deleteLogsPayloadJson();
 
-        fetchSummary();
+        await fetchSummary();
     }
 
     // initialize tracker
