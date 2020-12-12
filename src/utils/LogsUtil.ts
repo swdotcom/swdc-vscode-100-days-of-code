@@ -1,4 +1,4 @@
-import { compareDates, getItem } from "./Util";
+import { compareDates, getItem, isLoggedIn } from "./Util";
 import fs = require("fs");
 import { CodetimeMetrics } from "../models/CodetimeMetrics";
 import { Log } from "../models/Log";
@@ -446,7 +446,7 @@ export async function syncLogs() {
         saveLogsToFile(formattedLogs);
     }
 
-    if (createLogForToday) {
+    if (createLogForToday && isLoggedIn()) {
         // create a log for today and add it to the local logs
         // await addDailyLog();
         const log:Log = new Log();

@@ -7,6 +7,7 @@ import { getMilestoneById } from "./MilestonesUtil";
 import { monthNames } from "./Constants";
 import { window } from "vscode";
 import { fetchSummaryJsonFileData } from "../managers/FileManager";
+import { isLoggedIn } from "./Util";
 
 function getDashboardTemplate(): string {
     return path.join(__dirname, "/assets/templates/dashboard.template.html");
@@ -339,6 +340,13 @@ export function getUpdatedDashboardHtmlString(): string {
     const lineAddedProgressColor = linesAddedLevel === 6 ? "#FD9808" : "#00b4ee";
     const avgHoursProgressColor = avgHours >= 1 ? "#FD9808" : "#00b4ee";
 
+    let logInVisibility = "hidden";
+    let logInMessageDisplay = "none";
+    if (!isLoggedIn()) {
+        logInVisibility = "visible";
+        logInMessageDisplay = "";
+    }
+
     const templateVars = {
         hours,
         days,
@@ -374,7 +382,9 @@ export function getUpdatedDashboardHtmlString(): string {
         hoursProgressColor,
         streakProgressColor,
         lineAddedProgressColor,
-        avgHoursProgressColor
+        avgHoursProgressColor,
+        logInVisibility,
+        logInMessageDisplay
     };
 
     const templateString = fs.readFileSync(getDashboardTemplate()).toString();

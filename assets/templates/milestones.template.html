@@ -2,7 +2,12 @@
     <style>
         body {
             font-family: sans-serif;
-            color: ${this.cardTextColor}
+        	width: 800px;
+        	border-radius: 2px;
+        	border-width: 2px;
+        	border-style: solid;
+        	border-color: ${this.cardBackgroundColor};
+        	color: ${this.cardTextColor};
         }
         h1 {
             font-size: 24px;
@@ -22,6 +27,15 @@
             display: flex;
             width: 100%;
             align-items: center;
+        }
+        #logIn {
+            visibility: ${
+                this.logInVisibility
+            };
+        }
+        #logInMessage {
+            visibility: ${this.logInVisibility};
+            display: ${this.logInMessageDisplay};
         }
         .inf {
             font-size: larger;
@@ -135,6 +149,29 @@
             opacity: 0.1;
             cursor: wait;
         }
+        .milestonesHeader {
+            display: flex;
+            position: absolute;
+            right: 24px;
+        }
+        .milestonesHeader button {
+            margin-left: auto;
+            font-size: 14px;
+            font-weight: 600;
+            margin: 4px;
+            height: 20px;
+            color: #ffffff;
+            background-color: #00b4ee;
+            border-color: #00b4ee;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+        .logInMessageStyle {
+            font-size: 14px;
+            font-weight: 600;
+            color: #919eab;
+            word-wrap: break-word;
+        }
     </style>
     <body>
         <div class="top">
@@ -143,12 +180,25 @@
                 ><button class="viewRefreshButton" id="milestonesRefresh" title="Refresh" alt="Refresh">
                     <img class="viewRefreshButtonIcon" /></button
             ></a>
+            <div class="milestonesHeader">
+                <button id="logIn">Log In</button>
+            </div>
         </div>
+
+        <div class="logInMessageStyle" id="logInMessage">You must log in with Code Time to start tracking your 100 Days of Code</div>
+
         <div>${this.recents} ${this.allMilestones}</div>
     </body>
     <script>
         const vscode = acquireVsCodeApi();
         var shareButtons = document.getElementsByClassName("milestoneShare");
+
+        const logIn = document.getElementById("logIn");
+        if (logIn) {
+            logIn.addEventListener("click", function() {
+                vscode.postMessage({ command: "logInToAccount"});
+            });
+        }
 
         for (let i = 0; i < shareButtons.length; i++) {
             shareButtons[i].addEventListener("click", function () {

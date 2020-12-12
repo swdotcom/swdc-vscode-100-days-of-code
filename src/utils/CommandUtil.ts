@@ -143,6 +143,9 @@ export function createCommands(): { dispose: () => void } {
                             }
                             commands.executeCommand("DoC.viewLogs");
                             break;
+                        case "logInToAccount":
+                            commands.executeCommand("codetime.codeTimeExisting");
+                            break;
                     }
                 });
             }
@@ -241,6 +244,9 @@ export function createCommands(): { dispose: () => void } {
                             }
                             commands.executeCommand("DoC.viewDashboard");
                             break;
+                        case "logInToAccount":
+                            commands.executeCommand("codetime.codeTimeExisting");
+                            break;
                     }
                 });
             }
@@ -301,6 +307,9 @@ export function createCommands(): { dispose: () => void } {
                             }
                             commands.executeCommand("DoC.viewMilestones");
                             break;
+                        case "logInToAccount":
+                            commands.executeCommand("codetime.codeTimeExisting");
+                            break;
                     }
                 });
             }
@@ -351,6 +360,9 @@ export function createCommands(): { dispose: () => void } {
                             } else {
                                 displayLoginPromptIfNotLoggedIn();
                             }
+                            break;
+                        case "logInToAccount":
+                            commands.executeCommand("codetime.codeTimeExisting");
                             break;
                     }
                     commands.executeCommand("DoC.viewLogs");

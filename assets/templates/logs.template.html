@@ -6,11 +6,10 @@
 <style>
     body {
         font-family: sans-serif;
-
         color: $ {
             this.cardTextColor
         };
-        width: 830px;
+        width: 800px;
     }
 
     #top {
@@ -20,25 +19,37 @@
     }
 
     #addLog {
-        order: 2;
-        margin-left: auto;
-        font-size: 14px;
-        font-weight: 600;
-        height: 20px;
-        color: #ffffff;
-        background-color: #00b4ee;
-        border-color: #00b4ee;
-        border-radius: 2px;
-        cursor: pointer;
         visibility: $ {
             this.addLogVisibility
         };
+    }
+
+    #logIn {
+        visibility: : ${
+            this.logInVisibility
+        };
+    }
+    #logInMessage {
+        visibility: ${this.logInVisibility};
+        display: ${this.logInMessageDisplay};
     }
 
     .logHeader {
         display: flex;
         position: absolute;
         right: 24px;
+    }
+    .logHeader button {
+        margin-left: auto;
+        font-size: 14px;
+        font-weight: 600;
+        margin: 4px;
+        height: 20px;
+        color: #ffffff;
+        background-color: #00b4ee;
+        border-color: #00b4ee;
+        border-radius: 2px;
+        cursor: pointer;
     }
 
     .logCard {
@@ -494,6 +505,7 @@
     /* Buttons */
     .buttons {
         margin-top: 20px;
+        padding: 4px;
     }
 
     #editLogCancelButton {
@@ -541,6 +553,12 @@
         opacity: 0.1;
         cursor: wait;
     }
+    .logInMessageStyle {
+        font-size: 14px;
+        font-weight: 600;
+        color: #919eab;
+        word-wrap: break-word;
+    }
 </style>
 
 <body>
@@ -549,9 +567,12 @@
         <a><button class="viewRefreshButton" id="logsRefresh" title="Refresh" alt="Refresh">
                 <img class="viewRefreshButtonIcon" /></button></a>
         <div class="logHeader">
+            <button id="logIn">Log In</button>
             <button id="addLog">Add Log</button>
         </div>
     </div>
+
+    <div class="logInMessageStyle" id="logInMessage">You must log in with Code Time to start tracking your 100 Days of Code</div>
 
     ${this.logsHtml}
     <div id="editLogCard">
@@ -595,6 +616,13 @@
     if (addLog) {
         addLog.addEventListener("click", function() {
             vscode.postMessage({ command: "addLog" });
+        });
+    }
+
+    const logIn = document.getElementById("logIn");
+    if (logIn) {
+        logIn.addEventListener("click", function() {
+            vscode.postMessage({ command: "logInToAccount"});
         });
     }
 

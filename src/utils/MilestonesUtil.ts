@@ -72,25 +72,6 @@ export function compareWithLocalMilestones(serverMilestones: any) {
     writeToMilestoneJson(milestones);
 }
 
-export function checkIfMilestonesAchievedOnDate(date: number): boolean {
-    const dateData = new Date(date);
-    let milestonesData = getAllMilestones();
-    let count = 0;
-    if (milestonesData && milestonesData.milestones) {
-        const milestones = milestonesData.milestones;
-        for (let i = 0; i < milestones.length; i++) {
-            if (milestones[i].achieved && compareDates(new Date(milestones[i].date_achieved), dateData)) {
-                count++;
-                // ensures that more than one milestone was achieved that day
-                if (count > 1) {
-                    return true;
-                }
-            }
-        }
-    }
-    return false;
-}
-
 export function checkCodeTimeMetricsMilestonesAchieved(): Array<number> {
     let achievedMilestones = [];
     const summary: Summary = fetchSummaryJsonFileData();

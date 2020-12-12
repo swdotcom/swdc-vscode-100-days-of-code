@@ -2,7 +2,7 @@ import { window } from "vscode";
 import path = require("path");
 import fs = require("fs");
 import { getAllMilestones } from "./MilestonesUtil";
-import { compareDates } from "./Util";
+import { compareDates, isLoggedIn } from "./Util";
 import { monthNames } from "./Constants";
 
 function getMilestonesTemplate(): string {
@@ -131,13 +131,22 @@ export function getUpdatedMilestonesHtmlString(): string {
         recents += `\t\t<div class="noMilestones">No milestones earned today</div>\n`;
     }
 
+    let logInVisibility = "hidden";
+    let logInMessageDisplay = "none";
+    if (!isLoggedIn()) {
+        logInVisibility = "visible";
+        logInMessageDisplay = "";
+    }
+
     const templateVars = {
         cardTextColor,
         cardBackgroundColor,
         cardGrayedLevel,
         cardGrayedLevelFont,
         recents,
-        allMilestones
+        allMilestones,
+        logInVisibility,
+        logInMessageDisplay
     };
 
     const templateString = fs.readFileSync(getMilestonesTemplate()).toString();

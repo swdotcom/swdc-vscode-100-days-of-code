@@ -7,6 +7,7 @@ import { MilestoneEventManager } from "../managers/MilestoneEventManager";
 import { deleteMilestoneJson } from "./MilestonesUtil";
 import { deleteSummaryJson } from "./SummaryUtil";
 
+const moment = require("moment-timezone");
 const fileIt = require("file-it");
 const fs = require("fs");
 const os = require("os");
@@ -153,7 +154,7 @@ export function getSoftwareSessionAsJson() {
 
 export function isLoggedIn(): boolean {
     // getting authType to see if user is logged in. name is a check for if the user has not successfully logged in.
-    if (getItem("authType") && getItem("name")) {
+    if (getItem("name")) {
         _name = getItem("name");
         return true;
     }
@@ -161,10 +162,13 @@ export function isLoggedIn(): boolean {
 }
 
 export function displayLoginPromptIfNotLoggedIn() {
-    if (!isLoggedIn()) {
+    const lastPromptDate = getItem("last100doc_loginPromptDate");
+    const today = moment().format("YYYY-MM-DD");
+    if (!isLoggedIn() && lastPromptDate !== today) {
+        setItem("last100doc_loginPromptDate", today);
         window
             .showInformationMessage(
-                "Please log in to use the 100 Days of Code plugin ",
+                "You must log in with Code Time to start tracking your 100 Days of Code.",
                 {
                     modal: true
                 },
