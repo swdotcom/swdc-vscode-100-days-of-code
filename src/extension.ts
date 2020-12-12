@@ -5,27 +5,18 @@ import { createCommands } from "./utils/CommandUtil";
 import {
     checkMilestonesJson
 } from "./utils/MilestonesUtil";
-import { checkLogsJson, getLatestLogEntryNumber, resetPreviousLogIfEmpty, syncLogs } from "./utils/LogsUtil";
+import { checkLogsJson, syncLogs } from "./utils/LogsUtil";
 import { deleteLogsPayloadJson } from "./utils/LogsDbUtils";
 import {
     displayReadmeIfNotExists,
     isLoggedIn,
-    checkIfNameChanged,
-    resetData,
 } from "./utils/Util";
 import { getPluginName, getVersion } from "./utils/PluginUtil";
-import { commands } from "vscode";
 import { TrackerManager } from "./managers/TrackerManager";
 import { MilestoneEventManager } from "./managers/MilestoneEventManager";
 import { fetchSummary } from "./utils/SummaryDbUtil";
 
 const tracker: TrackerManager = TrackerManager.getInstance();
-
-let five_minute_interval: NodeJS.Timeout;
-let init_interval: NodeJS.Timeout;
-let log_out_interval: NodeJS.Timeout;
-
-const one_min_millis = 1000 * 60;
 
 // this method is called when the extension is activated
 export function activate(ctx: vscode.ExtensionContext) {
@@ -47,11 +38,6 @@ export async function initializePlugin() {
 
     // Displays README on first launch
     displayReadmeIfNotExists();
-
-    // init condition
-    if (getLatestLogEntryNumber() <= 0) {
-        commands.executeCommand("DoC.revealTree");
-    }
 
     // initialize the milestone event manager
     const milestoneEventMgr: MilestoneEventManager = MilestoneEventManager.getInstance();
@@ -78,11 +64,6 @@ export async function initializePlugin() {
     tracker.init();
 }
 
-
 export function deactivate(ctx: vscode.ExtensionContext) {
-
-    // clearing the the intervals for processes
-    clearInterval(five_minute_interval);
-    clearInterval(init_interval);
-    clearInterval(log_out_interval);
+    // add deactivate functionality here
 }

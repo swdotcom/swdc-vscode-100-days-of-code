@@ -109,6 +109,8 @@ export function displayReadmeIfNotExists(override = false) {
         const readmeUri = Uri.file(getLocalREADMEFile());
         commands.executeCommand("markdown.showPreview", readmeUri, ViewColumn.One, { locked: true });
         setItem("vscode_100doc_CtReadme", true);
+
+        commands.executeCommand("DoC.revealTree");
     }
 }
 

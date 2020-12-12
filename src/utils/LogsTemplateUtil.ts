@@ -318,37 +318,31 @@ export function getUpdatedLogsHtml(): string {
     let logsHtml = "";
     let addLogVisibility = "hidden";
 
-    const hasDefaultLogOnly = (logs.length === 0 || (logs.length === 1 && logs[0].title === NO_TITLE_LABEL));
+    const mostRecentLog = logs[logs.length - 1];
 
-    if (hasDefaultLogOnly) {
-        logsHtml = `\t\t<h2 id='noLogs'>Log Daily Progress to see it here!</h2>`;
+    if (mostRecentLog.title === NO_TITLE_LABEL || !mostRecentLog.description) {
         addLogVisibility = "visible";
-    } else {
-        const mostRecentLog = logs[logs.length - 1];
-
-        if (mostRecentLog.title === NO_TITLE_LABEL || !mostRecentLog.description) {
-            addLogVisibility = "visible";
-        }
-
-        // show the logs in reverse
-        logs.reverse();
-        for (let log of logs) {
-
-            const twitterShareUrl = generateShareUrl(
-                log.day_number,
-                log.title,
-                log.codetime_metrics.hours,
-                log.codetime_metrics.keystrokes,
-                log.codetime_metrics.lines_added
-            );
-
-            const formattedDate = getFormattedDate(log.date);
-
-            const shareIconLink = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
-
-            logsHtml += getLogCard(log, formattedDate, twitterShareUrl, shareIconLink, editPath, dropDownPath);
-        }
     }
+
+    // show the logs in reverse
+    logs.reverse();
+    for (let log of logs) {
+
+        const twitterShareUrl = generateShareUrl(
+            log.day_number,
+            log.title,
+            log.codetime_metrics.hours,
+            log.codetime_metrics.keystrokes,
+            log.codetime_metrics.lines_added
+        );
+
+        const formattedDate = getFormattedDate(log.date);
+
+        const shareIconLink = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+
+        logsHtml += getLogCard(log, formattedDate, twitterShareUrl, shareIconLink, editPath, dropDownPath);
+    }
+
 
 
     // if (
