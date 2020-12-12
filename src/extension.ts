@@ -3,18 +3,15 @@
 import * as vscode from "vscode";
 import { createCommands } from "./utils/CommandUtil";
 import {
-    checkMilestonesJson,
-    deleteMilestoneJson
+    checkMilestonesJson
 } from "./utils/MilestonesUtil";
-import { checkLogsJson, getLatestLogEntryNumber, deleteLogsJson, resetPreviousLogIfEmpty } from "./utils/LogsUtil";
-import { syncLogs } from "./utils/LogSync";
-import { deleteSummaryJson } from "./utils/SummaryUtil";
+import { checkLogsJson, getLatestLogEntryNumber, resetPreviousLogIfEmpty, syncLogs } from "./utils/LogsUtil";
 import { deleteLogsPayloadJson } from "./utils/LogsDbUtils";
 import {
     displayReadmeIfNotExists,
     isLoggedIn,
-    setName,
     checkIfNameChanged,
+    resetData,
 } from "./utils/Util";
 import { getPluginName, getVersion } from "./utils/PluginUtil";
 import { commands } from "vscode";
@@ -63,7 +60,6 @@ export async function initializePlugin() {
     // and fetch data from the db as well
 
     if (isLoggedIn()) {
-        setName();
 
         if (vscode.window.state.focused) {
           await milestoneEventMgr.fetchAllMilestones();
@@ -74,9 +70,6 @@ export async function initializePlugin() {
           await fetchSummary();
         }
 
-        // sets interval jobs
-        initializeIntervalJobs();
-
         // clean up unused files
         deleteLogsPayloadJson();
     }
@@ -85,41 +78,6 @@ export async function initializePlugin() {
     tracker.init();
 }
 
-function initializeIntervalJobs() {
-    setLogOutInterval();
-
-    // every 5 minutes perform the following
-    five_minute_interval = setInterval(() => {
-        if (checkIfNameChanged()) {
-            logOut();
-        } else {
-            // make sure the last log isn't empty
-            resetPreviousLogIfEmpty();
-
-            // sync the logs
-            syncLogs();
-        }
-    }, one_min_millis * 5);
-}
-
-function setLogOutInterval() {
-    log_out_interval = setInterval(() => {
-        if (checkIfNameChanged()) {
-            logOut();
-        }
-    }, 10000);
-}
-
-function logOut() {
-    // reset updates
-    clearInterval(five_minute_interval);
-    clearInterval(init_interval);
-
-    // reset files
-    deleteMilestoneJson();
-    deleteLogsJson();
-    deleteSummaryJson();
-}
 
 export function deactivate(ctx: vscode.ExtensionContext) {
 

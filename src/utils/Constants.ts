@@ -25,3 +25,5 @@ export const monthNames = [
 ];
 
 export const HOURS_THRESHOLD = 0.5;
+
+export const NO_TITLE_LABEL = "No Title";

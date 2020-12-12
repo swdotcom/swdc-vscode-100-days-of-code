@@ -1,0 +1,169 @@
+<html>
+    <style>
+        body {
+            font-family: sans-serif;
+            color: ${this.cardTextColor}
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        h2 {
+            font-size: 21px;
+            font-weight: 600;
+        }
+        hr {
+            height: 3px;
+            border: none;
+            color: rgba(255, 255, 255, 0.05);
+            background-color: ${this.cardBackgroundColor};
+        }
+        .top {
+            display: flex;
+            width: 100%;
+            align-items: center;
+        }
+        .inf {
+            font-size: larger;
+        }
+        .circle {
+            display: inline-block;
+            vertical-align: middle;
+            height: 30px;
+            width: 30px;
+            border-radius: 50%;
+            font-size: 18px;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 2px;
+        }
+
+        /* Milestone card */
+        .milestoneCard {
+            display: flex;
+        	display: inline-flex;
+        	align-items: center;
+        	flex-direction: column;
+            margin: 10px;
+            padding: 8px 12px 12px 12px;
+            position: relative;
+            height: 250px;
+            width: 200px;
+            border-radius: 2px;
+            background-color: ${this.cardBackgroundColor};
+        }
+        .milestoneShare {
+            position: absolute;
+            right: 16px;
+            top: 14px;
+            height: auto;
+            width: 20px;
+            transform: translate(5px, -3px);
+        }
+        .milestoneCardLevel {
+            position: absolute;
+            width: 50px;
+            height: 18px;
+            left: 12px;
+            top: 11px;
+            line-height: 18px;
+            font-size: 12px;
+            font-weight: 250;
+            border-radius: 3px;
+            text-align: center;
+            vertical-align: middle;
+            background: rgba(145, 158, 171, 0.5);
+        }
+        .milestoneTitle {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 16px;
+            line-height: 20px;
+            color: ${this.cardTextColor};
+        }
+        .logo {
+            height: 120px;
+            width: 120px;
+            margin-top: 16px;
+        }
+        .milestoneDesc {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
+            color: ${this.cardTextColor};
+        }
+        .date {
+            text-align: center;
+            font-size: 12px;
+            color: #919eab;
+            margin-top: 8px;
+        }
+
+        /* Grayed */
+        .grayed {
+            color: #6d6d6d;
+            filter: grayscale(100%);
+        }
+        .grayedLevel {
+            background: ${this.cardGrayedLevel};
+            color: ${this.cardGrayedLevelFont};
+        }
+        .noMilestones {
+            font-size: 18px;
+            font-weight: 600;
+            text-align: center;
+            line-height: 32px;
+            padding-bottom: 10px;
+        }
+        .hiddenId {
+            visibility: hidden;
+        }
+        .viewRefreshButton {
+            cursor: pointer;
+            position: absolute;
+            background-color: rgba(0,0,0,0);
+            border-color: rgba(0,0,0,0);
+            margin-top: -12px;
+        }
+        .viewRefreshButtonIcon {
+            width: 20px;
+            height: 20px;
+            content:url('https://100-days-of-code.s3-us-west-1.amazonaws.com/refresh.svg');
+        }
+        button:disabled {
+            opacity: 0.1;
+            cursor: wait;
+        }
+    </style>
+    <body>
+        <div class="top">
+            <h1>Milestones</h1>
+            <a
+                ><button class="viewRefreshButton" id="milestonesRefresh" title="Refresh" alt="Refresh">
+                    <img class="viewRefreshButtonIcon" /></button
+            ></a>
+        </div>
+        <div>${this.recents} ${this.allMilestones}</div>
+    </body>
+    <script>
+        const vscode = acquireVsCodeApi();
+        var shareButtons = document.getElementsByClassName("milestoneShare");
+
+        for (let i = 0; i < shareButtons.length; i++) {
+            shareButtons[i].addEventListener("click", function () {
+                var hiddenId = this.parentNode.parentNode.getElementsByClassName("hiddenId")[0].textContent;
+                vscode.postMessage({ command: "incrementShare", value: hiddenId });
+            });
+        }
+
+        const refreshButton = document.getElementById("milestonesRefresh");
+        refreshButton.addEventListener("click", function () {
+            refreshButton.disabled = true;
+            vscode.postMessage({ command: "refreshView", value: "milestones" });
+            setTimeout(() => {
+                refreshButton.disabled = false;
+            }, 2000);
+        });
+    </script>
+</html>

@@ -9,7 +9,8 @@ import { window } from "vscode";
 import { fetchSummaryJsonFileData } from "../managers/FileManager";
 
 function getDashboardTemplate(): string {
-    return path.join(__dirname, "../assets/templates/dashboard.template.html");
+    return path.join(__dirname, "/assets/templates/dashboard.template.html");
+    // return path.join(__dirname, "../assets/templates/dashboard.template.html");
 }
 
 export function getCertificateHtmlString(name: string): string {

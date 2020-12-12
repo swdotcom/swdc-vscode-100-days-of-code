@@ -6,7 +6,8 @@ import { compareDates } from "./Util";
 import { monthNames } from "./Constants";
 
 function getMilestonesTemplate(): string {
-    return path.join(__dirname, "../assets/templates/milestones.template.html");
+    return path.join(__dirname, "/assets/templates/milestones.template.html");
+    // return path.join(__dirname, "../assets/templates/milestones.template.html");
 }
 
 function generateShareUrl(id: number, title: string, description: string): string {

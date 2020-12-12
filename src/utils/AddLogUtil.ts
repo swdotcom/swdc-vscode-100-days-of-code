@@ -4,11 +4,12 @@ import fs = require("fs");
 import { getMostRecentLogObject, getLatestLogEntryNumber } from "./LogsUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
 import { Log } from "../models/Log";
-import { monthNames } from "./Constants";
+import { monthNames, NO_TITLE_LABEL } from "./Constants";
 import { window } from "vscode";
 
 function getAddLogTemplate(): string {
-    return path.join(__dirname, "../assets/templates/addLog.template.html");
+    return path.join(__dirname, "/assets/templates/addLog.template.html");
+    // return path.join(__dirname, "../assets/templates/addLog.template.html");
 }
 
 function getStyleColorsBasedOnMode(): any {
@@ -37,7 +38,7 @@ export function getUpdatedAddLogHtmlString(): string {
     const logDate = new Date(log.date);
     let day = getLatestLogEntryNumber() + 1;
 
-    if (compareDates(dateOb, logDate) && log.title !== "No Title") {
+    if (compareDates(dateOb, logDate) && log.title !== NO_TITLE_LABEL) {
         return "<html><body><br><br><h1>Today's Log already exists. If you want to edit it, please update the Log from the Logs tab in 100 Days of Code.</h1></body></html>";
     } else if (compareDates(dateOb, logDate)) {
         day = log.day_number;
