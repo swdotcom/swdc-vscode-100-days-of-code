@@ -182,17 +182,6 @@ export function setDailyMilestonesByDayNumber(dayNumber: number, newMilestones: 
     writeToLogsJson(logs);
 }
 
-export async function addDailyLog() {
-    return await addLogToJson(
-        NO_TITLE_LABEL,
-        "", // description
-        "0",  // hours
-        "0",  // keystrokes
-        "0",  // lines
-        []
-    );
-}
-
 export async function addLogToJson(
     title: string,
     description: string,
@@ -201,9 +190,9 @@ export async function addLogToJson(
     lines: string,
     links: Array<string>
 ) {
-    const dayNum = getLatestLogEntryNumber() + 1;
+    const numLogs = getLatestLogEntryNumber();
 
-    if (dayNum === 0) {
+    if (numLogs === 0) {
         console.log("Logs json could not be read");
         return false;
     }
@@ -220,7 +209,6 @@ export async function addLogToJson(
     log.links = links;
     log.date = Date.now();
     log.codetime_metrics = codetimeMetrics;
-    log.day_number = dayNum;
 
     const logExists = checkIfLogExists(log);
 
@@ -228,6 +216,7 @@ export async function addLogToJson(
     if (logExists) {
         return updateLog(log);
     } else {
+        log.day_number = numLogs + 1;
         await createLog(log);
     }
 
@@ -372,7 +361,7 @@ export async function resetPreviousLogIfEmpty() {
 }
 
 // updates a log locally and on the server
-export async function updateLog(log: Log) {
+async function updateLog(log: Log) {
     // get all log objects
     const logs = await getLocalLogsFromFile();
     // find and update the log object
@@ -393,7 +382,7 @@ export async function updateLog(log: Log) {
 }
 
 // creates a new log locally and on the server
-export async function createLog(log: Log) {
+async function createLog(log: Log) {
     // get all log objects
     const logs = await getLocalLogsFromFile();
     // add the new log
@@ -459,7 +448,10 @@ export async function syncLogs() {
 
     if (createLogForToday) {
         // create a log for today and add it to the local logs
-        await addDailyLog();
+        // await addDailyLog();
+        const log:Log = new Log();
+        log.day_number = (await getLocalLogsFromFile()).length + 1;
+        await createLog(log);
     }
 }
 
@@ -500,7 +492,7 @@ function getLocalLogsFromFile(): Array<Log> {
     if (exists) {
         logs = getFileDataAsJson(filePath);
     }
-    return logs;
+    return logs || [];
 }
 
 function getLogFilePath(): string {
