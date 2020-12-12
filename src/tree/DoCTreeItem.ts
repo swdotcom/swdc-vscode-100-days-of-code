@@ -2,7 +2,7 @@ import { TreeItem, TreeItemCollapsibleState, Command } from "vscode";
 import * as path from "path";
 import { TreeNode } from "../models/TreeNode";
 
-const resourcePath: string = path.join(__filename, "..", "..", "..", "resources");
+const resourcePath: string = path.join(__dirname, "resources");
 
 export class DoCTreeItem extends TreeItem {
     constructor(
@@ -27,17 +27,6 @@ export class DoCTreeItem extends TreeItem {
 
         // set the context value (used in the config to match for icon hovering)
         this.contextValue = getTreeItemContextValue(treeItem);
-    }
-
-    get tooltip(): string {
-        if (!this.treeItem) {
-            return "";
-        }
-        if (this.treeItem.tooltip) {
-            return this.treeItem.tooltip;
-        } else {
-            return this.treeItem.label;
-        }
     }
 
     iconPath = {

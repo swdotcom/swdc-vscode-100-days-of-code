@@ -3,14 +3,14 @@ import { Summary } from "../models/Summary";
 import { getMilestoneById } from "./MilestonesUtil";
 import { Log } from "../models/Log";
 import { getAllLogObjects } from "./LogsUtil";
-import { compareDates } from "./Util";
 import path = require("path");
 import fs = require("fs");
-import { monthNames } from "./Constants";
+import { monthNames, NO_TITLE_LABEL } from "./Constants";
 import { fetchSummaryJsonFileData } from "../managers/FileManager";
 
 function getLogsTemplate() {
-    return path.join(__dirname, "../assets/templates/logs.template.html");
+    return path.join(__dirname, "/assets/templates/logs.template.html");
+    // return path.join(__dirname, "../assets/templates/logs.template.html");
 }
 
 function getStyleColorsBasedOnMode(): any {
@@ -318,51 +318,78 @@ export function getUpdatedLogsHtml(): string {
     let logsHtml = "";
     let addLogVisibility = "hidden";
 
-    if (
-        logs.length < 1 ||
-        (logs.length === 1 && logs[0].title === "No Title" && compareDates(new Date(), new Date(logs[0].date)))
-    ) {
-        logsHtml = `\t\t<h2 id='noLogs'>Log Daily Progress to see it here!</h2>`;
+    const mostRecentLog = logs[logs.length - 1];
+
+    if (mostRecentLog.title === NO_TITLE_LABEL || !mostRecentLog.description) {
         addLogVisibility = "visible";
-    } else {
-        let mostRecentLog = logs[logs.length - 1];
-        let mostRecentLogDate = new Date(mostRecentLog.date);
-        let dateNow = new Date();
-
-        // If no log for today
-        if (!compareDates(mostRecentLogDate, dateNow)) {
-            addLogVisibility = "visible";
-        }
-        for (let x = 0; x < 10; x++) {
-        for (let i = logs.length - 1; i >= 0; i--) {
-            // If today's log is unpopulated
-            if (
-                i === logs.length - 1 &&
-                compareDates(mostRecentLogDate, dateNow) &&
-                mostRecentLog.title === "No Title"
-            ) {
-                addLogVisibility = "visible";
-                continue;
-            }
-
-            const day = logs[i];
-
-            const twitterShareUrl = generateShareUrl(
-                day.day_number,
-                day.title,
-                day.codetime_metrics.hours,
-                day.codetime_metrics.keystrokes,
-                day.codetime_metrics.lines_added
-            );
-
-            const formattedDate = getFormattedDate(day.date);
-
-            const shareIconLink = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
-
-            logsHtml += getLogCard(day, formattedDate, twitterShareUrl, shareIconLink, editPath, dropDownPath);
-        }
     }
+
+    // show the logs in reverse
+    logs.reverse();
+    for (let log of logs) {
+
+        const twitterShareUrl = generateShareUrl(
+            log.day_number,
+            log.title,
+            log.codetime_metrics.hours,
+            log.codetime_metrics.keystrokes,
+            log.codetime_metrics.lines_added
+        );
+
+        const formattedDate = getFormattedDate(log.date);
+
+        const shareIconLink = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+
+        logsHtml += getLogCard(log, formattedDate, twitterShareUrl, shareIconLink, editPath, dropDownPath);
     }
+
+
+
+    // if (
+    //     logs.length < 1 ||
+    //     (logs.length === 1 && logs[0].title === "No Title" && compareDates(new Date(), new Date(logs[0].date)))
+    // ) {
+    //     logsHtml = `\t\t<h2 id='noLogs'>Log Daily Progress to see it here!</h2>`;
+    //     addLogVisibility = "visible";
+    // } else {
+    //     let mostRecentLog = logs[logs.length - 1];
+    //     let mostRecentLogDate = new Date(mostRecentLog.date);
+    //     let dateNow = new Date();
+
+    //     // If no log for today
+    //     if (!compareDates(mostRecentLogDate, dateNow)) {
+    //         addLogVisibility = "visible";
+    //     }
+    //     for (let x = 0; x < 10; x++) {
+    //     for (let i = logs.length - 1; i >= 0; i--) {
+    //         // If today's log is unpopulated
+    //         if (
+    //             i === logs.length - 1 &&
+    //             compareDates(mostRecentLogDate, dateNow) &&
+    //             mostRecentLog.title === "No Title"
+    //         ) {
+    //             addLogVisibility = "visible";
+    //             continue;
+    //         }
+
+    //         const day = logs[i];
+
+    //         const twitterShareUrl = generateShareUrl(
+    //             day.day_number,
+    //             day.title,
+    //             day.codetime_metrics.hours,
+    //             day.codetime_metrics.keystrokes,
+    //             day.codetime_metrics.lines_added
+    //         );
+
+    //         const formattedDate = getFormattedDate(day.date);
+
+    //         const shareIconLink = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+
+    //         logsHtml += getLogCard(day, formattedDate, twitterShareUrl, shareIconLink, editPath, dropDownPath);
+    //     }
+    // }
+    // }
 
     const templateVars = {
         logsHtml,

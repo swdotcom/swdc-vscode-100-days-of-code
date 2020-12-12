@@ -11,12 +11,12 @@ import {
 } from "./MilestonesUtil";
 import { getUpdatedAddLogHtmlString } from "./addLogUtil";
 import { getUpdatedDashboardHtmlString, getCertificateHtmlString } from "./DashboardUtil";
-import { displayReadmeIfNotExists, displayLoginPromptIfNotLoggedIn, isLoggedIn } from "./Util";
+import { displayReadmeIfNotExists, displayLoginPromptIfNotLoggedIn, isLoggedIn, checkIfNameChanged } from "./Util";
 import { getUpdatedMilestonesHtmlString } from "./MilestonesTemplateUtil";
 import { fetchSummary } from "./SummaryDbUtil";
 import { getUpdatedLogsHtml } from "./LogsTemplateUtil";
 import { TrackerManager } from "../managers/TrackerManager";
-import { deleteLogDay, syncLogs } from "./LogSync";
+import { deleteLogDay, syncLogs } from "./LogsUtil";
 import { MilestoneEventManager } from "../managers/MilestoneEventManager";
 
 let currentTitle: string = "";
@@ -62,7 +62,10 @@ export function createCommands(): { dispose: () => void } {
     );
 
     cmds.push(
-        commands.registerCommand("DoC.viewLogs", () => {
+        commands.registerCommand("DoC.viewLogs", async () => {
+            // check if the user has changed accounts
+            await checkIfNameChanged();
+
             const generatedHtml = getUpdatedLogsHtml();
 
             const title = "Logs";
@@ -158,7 +161,10 @@ export function createCommands(): { dispose: () => void } {
     );
 
     cmds.push(
-        commands.registerCommand("DoC.viewDashboard", () => {
+        commands.registerCommand("DoC.viewDashboard", async () => {
+            // check if the user has changed accounts
+            await checkIfNameChanged();
+
             const generatedHtml = getUpdatedDashboardHtmlString();
 
             const title = "Dashboard";
@@ -247,7 +253,10 @@ export function createCommands(): { dispose: () => void } {
     );
 
     cmds.push(
-        commands.registerCommand("DoC.viewMilestones", () => {
+        commands.registerCommand("DoC.viewMilestones", async () => {
+            // check if the user has changed accounts
+            await checkIfNameChanged();
+            
             if (isLoggedIn()) {
                 checkCodeTimeMetricsMilestonesAchieved();
                 checkLanguageMilestonesAchieved();

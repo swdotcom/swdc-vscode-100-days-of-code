@@ -17,7 +17,8 @@ export function checkMilestonesJson(): boolean {
     const filePath = getMilestonesJsonFilePath();
     if (!fs.existsSync(filePath)) {
         try {
-            const src = path.join(__dirname, "../assets/milestones.json");
+            const src = path.join(__dirname, "/assets/milestones.json");
+            // const src = path.join(__dirname, "../assets/milestones.json");
             fs.copyFileSync(src, filePath);
         } catch (e) {
             return false;
@@ -51,57 +52,24 @@ export function getTodaysLocalMilestones(): Array<number> {
     return sendMilestones;
 }
 
-export function compareWithLocalMilestones(milestoneData: any) {
-    if (milestoneData && milestoneData.length) {
-        // goes through each milestone and updates based on db data
-        const localMilestoneData = getAllMilestones();
-        const milestones = localMilestoneData.milestones || [];
-        let dates = [];
-        let toAddDailyMilestones = [];
+export function compareWithLocalMilestones(serverMilestones: any) {
+    // get the local copy of the milestones and update the attributes
+    const localMilestoneData = getAllMilestones();
+    const milestones = localMilestoneData.milestones || [];
 
-        for (const appMilestone of milestoneData) {
-            const dbMilestonesLocalDate = appMilestone.unix_date * 1000;
-            const dbDateOb = new Date(dbMilestonesLocalDate);
-
-            // get the milestone IDs
-            const appMilestoneIds = appMilestone.milestones;
-            if (appMilestoneIds && appMilestoneIds.length) {
-                // find the matching milestone
-                for (const milestoneId of appMilestoneIds) {
-                    const milestoneIdx = milestones.findIndex((n: any) => n.id === milestoneId);
-                    const matchingMilestone = milestoneIdx !== -1 ? milestones[milestoneIdx] : null;
-                    if (matchingMilestone) {
-                        const isEqual = compareDates(dbDateOb, new Date(matchingMilestone.date_achieved));
-                        // found a local milestone
-                        if (matchingMilestone.achieved && !isEqual) {
-                            // Daily Milestones will not update
-                            if (
-                                (matchingMilestone.id > 18 && matchingMilestone.id < 25) ||
-                                (matchingMilestone.id > 48 && matchingMilestone.id < 57)
-                            ) {
-                                toAddDailyMilestones.push(matchingMilestone.id);
-                                if (dbMilestonesLocalDate > matchingMilestone.date_achieved) {
-                                    dates.push(dbMilestonesLocalDate, matchingMilestone.date_achieved);
-                                    milestones[milestoneIdx].date_achieved = dbMilestonesLocalDate;
-                                }
-                            } else if (dbMilestonesLocalDate < matchingMilestone.date_achieved) {
-                                dates.push(dbMilestonesLocalDate, matchingMilestone.date_achieved);
-                                milestones[milestoneIdx].date_achieved = dbMilestonesLocalDate;
-                            }
-                        } else if (!matchingMilestone.achieved) {
-                            dates.push(dbMilestonesLocalDate);
-                            milestones[milestoneIdx].achieved = true;
-                            milestones[milestoneIdx].date_achieved = dbMilestonesLocalDate;
-                        }
-                    }
-                }
+    const hasServerMilestones = (serverMilestones && serverMilestones.length);
+    for (let milestone of milestones) {
+        if (hasServerMilestones) {
+            const serverMilestone = serverMilestones.find((n:any) => n.milestones.includes(milestone.id));
+            if (serverMilestone) {
+                milestone.date_achieved = new Date(serverMilestone.unix_date * 1000);
+                milestone["day_number"] = serverMilestone.day_number;
+                milestone.achieved = true;
             }
         }
-
-        if (dates.length > 0) {
-            writeToMilestoneJson(milestones);
-        }
     }
+
+    writeToMilestoneJson(milestones);
 }
 
 export function checkIfMilestonesAchievedOnDate(date: number): boolean {

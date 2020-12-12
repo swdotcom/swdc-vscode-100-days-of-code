@@ -6,13 +6,21 @@
     "publisher": "softwaredotcom",
     "icon": "resources/100-days-of-code-icon.png",
     "scripts": {
-        "vscode:prepublish": "yarn run compile",
         "compile": "tsc -p ./",
-        "lint": "eslint src --ext ts",
+        "lint": "tslint -p ./",
         "watch": "tsc -watch -p ./",
+        "build": "vsce package --yarn",
+        "vscode:prepublish": "webpack --mode production",
+        "webpack": "webpack --mode development",
+        "webpack-dev": "webpack --mode development --watch",
+        "test-compile": "tsc -p ./",
         "pretest": "yarn run compile && yarn run lint",
         "test": "node ./out/test/runTest.js"
     },
+    "extensionKind": [
+        "ui",
+        "workspace"
+    ],
     "engines": {
         "vscode": "^1.35.0"
     },
@@ -39,7 +47,7 @@
     "activationEvents": [
         "onStartupFinished"
     ],
-    "main": "./out/extension.js",
+    "main": "./dist/extension",
     "contributes": {
         "commands": [
             {
@@ -79,19 +87,22 @@
         "@types/vscode": "^1.35.0",
         "@typescript-eslint/eslint-plugin": "^2.18.0",
         "@typescript-eslint/parser": "^2.18.0",
+        "copy-webpack-plugin": "^7.0.0",
         "eslint": "^6.8.0",
         "glob": "^7.1.6",
         "mocha": "^7.0.1",
+        "ts-loader": "^8.0.12",
         "typescript": "^3.7.5",
-        "vscode-test": "^1.3.0"
+        "vscode-test": "^1.3.0",
+        "webpack": "^5.10.1",
+        "webpack-cli": "^4.2.0"
     },
     "dependencies": {
         "axios": "^0.19.2",
-        "file-it": "^1.0.24",
+        "file-it": "^1.0.26",
         "moment-timezone": "^0.5.28",
         "open": "^7.0.3",
-        "querystring": "^0.2.0",
-        "swdc-tracker": "1.3.2"
+        "swdc-tracker": "^1.3.3"
     },
     "extensionDependencies": [
         "softwaredotcom.swdc-vscode"

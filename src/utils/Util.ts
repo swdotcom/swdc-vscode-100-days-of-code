@@ -1,9 +1,11 @@
-import { commands, ViewColumn, Uri, window, extensions } from "vscode";
+import { commands, ViewColumn, Uri, window } from "vscode";
 import { _100_DAYS_OF_CODE_PLUGIN_ID, _100_DAYS_OF_CODE_EXT_ID } from "./Constants";
-import { syncLogs } from "./LogSync";
+import { deleteLogsJson, syncLogs } from "./LogsUtil";
 import { fetchSummary } from "./SummaryDbUtil";
 import { reloadCurrentView } from "./CommandUtil";
 import { MilestoneEventManager } from "../managers/MilestoneEventManager";
+import { deleteMilestoneJson } from "./MilestonesUtil";
+import { deleteSummaryJson } from "./SummaryUtil";
 
 const fileIt = require("file-it");
 const fs = require("fs");
@@ -107,6 +109,8 @@ export function displayReadmeIfNotExists(override = false) {
         const readmeUri = Uri.file(getLocalREADMEFile());
         commands.executeCommand("markdown.showPreview", readmeUri, ViewColumn.One, { locked: true });
         setItem("vscode_100doc_CtReadme", true);
+
+        commands.executeCommand("DoC.revealTree");
     }
 }
 
@@ -150,6 +154,7 @@ export function getSoftwareSessionAsJson() {
 export function isLoggedIn(): boolean {
     // getting authType to see if user is logged in. name is a check for if the user has not successfully logged in.
     if (getItem("authType") && getItem("name")) {
+        _name = getItem("name");
         return true;
     }
     return false;
@@ -200,45 +205,50 @@ function initializeLogInCheckInterval() {
         const passedTimeThreshold = current_check_login_interval_count >= check_login_interval_max_times;
 
         if (loggedIn) {
-            window.showInformationMessage("Loading account logs and milestones...");
-
-            setName();
-
-            await syncLogs();
-
-            await MilestoneEventManager.getInstance().fetchMilestones();
-
-            // update the summary on init
-            fetchSummary();
-
-            clearInterval(check_logon_interval);
-
             checking_login = false;
-
-            reloadCurrentView();
+            clearInterval(check_logon_interval);
+            rebuildData()
         } else if (passedTimeThreshold) {
-            clearInterval(check_logon_interval);
-
             checking_login = false;
+            clearInterval(check_logon_interval);
         }
         current_check_login_interval_count++;
-    }, 9000);
+    }, 10000);
 }
 
-export function setName() {
-    const name = getItem("name");
-    if (name && name !== "") {
-        _name = name;
-    }
-}
-
-export function checkIfNameChanged() {
+export async function checkIfNameChanged() {
     const name = getItem("name");
     if (_name !== name) {
+        _name = name;
+
+        resetData();
+        await rebuildData();
+        
         return true;
     } else {
         return false;
     }
+}
+
+export async function rebuildData() {
+
+    window.showInformationMessage("Loading account logs and milestones...");
+
+    await syncLogs();
+
+    await MilestoneEventManager.getInstance().fetchMilestones();
+
+    // update the summary on init
+    await fetchSummary();
+
+    reloadCurrentView();
+}
+
+export async function resetData() {
+    // reset files
+    deleteMilestoneJson();
+    deleteLogsJson();
+    deleteSummaryJson();
 }
 
 export function mergeStringArrays(array1: string[], array2: string[]) {
