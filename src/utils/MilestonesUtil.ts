@@ -43,9 +43,9 @@ export function getTodaysLocalMilestones(): Array<number> {
     const milestoneData = getAllMilestones();
     if (milestoneData && milestoneData.milestones) {
         const milestones = milestoneData.milestones;
-        for (let i = 0; i < milestones.length; i++) {
-            if (milestones[i].achieved && compareDates(new Date(milestones[i].date_achieved), now)) {
-                sendMilestones.push(milestones[i].id);
+        for (let milestone of milestones) {
+            if (milestone.achieved && milestone.date_achieved && compareDates(new Date(milestone.date_achieved), now)) {
+                sendMilestones.push(milestone.id);
             }
         }
     }
@@ -63,7 +63,6 @@ export function compareWithLocalMilestones(serverMilestones: any) {
             const serverMilestone = serverMilestones.find((n:any) => n.milestones.includes(milestone.id));
             if (serverMilestone) {
                 milestone.date_achieved = new Date(serverMilestone.unix_date * 1000);
-                milestone["day_number"] = serverMilestone.day_number;
                 milestone.achieved = true;
             }
         }
@@ -314,36 +313,27 @@ function achievedMilestonesJson(ids: Array<number>): Array<number> {
     const milestonesData = getAllMilestones();
     const milestones = milestonesData.milestones || [];
     const dateNow = new Date();
-    for (let id of ids) {
 
-        // Usually would never be triggered
-        if (!checkIdRange(id) || !milestones[id - 1]) {
+    let displayedPrompt = false;
+    for (let id of ids) {
+        const milestone = milestones.length > id - 1 ? milestones[id - 1] : null;
+
+        // check if the milestone ID is valid and if the milestone has been marked as achieved or not
+        if (!checkIdRange(id) || !milestone || (milestone.date_achieved && milestone.achieved)) {
             continue;
         }
 
-        // Updates daily - daily time and languages
-        if ((id > 18 && id < 25) || (id > 48 && id < 57)) {
-            const dateOb = new Date(milestones[id - 1].date_achieved);
-            // Updates only if it wasn't achieved that day
-            if (!compareDates(dateOb, dateNow)) {
-                milestones[id - 1].achieved = true; // id is indexed starting 1
-                milestones[id - 1].date_achieved = dateNow.valueOf();
-                updatedIds.push(id);
-            }
-        }
+        // this is the only place that sets "date_achieved" and "achieved" values
+        milestone.achieved = true;
+        milestone.date_achieved = dateNow.valueOf();
+        updatedIds.push(id);
 
-        // If no date entry for the milestone has been made
-        else if (!(milestones[id - 1].date_achieved && milestones[id - 1].date_achieved > 0)) {
-            milestones[id - 1].achieved = true; // id is indexed starting 1
-            milestones[id - 1].date_achieved = dateNow.valueOf();
-            // For certificate
-            if (id === 11) {
-                const title = "View Dashboard";
-                const msg = "Whoa! You just unlocked the #100DaysOfCode Certificate. Please view it on the 100 Days of Code Dashboard.";
-                const commandCallback = "DoC.viewDashboard";
-                commands.executeCommand("DoC.showInfoMessage", title, msg, true /*isModal*/, commandCallback);
-            }
-            updatedIds.push(id);
+        if (id === 11) {
+            displayedPrompt = true;
+            const title = "View Dashboard";
+            const msg = "Whoa! You just unlocked the #100DaysOfCode Certificate. Please view it on the 100 Days of Code Dashboard.";
+            const commandCallback = "DoC.viewDashboard";
+            commands.executeCommand("DoC.showInfoMessage", title, msg, true /*isModal*/, commandCallback);
         }
     }
 
@@ -360,10 +350,12 @@ function achievedMilestonesJson(ids: Array<number>): Array<number> {
         // write to milestones file
         writeToMilestoneJson(milestones);
 
-        const title = "View Milestones";
-        const msg = "Hurray! You just achieved another milestone.";
-        const commandCallback = "DoC.viewMilestones";
-        commands.executeCommand("DoC.showInfoMessage", title, msg, false /*isModal*/, commandCallback);
+        if (!displayedPrompt) {
+            const title = "View Milestones";
+            const msg = "Hurray! You just achieved another milestone.";
+            const commandCallback = "DoC.viewMilestones";
+            commands.executeCommand("DoC.showInfoMessage", title, msg, false /*isModal*/, commandCallback);
+        }
         return updatedIds;
     }
     return [];
