@@ -11,7 +11,6 @@ import { isLoggedIn } from "./Util";
 
 function getLogsTemplate() {
     return path.join(__dirname, "/assets/templates/logs.template.html");
-    // return path.join(__dirname, "../assets/templates/logs.template.html");
 }
 
 function getStyleColorsBasedOnMode(): any {

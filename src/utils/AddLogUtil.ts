@@ -9,7 +9,6 @@ import { window } from "vscode";
 
 function getAddLogTemplate(): string {
     return path.join(__dirname, "/assets/templates/addLog.template.html");
-    // return path.join(__dirname, "../assets/templates/addLog.template.html");
 }
 
 function getStyleColorsBasedOnMode(): any {

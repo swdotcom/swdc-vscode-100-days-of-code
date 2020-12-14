@@ -11,7 +11,6 @@ import { isLoggedIn } from "./Util";
 
 function getDashboardTemplate(): string {
     return path.join(__dirname, "/assets/templates/dashboard.template.html");
-    // return path.join(__dirname, "../assets/templates/dashboard.template.html");
 }
 
 export function getCertificateHtmlString(name: string): string {
