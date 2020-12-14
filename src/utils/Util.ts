@@ -260,3 +260,16 @@ export function mergeStringArrays(array1: string[], array2: string[]) {
     array2 = array2 || [];
     return [...new Set([...array1, ...array2])];
 }
+
+export function formatNumber(num) {
+    let str = "";
+    num = num ? parseFloat(num) : 0;
+    if (num >= 1000) {
+        str = num.toLocaleString();
+    } else if (num % 1 === 0) {
+        str = num.toFixed(0);
+    } else {
+        str = num.toFixed(2);
+    }
+    return str;
+}

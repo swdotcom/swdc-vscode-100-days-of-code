@@ -7,7 +7,7 @@ import { getMilestoneById } from "./MilestonesUtil";
 import { monthNames } from "./Constants";
 import { window } from "vscode";
 import { fetchSummaryJsonFileData } from "../managers/FileManager";
-import { isLoggedIn } from "./Util";
+import { formatNumber, isLoggedIn } from "./Util";
 
 function getDashboardTemplate(): string {
     return path.join(__dirname, "/assets/templates/dashboard.template.html");
@@ -287,7 +287,6 @@ export function getUpdatedDashboardHtmlString(): string {
 
     // Metrics
     let hours = summary.hours + summary.currentHours;
-    hours = parseFloat(hours.toFixed(2));
     let days = summary.days;
     let streaks = summary.longest_streak;
     const linesAdded = summary.lines_added + summary.currentLines;
@@ -347,10 +346,10 @@ export function getUpdatedDashboardHtmlString(): string {
     }
 
     const templateVars = {
-        hours,
+        hours: formatNumber(hours),
         days,
         streaks,
-        linesAdded,
+        linesAdded: formatNumber(linesAdded),
         avgHours,
         daysLevelTooltip,
         hoursLevelTooltip,
