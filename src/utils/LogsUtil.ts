@@ -49,10 +49,24 @@ export function getAllLogObjects(): Array<Log> {
     const exists = checkLogsJson();
     if (exists) {
         const filepath = getLogsFilePath();
-        const logs = getFileDataAsJson(filepath);
+        let logs = getFileDataAsJson(filepath);
+        if (logs && logs.length) {
+            // sort by unix_date
+            logs = logs.sort(
+                (a: Log, b: Log) => b.unix_date - a.unix_date
+            );
+        }
         return logs || [];
     }
     return [];
+}
+
+export function getLogByUnixDate(unix_date: number): Log {
+    const logs: Array<Log> = getAllLogObjects();
+    if (logs && logs.length) {
+        return logs.find(n => n.unix_date === unix_date);
+    }
+    return null;
 }
 
 export function writeToLogsJson(logs: Array<Log> = []) {
@@ -148,31 +162,6 @@ export function getDayNumberFromDate(dateUnix: number): number {
     return -1;
 }
 
-/**
- * compares a log to the logs stored locally to check if it already exists
- * checks against both date and day number
- * @param log - a log object
- */
-function checkIfLogExists(log: Log): boolean {
-    let logExists = false;
-
-    const logEndOfDay = moment(log.date).endOf("day");
-    const logDayNumber = log.day_number;
-
-    const logs = getAllLogObjects();
-    const existingLogs = logs.filter(n => {
-        let endOfDay = moment(n.date).endOf("day");
-        let dayNumber = n.day_number;
-        return logEndOfDay === endOfDay && logDayNumber === dayNumber;
-    });
-
-    if (existingLogs.length > 0) {
-        logExists = true;
-    }
-
-    return logExists;
-}
-
 export function setDailyMilestonesByDayNumber(dayNumber: number, newMilestones: Array<number>) {
     let logs = getAllLogObjects();
     let log = logs[dayNumber - 1];
@@ -204,23 +193,29 @@ export async function addLogToJson(
     codetimeMetrics.keystrokes = parseInt(keystrokes);
 
     let log = new Log();
-    log.title = title;
+    if (title) {
+        log.title = title;
+    }
     log.description = description;
     log.links = links;
-    log.date = Date.now();
     log.codetime_metrics = codetimeMetrics;
+    log.day_number = getDayNumberForNewLog();
 
-    const logExists = checkIfLogExists(log);
-
-    // if log exists, we need to edit log not create one
-    if (logExists) {
-        return updateLog(log);
-    } else {
-        log.day_number = numLogs + 1;
-        await createLog(log);
-    }
+    await createLog(log);
 
     updateSummaryJson();
+}
+
+// Get the last log's day_number. If the date is the
+// same use the same day_number. If not, increment it.
+export function getDayNumberForNewLog() {
+    const lastLog = getMostRecentLogObject();
+    const currentDay = moment().format("YYYY-MM-DD");
+    const lastLogDay = moment(lastLog.date).format("YYYY-MM-DD");
+    if (currentDay == lastLogDay) {
+        return lastLog.day_number;
+    }
+    return lastLog.day_number + 1;
 }
 
 export function getLatestLogEntryNumber(): number {
@@ -230,6 +225,7 @@ export function getLatestLogEntryNumber(): number {
 
 export function getMostRecentLogObject(): Log | any {
     const logs = getAllLogObjects();
+    
     if (logs.length > 0) {
         return logs[logs.length - 1];
     } else {
@@ -301,16 +297,17 @@ export function updateLogShare(day: number) {
 
 export async function editLogEntry(
     dayNumber: number,
+    unix_date: number,
     title: string,
     description: string,
     links: Array<string>,
     editedHours: number
 ) {
-    let logs = getAllLogObjects();
-    let log = logs[dayNumber - 1];
+    let log = getLogByUnixDate(unix_date);
     log.title = title;
     log.description = description;
     log.links = links;
+    log.unix_date = unix_date;
     const currentLoggedHours = log.codetime_metrics.hours;
     if (editedHours >= 0 && editedHours <= 12) {
         log.codetime_metrics.hours = editedHours;
@@ -320,7 +317,7 @@ export async function editLogEntry(
         log.codetime_metrics.hours = 12;
     }
     let summaryTotalHours = getSummaryTotalHours();
-    if (dayNumber === logs.length) {
+    if (dayNumber === getAllLogObjects().length) {
         setSummaryCurrentHours(log.codetime_metrics.hours);
     } else {
         summaryTotalHours -= currentLoggedHours;
@@ -328,36 +325,6 @@ export async function editLogEntry(
         setSummaryTotalHours(summaryTotalHours);
     }
     await updateLog(log);
-}
-
-function isLogEmpty(log: Log): boolean {
-    return (
-        log.codetime_metrics.hours === 0 &&
-        log.codetime_metrics.keystrokes === 0 &&
-        log.codetime_metrics.lines_added === 0 &&
-        log.title === NO_TITLE_LABEL &&
-        (log.description === "No Description" || !log.description) &&
-        log.milestones.length === 0 &&
-        (log.links.length === 0 || (log.links.length === 1 && log.links[0] === ""))
-    );
-}
-
-/**
- * If the last log is empty (NO_TITLE_LABEL, keystrokes, etc) then set the log date
- */
-export async function resetPreviousLogIfEmpty() {
-    const logDate = new Date();
-    let logs = getAllLogObjects();
-    if (logs.length > 0) {
-        // get the last log
-        const log: Log = logs[logs.length - 1];
-        if (log && isLogEmpty(log)) {
-            log.date = logDate.valueOf();
-            logs[logs.length - 1] = log;
-            // update the rest of the info like end of day and persist to the backend
-            updateLog(log);
-        }
-    }
 }
 
 // updates a log locally and on the server
@@ -382,15 +349,16 @@ async function updateLog(log: Log) {
 }
 
 // creates a new log locally and on the server
-async function createLog(log: Log) {
+export async function createLog(log: Log) {
     // get all log objects
     const logs = await getLocalLogsFromFile();
+    // push the new log to the server
+    const preparedLog:Log = await prepareLogForServerUpdate(log);
     // add the new log
-    const updatedLogs = [...logs, log];
+    const updatedLogs = [...logs, preparedLog];
     // write back to the local file
     saveLogsToFile(updatedLogs);
-    // push the new log to the server
-    const preparedLog = await prepareLogForServerUpdate(log);
+    
     await pushNewLogToServer(preparedLog);
 }
 
@@ -408,7 +376,7 @@ export async function deleteLogDay(unix_date: number) {
             // delete the log
             let logs: Array<Log> = await getLocalLogsFromFile();
             // delete the log based on the dayNum
-            logs = logs.filter((n: Log) => n.date !== unix_date);
+            logs = logs.filter((n: Log) => n.unix_date !== unix_date);
             saveLogsToFile(logs);
             await syncLogs();
             commands.executeCommand("DoC.viewLogs");
@@ -435,6 +403,7 @@ export async function syncLogs() {
     if (serverLogs && serverLogs.length) {
         // these come back sorted in ascending order
         const formattedLogs = formatLogs(serverLogs);
+
         // check if we have one for today
         const lastLoggedDay = moment(formattedLogs[formattedLogs.length - 1].date).format("YYYY-MM-DD");
         
@@ -457,21 +426,20 @@ export async function syncLogs() {
 
 // converts local log to format that server will accept
 function prepareLogForServerUpdate(log: Log) {
-    const offset_minutes = new Date().getTimezoneOffset();
-    const preparedLog = {
-        day_number: log.day_number,
-        title: log.title,
-        description: log.description,
-        ref_links: log.links,
+    const offset_seconds = new Date().getTimezoneOffset() * 60;
+
+    let preparedLog = {
+        ...log,
         minutes: log.codetime_metrics.hours * 60,
         keystrokes: log.codetime_metrics.keystrokes,
         lines_added: log.codetime_metrics.lines_added,
         lines_removed: 0,
-        unix_date: Math.round(log.date / 1000), // milliseconds --> seconds
-        local_date: Math.round(log.date / 1000) - offset_minutes * 60, // milliseconds --> seconds
-        offset_minutes,
+        unix_date: moment(log.date).unix(),
+        local_date: moment(log.date).unix() - offset_seconds,
+        offset_minutes: offset_seconds / 60,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
     };
+
     return preparedLog;
 }
 
@@ -526,19 +494,19 @@ async function updateExistingLogOnServer(log: {}) {
 // formats logs from the server into the local log model format before saving locally
 // logs have a format like [ { day_number: 1, date: ... }, ... ]
 function formatLogs(logs: Array<Log>) {
-    let formattedLogs: Array<Log> = [];
-
+    const formattedLogs: Array<Log> = [];
     logs.forEach((log: any) => {
-        let formattedLog = new Log();
-        formattedLog.title = log.title;
-        formattedLog.description = log.description;
-        formattedLog.day_number = log.day_number;
-        formattedLog.codetime_metrics.hours = log.minutes ? parseFloat((log.minutes / 60).toFixed(2)) : 0;
-        formattedLog.codetime_metrics.keystrokes = log.keystrokes;
-        formattedLog.codetime_metrics.lines_added = log.lines_added;
-        formattedLog.date = log.unix_date ? log.unix_date * 1000 : 0; // seconds --> milliseconds
-        formattedLog.links = log.ref_links || [];
-        formattedLogs.push(formattedLog);
+        if (!log.codetime_metrics) {
+            log.codetime_metrics = new CodetimeMetrics();
+        }
+        if (!log.date) {
+            log.date = log.unix_date * 1000;
+        }
+        log.codetime_metrics.hours = log.minutes ? parseFloat((log.minutes / 60).toFixed(2)) : 0;
+        log.codetime_metrics.keystrokes = log.keystrokes;
+        log.codetime_metrics.lines_added = log.lines_added;
+        log.links = log.ref_links || [];
+        formattedLogs.push(log);
     });
     // sorts logs in ascending order
     formattedLogs.sort((a: Log, b: Log) => {

@@ -1,10 +1,8 @@
-import { compareDates } from "./Util";
 import path = require("path");
 import fs = require("fs");
-import { getMostRecentLogObject, getLatestLogEntryNumber } from "./LogsUtil";
+import { getDayNumberForNewLog } from "./LogsUtil";
 import { getSessionCodetimeMetrics } from "./MetricUtil";
-import { Log } from "../models/Log";
-import { monthNames, NO_TITLE_LABEL } from "./Constants";
+import { monthNames } from "./Constants";
 import { window } from "vscode";
 
 function getAddLogTemplate(): string {
@@ -28,20 +26,12 @@ function getStyleColorsBasedOnMode(): any {
     return { cardTextColor, cardBackgroundColor, cardGrayedLevel, sharePath };
 }
 
-export function getUpdatedAddLogHtmlString(): string {
-    const log: Log = getMostRecentLogObject();
+export function getAddLogHtmlString(): string {
     const dateOb = new Date();
     const date = dateOb.getDate();
     const month = monthNames[dateOb.getMonth()]; // Month is 0 indexed
     const year = dateOb.getFullYear();
-    const logDate = new Date(log.date);
-    let day = getLatestLogEntryNumber() + 1;
-
-    if (compareDates(dateOb, logDate) && log.title !== NO_TITLE_LABEL) {
-        return "<html><body><br><br><h1>Today's Log already exists. If you want to edit it, please update the Log from the Logs tab in 100 Days of Code.</h1></body></html>";
-    } else if (compareDates(dateOb, logDate)) {
-        day = log.day_number;
-    }
+    let day = getDayNumberForNewLog();
 
     // metrics is stored as [minutes, keystrokes, lines]
     const metrics = getSessionCodetimeMetrics();

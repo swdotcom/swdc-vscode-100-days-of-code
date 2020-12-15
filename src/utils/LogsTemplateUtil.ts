@@ -2,7 +2,7 @@ import { window } from "vscode";
 import { Summary } from "../models/Summary";
 import { getMilestoneById } from "./MilestonesUtil";
 import { Log } from "../models/Log";
-import { getAllLogObjects } from "./LogsUtil";
+import { createLog, getAllLogObjects, getMostRecentLogObject } from "./LogsUtil";
 import path = require("path");
 import fs = require("fs");
 import { monthNames, NO_TITLE_LABEL } from "./Constants";
@@ -223,7 +223,7 @@ function getLogCard(
         `\t<div class="logCard" data-val="${day.day_number}">`,
         `\t\t<div class="cardHeader">`,
         `\t\t\t<div class="cardHeaderTextSection">`,
-        `\t\t\t\t<div class="cardSubject">Day ${day.day_number}: ${day.title}</div>`,
+        `\t\t\t\t<div class="cardSubject" date-data-val="${day.unix_date}">Day ${day.day_number}: ${day.title}</div>`,
         `\t\t\t\t<div class="cardTextGroup">`,
         `\t\t\t\t\t<div class="cardDateText">${formattedDate}</div>`,
         `\t\t\t\t</div>`,
@@ -317,13 +317,6 @@ export function getUpdatedLogsHtml(): string {
     // CSS
     let logsHtml = "";
     let addLogVisibility = "hidden";
-
-    const mostRecentLog = logs[logs.length - 1];
-
-    if (mostRecentLog.title === NO_TITLE_LABEL || !mostRecentLog.description) {
-        addLogVisibility = "visible";
-    }
-
     let logInVisibility = "hidden";
     let logInMessageDisplay = "none";
     if (!isLoggedIn()) {
@@ -331,23 +324,31 @@ export function getUpdatedLogsHtml(): string {
         logInMessageDisplay = "";
     }
 
-    // show the logs in reverse
-    logs.reverse();
-    for (let log of logs) {
+    const mostRecentLog = getMostRecentLogObject();
+    if (mostRecentLog && (mostRecentLog.title === NO_TITLE_LABEL || !mostRecentLog.description)) {
+        addLogVisibility = "visible";
+    }
 
-        const twitterShareUrl = generateShareUrl(
-            log.day_number,
-            log.title,
-            log.codetime_metrics.hours,
-            log.codetime_metrics.keystrokes,
-            log.codetime_metrics.lines_added
-        );
+    if (logs && logs.length) {
+        
+        for (let log of logs) {
+            const twitterShareUrl = generateShareUrl(
+                log.day_number,
+                log.title,
+                log.codetime_metrics.hours,
+                log.codetime_metrics.keystrokes,
+                log.codetime_metrics.lines_added
+            );
 
-        const formattedDate = getFormattedDate(log.date);
+            const formattedDate = getFormattedDate(log.date);
 
-        const shareIconLink = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+            const shareIconLink = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
 
-        logsHtml += getLogCard(log, formattedDate, twitterShareUrl, shareIconLink, editPath, dropDownPath);
+            logsHtml += getLogCard(log, formattedDate, twitterShareUrl, shareIconLink, editPath, dropDownPath);
+        }
+    } else {
+        addLogVisibility = "visible";
+        logsHtml = `\t\t<h2 id='noLogs'>Log Daily Progress to see it here!</h2>`;
     }
 
     const templateVars = {

@@ -573,15 +573,10 @@
     <div class="logInMessageStyle" id="logInMessage">You must log in with Code Time to start tracking your 100 Days of Code</div>
 
     ${this.logsHtml}
-    <div id="editLogCard">
+    <div id="editLogCard" date-date-value="">
         <div id="editLogCardContent">
             <div id="head1">Edit log</div>
             <div id="editLogsDayAndDate" class="head2 date"></div>
-            <!--
-                <div class="head2">Day</div>
-                <div class="dayError" id="editDayNumberErrorField"></div>
-                <input type="number" class="text" id="editDayNumberSelect" />
-                -->
             <div class="head2">Title</div>
             <textarea id="editLogsTitle" class="text" placeholder="Title for today's work log" rows="1"></textarea>
             <div class="head2">Description</div>
@@ -709,6 +704,7 @@
 
     for (let i = 0; i < editButtons.length; i++) {
         editButtons[i].addEventListener("click", function() {
+            const unix_date = this.parentNode.parentNode.getElementsByClassName("cardSubject")[0].getAttribute("date-data-val");
             const title = this.parentNode.parentNode.getElementsByClassName("cardSubject")[0].innerHTML;
             let titleSplit = title.split(" ");
             titleSplit.shift();
@@ -736,6 +732,7 @@
             let dayAndDateTitle = document.getElementById("editLogsDayAndDate");
             dayAndDateTitle.innerHTML = "Day " + dayNumber + " |  " + dateString;
             let titleField = document.getElementById("editLogsTitle");
+            dayAndDateTitle.setAttribute("date-data-val", unix_date);
             titleField.value = titleString;
             let descriptionField = document.getElementById("editLogsDescription");
             descriptionField.value = descriptionString;
@@ -770,7 +767,9 @@
     });
 
     var submitButton = document.getElementById("editLogSubmitButton");
-    submitButton.addEventListener("click", function() {
+    submitButton.addEventListener("click", function(arg) {
+        console.log("--------------------");
+        console.log(document);
         let dayAndDateTitle = document.getElementById("editLogsDayAndDate");
         let dayNumber = dayAndDateTitle.innerHTML.split(" ")[1];
         let titleField = document.getElementById("editLogsTitle");
@@ -784,6 +783,8 @@
 
         // get the log card to get everything else from the card
         const logCard = logCards[cardIdx];
+
+        const unix_date = dayAndDateTitle.getAttribute("date-data-val");
 
         // get the card header
         const cardHeader = logCard.getElementsByClassName("cardHeader")[0];
@@ -879,12 +880,14 @@
         cardHoursBar.style.backgroundColor = barColorHours;
         cardDescription.innerHTML = description;
         cardContent.style.maxHeight = cardContent.scrollHeight + "px";
+
         const dayUpdate = {
             day_number: dayNumber,
             title: title,
             description: description,
             links: links,
-            hours: editHoursAmount
+            hours: editHoursAmount,
+            unix_date
         };
         vscode.postMessage({ command: "editLog", value: dayUpdate });
         let editLogsForm = document.getElementById("editLogCard");
