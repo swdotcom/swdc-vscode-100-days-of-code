@@ -9,7 +9,7 @@ import {
     updateMilestoneShare,
     checkSharesMilestones
 } from "./MilestonesUtil";
-import { getUpdatedAddLogHtmlString } from "./addLogUtil";
+import { getAddLogHtmlString } from "./AddLogUtil";
 import { getUpdatedDashboardHtmlString, getCertificateHtmlString } from "./DashboardUtil";
 import { displayReadmeIfNotExists, displayLoginPromptIfNotLoggedIn, isLoggedIn, checkIfNameChanged } from "./Util";
 import { getUpdatedMilestonesHtmlString } from "./MilestonesTemplateUtil";
@@ -90,7 +90,8 @@ export function createCommands(): { dispose: () => void } {
                             const dayUpdate = message.value;
 
                             await editLogEntry(
-                                parseInt(dayUpdate.day_number),
+                                parseInt(dayUpdate.day_number, 10),
+                                parseInt(dayUpdate.unix_date, 10),
                                 dayUpdate.title,
                                 dayUpdate.description,
                                 dayUpdate.links,
@@ -323,7 +324,7 @@ export function createCommands(): { dispose: () => void } {
 
     cmds.push(
         commands.registerCommand("DoC.addLog", () => {
-            const generatedHtml = getUpdatedAddLogHtmlString();
+            const generatedHtml = getAddLogHtmlString();
 
             const title = "Add Daily Progress Log";
             if (currentPanel && title !== currentTitle) {

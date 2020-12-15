@@ -11,7 +11,6 @@ const moment = require("moment-timezone");
 const fileIt = require("file-it");
 const fs = require("fs");
 const os = require("os");
-const { exec } = require("child_process");
 
 let check_logon_interval: NodeJS.Timeout;
 let check_login_interval_max_times = 40;
@@ -19,37 +18,6 @@ let current_check_login_interval_count = 0;
 let checking_login = false;
 let _name = "";
 
-async function wrapExecPromise(cmd: string, projectDir: null | undefined) {
-    let result = null;
-    try {
-        let opts = projectDir !== undefined && projectDir !== null ? { cwd: projectDir } : {};
-        result = await execPromise(cmd, opts).catch(e => {
-            if (e.message) {
-                console.log(e.message);
-            }
-            return null;
-        });
-    } catch (e) {
-        if (e.message) {
-            console.log(e.message);
-        }
-        result = null;
-    }
-    return result;
-}
-
-function execPromise(command: any, opts: { cwd: any } | { cwd?: undefined }) {
-    return new Promise(function (resolve, reject) {
-        exec(command, opts, (error: any, stdout: string, stderr: any) => {
-            if (error) {
-                reject(error);
-                return;
-            }
-
-            resolve(stdout.trim());
-        });
-    });
-}
 
 export function isWindows() {
     return process.platform.indexOf("win32") !== -1;
