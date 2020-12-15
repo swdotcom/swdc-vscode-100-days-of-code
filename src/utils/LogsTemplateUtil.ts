@@ -2,7 +2,7 @@ import { window } from "vscode";
 import { Summary } from "../models/Summary";
 import { getMilestoneById } from "./MilestonesUtil";
 import { Log } from "../models/Log";
-import { createLog, getAllLogObjects, getMostRecentLogObject } from "./LogsUtil";
+import { getAllLogObjects, getMostRecentLogObject } from "./LogsUtil";
 import path = require("path");
 import fs = require("fs");
 import { monthNames, NO_TITLE_LABEL } from "./Constants";

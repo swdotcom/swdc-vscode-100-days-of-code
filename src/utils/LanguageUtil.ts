@@ -1,5 +1,4 @@
 import { compareDates } from "./Util";
-import fs = require("fs");
 import { getFile, getFileDataAsJson } from "../managers/FileManager";
 
 function getFileSummaryJson() {
