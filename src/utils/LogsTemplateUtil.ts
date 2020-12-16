@@ -2,7 +2,7 @@ import { window } from "vscode";
 import { Summary } from "../models/Summary";
 import { getMilestoneById } from "./MilestonesUtil";
 import { Log } from "../models/Log";
-import { getAllLogObjects, getMostRecentLogObject } from "./LogsUtil";
+import { getAllDescendingOrderLogObjects, getMostRecentLogObject } from "./LogsUtil";
 import path = require("path");
 import fs = require("fs");
 import { monthNames, NO_TITLE_LABEL } from "./Constants";
@@ -300,7 +300,7 @@ function getLogCard(
 }
 
 export function getUpdatedLogsHtml(): string {
-    let logs: Array<Log> = getAllLogObjects();
+    let logs: Array<Log> = getAllDescendingOrderLogObjects();
 
     // if in light mode
     const {
