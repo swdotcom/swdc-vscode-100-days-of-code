@@ -250,3 +250,17 @@ export function getMillisSinceLastUpdate(file) {
 
     return (new Date().getTime() - stats.mtime);
 }
+
+export function getInputFormStyles() {
+    let cardTextColor = "#FFFFFF";
+    let cardBackgroundColor = "rgba(255,255,255,0.05)";
+    let cardGrayedLevel = "#474747";
+    let sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+    if (window.activeColorTheme.kind === 1) {
+        cardTextColor = "#444444";
+        cardBackgroundColor = "rgba(0,0,0,0.10)";
+        cardGrayedLevel = "#B5B5B5";
+        sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shareLight.svg";
+    }
+    return { cardTextColor, cardBackgroundColor, cardGrayedLevel, sharePath };
+}

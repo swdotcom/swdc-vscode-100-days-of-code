@@ -28,7 +28,9 @@
         visibility: : ${this.logInVisibility};
     }
     #logInMessage {
-        visibility: ${this.logInVisibility};
+        visibility: $ {
+            this.logInVisibility
+        };
         display: ${this.logInMessageDisplay};
     }
 
@@ -60,6 +62,21 @@
         border-radius: 2px;
         padding: 10px;
         margin-bottom: 20px;
+    }
+
+    #editLogCard {
+        z-index: 1;
+        color: ${this.cardTextColor};
+        visibility: hidden;
+        padding: 16px;
+        position: absolute;
+        width: 450px;
+        top: 50%;
+        margin-top: -260px;
+        left: 50%;
+        margin-left: -225px;
+        background: ${this.cardBackgroundColor};
+        border-radius: 2px;
     }
 
     .cardText {
@@ -402,32 +419,7 @@
         visibility: visible;
     }
 
-    #editLogCard {
-        position: fixed;
-        z-index: 1;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 95%;
-        overflow: auto;
-        background-color: rgba(201, 197, 197, 1);
-        visibility: hidden;
-    }
-
-    #editLogCardContent {
-        position: absolute;
-        padding: 16px;
-        width: 450px;
-        top: 50%;
-        margin-top: -260px;
-        left: 50%;
-        margin-left: -225px;
-
-        background: $ {
-            this.editLogCardColor
-        };
-        border-radius: 2px;
-    }
+    
 
     /* Headings */
     #head1 {
@@ -506,18 +498,14 @@
         padding: 4px;
     }
 
-    #editLogCancelButton {
-        cursor: pointer;
+    .cancel {
         font-size: 16px;
-        line-height: 20px;
-
-        color: $ {
-            this.cardTextColor
-        };
+        line-height: 25px;
+        color: ${this.cardTextColor};
         background-color: rgba(0, 0, 0, 0);
         border-color: rgba(0, 0, 0, 0);
-        box-sizing: border-box;
         border-radius: 2px;
+        cursor: pointer;
     }
 
     #editLogSubmitButton {
@@ -572,7 +560,10 @@
 
     <div class="logInMessageStyle" id="logInMessage">You must log in with Code Time to start tracking your 100 Days of Code</div>
 
-    ${this.logsHtml}
+    <div id="logList">
+        ${this.logsHtml}
+    </div>
+
     <div id="editLogCard" date-date-value="">
         <div id="editLogCardContent">
             <div id="head1">Edit log</div>
@@ -598,7 +589,7 @@
 
             <div class="buttons">
                 <button id="editLogSubmitButton">Submit</button>
-                <button id="editLogCancelButton">Cancel</button>
+                <button id="editLogCancelButton" class="cancel">Cancel</button>
             </div>
         </div>
     </div>
@@ -729,6 +720,8 @@
                 .innerHTML;
             let editLogsForm = document.getElementById("editLogCard");
             editLogsForm.style.visibility = "visible";
+            let logListEl = document.getElementById("logList");
+            logListEl.style.visibility = "hidden";
             let dayAndDateTitle = document.getElementById("editLogsDayAndDate");
             dayAndDateTitle.innerHTML = "Day " + dayNumber + " |  " + dateString;
             let titleField = document.getElementById("editLogsTitle");
@@ -756,6 +749,8 @@
     cancelButton.addEventListener("click", function() {
         let editLogsForm = document.getElementById("editLogCard");
         editLogsForm.style.visibility = "hidden";
+        let logListEl = document.getElementById("logList");
+        logListEl.style.visibility = "visible";
 
         /* const dayErrorElement = document.getElementById("editDayNumberErrorField");
         const editDayNumberSelectField = document.getElementById("editDayNumberSelect");
