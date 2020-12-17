@@ -193,7 +193,6 @@ export async function checkIfNameChanged() {
     if (_name !== name) {
         _name = name;
 
-        resetData();
         await rebuildData();
         
         return true;
@@ -204,14 +203,15 @@ export async function checkIfNameChanged() {
 
 export async function rebuildData() {
 
+    resetData();
+
     window.showInformationMessage("Loading account logs and milestones...");
 
-    await syncLogs();
-
-    await MilestoneEventManager.getInstance().fetchMilestones();
-
-    // update the summary on init
-    await fetchSummary();
+    await Promise.all([
+        fetchSummary(),
+        syncLogs(),
+        MilestoneEventManager.getInstance().fetchMilestones(),
+    ]);
 
     reloadCurrentView();
 }
@@ -240,4 +240,13 @@ export function formatNumber(num) {
         str = num.toFixed(2);
     }
     return str;
+}
+
+export function getMillisSinceLastUpdate(file) {
+    if (!fs.existsSync(file)) {
+        return -1;
+    }
+    const stats = fs.statSync(file);
+
+    return (new Date().getTime() - stats.mtime);
 }

@@ -1,6 +1,6 @@
 import path = require("path");
 import fs = require("fs");
-import { getDaysLevel, getHoursLevel, getLongStreakLevel, getLinesAddedLevel } from "./SummaryUtil";
+import { getDaysLevel, getHoursLevel, getLongStreakLevel, getLinesAddedLevel, getCurrentChallengeRound } from "./SummaryUtil";
 import { Summary } from "../models/Summary";
 import { getLastSevenLoggedDays, getAllCodetimeHours, getLogDateRange } from "./LogsUtil";
 import { getMilestoneById } from "./MilestonesUtil";
@@ -264,9 +264,9 @@ function getMilestonesHtml(recent_milestones: Array<number>): string {
                     `\t\t\t\t<div class="milestoneCard">`,
                     `\t\t\t\t\t<img class="logo"`,
                     `\t\t\t\t\tsrc="${milestone.icon}">`,
-                    `\t\t\t\t\t<div class="milestoneData">`,
-                    `\t\t\t\t\t\t<div class="milestoneTitle">${milestone.title}</div>`,
-                    `\t\t\t\t\t\t<div class="milestoneDesc">${milestone.description}</div>`,
+                    `\t\t\t\t\t<div class="cardData">`,
+                    `\t\t\t\t\t\t<div class="cardTitle">${milestone.title}</div>`,
+                    `\t\t\t\t\t\t<div class="cardDesc">${milestone.description}</div>`,
                     `\t\t\t\t\t</div>`,
                     `\t\t\t\t</div>`
                 ].join("\n");
@@ -346,6 +346,7 @@ export function getUpdatedDashboardHtmlString(): string {
     }
 
     const templateVars = {
+        currentChallengeRound: getCurrentChallengeRound(),
         hours: formatNumber(hours),
         days,
         streaks,

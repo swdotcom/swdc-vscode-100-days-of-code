@@ -28,17 +28,19 @@ export function getSummaryJsonFilePath() {
 }
 
 export function fetchSummaryJsonFileData(): Summary {
+	const emptySummary:Summary = new Summary();
 	// checks if summary JSON exists. If not populates it with base values
 	const filepath = getSummaryJsonFilePath();
 	if (!fs.existsSync(filepath)) {
 		// create a blank summary
-		fs.writeFileSync(filepath, [JSON.stringify(new Summary(), null, 2)]);
+		fs.writeFileSync(filepath, [JSON.stringify(emptySummary, null, 2)]);
 	}
 
 	try {
+		// return the local summary
 		return getFileDataAsJson(filepath);
 	} catch (e) {
 		console.log("File not found: " + filepath);
 	}
-	return new Summary();
+	return emptySummary;
 }

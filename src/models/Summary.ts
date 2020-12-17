@@ -14,4 +14,5 @@ export class Summary {
     public shares: number = 0;
     public languages: string[] = [];
     public lastUpdated: number = 0;
+    public challenge_round: number = 1;
 }

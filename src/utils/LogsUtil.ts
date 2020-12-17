@@ -7,7 +7,8 @@ import {
     updateSummaryJson,
     getSummaryTotalHours,
     setSummaryCurrentHours,
-    setSummaryTotalHours
+    setSummaryTotalHours,
+    getCurrentChallengeRound
 } from "./SummaryUtil";
 import { getFileDataAsJson, getFile } from "../managers/FileManager";
 import { isResponseOk, softwareDelete, softwareGet, softwarePost, softwarePut } from "../managers/HttpManager";
@@ -15,26 +16,13 @@ import { commands, window } from "vscode";
 import { getAllMilestones } from "./MilestonesUtil";
 import { NO_TITLE_LABEL } from "./Constants";
 
+const queryString = require("query-string");
 const moment = require("moment-timezone");
 
 let currently_deleting_log_date: number = -1;
 
 export function getLogsFilePath(): string {
     return getFile("logs.json");
-}
-
-export function checkLogsJson(): boolean {
-    const filepath = getLogsFilePath();
-    if (!fs.existsSync(filepath)) {
-        // create empty logs
-        const logs: Array<Log> = [];
-        try {
-            fs.writeFileSync(filepath, JSON.stringify(logs, null, 2));
-        } catch (e) {
-            return false;
-        }
-    }
-    return true;
 }
 
 export function deleteLogsJson() {
@@ -46,19 +34,15 @@ export function deleteLogsJson() {
 }
 
 export function getAllDescendingOrderLogObjects(): Array<Log> {
-    const exists = checkLogsJson();
-    if (exists) {
-        const filepath = getLogsFilePath();
-        let logs = getFileDataAsJson(filepath);
-        if (logs && logs.length) {
-            // sort by unix_date in descending order
-            logs = logs.sort(
-                (a: Log, b: Log) => b.unix_date - a.unix_date
-            );
-        }
-        return logs || [];
+    const filepath = getLogsFilePath();
+    let logs = getFileDataAsJson(filepath);
+    if (logs && logs.length) {
+        // sort by unix_date in descending order
+        logs = logs.sort(
+            (a: Log, b: Log) => b.unix_date - a.unix_date
+        );
     }
-    return [];
+    return logs || [];
 }
 
 export function getLogByUnixDate(unix_date: number): Log {
@@ -223,6 +207,7 @@ export async function addLogToJson(
     log.links = links;
     log.codetime_metrics = codetimeMetrics;
     log.day_number = getDayNumberForNewLog();
+    log.challenge_round = getCurrentChallengeRound();
 
     await createLog(log);
 
@@ -252,9 +237,11 @@ export function getMostRecentLogObject(): Log | any {
     if (logs && logs.length > 0) {
         // get the most recent one
         return logs[0];
-    } else {
-        return new Log();
     }
+    const log:Log = new Log();
+    log.day_number = 1;
+    log.challenge_round = getCurrentChallengeRound();
+    return log;
 }
 
 export function getLogDateRange(): Array<number> {
@@ -385,34 +372,35 @@ export async function deleteLogDay(unix_date: number) {
         window.showInformationMessage("Currently waiting to delete the requested log, please wait.");
         return;
     }
-    const jwt = getItem("jwt");
-    if (jwt) {
-        currently_deleting_log_date = unix_date;
-        const resp = await softwareDelete("/100doc/logs", { unix_dates: [unix_date] }, jwt);
-        if (isResponseOk(resp)) {
-            window.showInformationMessage("Your log has been successfully deleted.");
-            // delete the log
-            let logs: Array<Log> = await getLocalLogsFromFile();
-            // delete the log based on the dayNum
-            logs = logs.filter((n: Log) => n.unix_date !== unix_date);
-            saveLogsToFile(logs);
-            await syncLogs();
-            commands.executeCommand("DoC.viewLogs");
-        }
-        currently_deleting_log_date = -1;
+
+    currently_deleting_log_date = unix_date;
+    
+    const resp = await softwareDelete("/100doc/logs", { unix_dates: [unix_date] }, getItem("jwt"));
+    if (isResponseOk(resp)) {
+        window.showInformationMessage("Your log has been successfully deleted.");
+        // delete the log
+        let logs: Array<Log> = await getLocalLogsFromFile();
+        // delete the log based on the dayNum
+        logs = logs.filter((n: Log) => n.unix_date !== unix_date);
+        saveLogsToFile(logs);
+        await syncLogs();
+        commands.executeCommand("DoC.viewLogs");
     }
+    currently_deleting_log_date = -1;
+
 }
 
 // pulls logs from the server and saves them locally. This will be run periodically.
 // logs have a format like [ { day_number: 1, date: ... }, ... ]
 export async function syncLogs() {
-    const jwt = getItem("jwt");
     let serverLogs: Array<Log> = getLocalLogsFromFile();
-    if (jwt) {
-        const resp = await softwareGet("/100doc/logs", jwt);
-        if (isResponseOk(resp)) {
-            serverLogs = resp.data;
-        }
+
+    const qryStr = queryString.stringify({
+        challenge_round: getCurrentChallengeRound()
+    });
+    const resp = await softwareGet(`/100doc/logs?${qryStr}`, getItem("jwt"));
+    if (isResponseOk(resp)) {
+        serverLogs = resp.data;
     }
 
     let createLogForToday = true;
@@ -438,6 +426,7 @@ export async function syncLogs() {
         // await addDailyLog();
         const log:Log = new Log();
         log.day_number = getDayNumberForNewLog();
+        log.challenge_round = getCurrentChallengeRound();
         await createLog(log);
     }
 }
@@ -455,7 +444,8 @@ function prepareLogForServerUpdate(log: Log) {
         unix_date: moment(log.date).unix(),
         local_date: moment(log.date).unix() - offset_seconds,
         offset_minutes: offset_seconds / 60,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        challenge_round: log.challenge_round || getCurrentChallengeRound()
     };
 
     return preparedLog;
@@ -481,7 +471,7 @@ function getLocalLogsFromFile(): Array<Log> {
     return logs || [];
 }
 
-function getLogFilePath(): string {
+export function getLogFilePath(): string {
     return getFile("logs.json");
 }
 
@@ -495,18 +485,12 @@ function checkIfLocalFileExists(filepath: string): boolean {
 
 // push new local logs to the server
 async function pushNewLogToServer(log: {}) {
-    const jwt = getItem("jwt");
-    if (jwt) {
-        await softwarePost("/100doc/logs", [log], jwt);
-    }
+    await softwarePost("/100doc/logs", [log], getItem("jwt"));
 }
 
 // push new local logs to the server
 async function updateExistingLogOnServer(log: {}) {
-    const jwt = getItem("jwt");
-    if (jwt) {
-        await softwarePut("/100doc/logs", [log], jwt);
-    }
+    await softwarePut("/100doc/logs", [log], getItem("jwt"));
 }
 
 // formats logs from the server into the local log model format before saving locally
@@ -524,6 +508,9 @@ function formatLogs(logs: Array<Log>) {
         log.codetime_metrics.keystrokes = log.keystrokes;
         log.codetime_metrics.lines_added = log.lines_added;
         log.links = log.ref_links || [];
+        if (!log.challenge_round) {
+            log.challenge_round = getCurrentChallengeRound();
+        }
         formattedLogs.push(log);
     });
     // sorts logs in descending order

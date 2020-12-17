@@ -9,7 +9,7 @@ import { HOURS_THRESHOLD } from "./Constants";
 import { Milestone } from "../models/Milestone";
 import { getFile, getFileDataAsJson, fetchSummaryJsonFileData } from "../managers/FileManager";
 
-function getMilestonesJsonFilePath(): string {
+export function getMilestonesJsonFilePath(): string {
     return getFile("milestones.json");
 }
 
@@ -18,7 +18,6 @@ export function checkMilestonesJson(): boolean {
     if (!fs.existsSync(filePath)) {
         try {
             const src = path.join(__dirname, "/assets/milestones.json");
-            // const src = path.join(__dirname, "../assets/milestones.json");
             fs.copyFileSync(src, filePath);
         } catch (e) {
             return false;

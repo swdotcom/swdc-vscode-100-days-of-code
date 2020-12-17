@@ -1,9 +1,11 @@
 import { TextDocument, TextDocumentChangeEvent, window, WindowState, workspace } from "vscode";
 import { getDayNumberFromDate } from "../utils/LogsUtil";
 import { checkCodeTimeMetricsMilestonesAchieved, checkDaysMilestones, checkLanguageMilestonesAchieved, compareWithLocalMilestones, getTodaysLocalMilestones } from "../utils/MilestonesUtil";
-import { syncSummary } from "../utils/SummaryUtil";
+import { getCurrentChallengeRound, syncSummary } from "../utils/SummaryUtil";
 import { getItem, isLoggedIn } from "../utils/Util";
 import { isResponseOk, softwareGet, softwarePost } from "./HttpManager";
+
+const queryString = require("query-string");
 
 export class MilestoneEventManager {
 	private static instance: MilestoneEventManager;
@@ -106,7 +108,8 @@ export class MilestoneEventManager {
 			local_date: Math.round(millisNow / 1000) - offset_minutes * 60, // milliseconds --> seconds,
 			offset_minutes,
 			timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-			milestones
+			milestones,
+			challenge_round: getCurrentChallengeRound()
 		}];
 
 		await softwarePost("/100doc/milestones", milestoneData, getItem("jwt"));
@@ -133,10 +136,13 @@ export class MilestoneEventManager {
 		endDate.setHours(23, 59, 59, 0);
 
 		// query params
-		const start_date = Math.round(startDate.valueOf() / 1000);
-		const end_date = Math.round(endDate.valueOf() / 1000);
+		const qryStr = queryString.stringify({
+			start_date: Math.round(startDate.valueOf() / 1000),
+			end_date: Math.round(endDate.valueOf() / 1000),
+			challenge_round: getCurrentChallengeRound()
+		});
 
-		const milestoneData = await softwareGet(`/100doc/milestones?start_date=${start_date}&end_date=${end_date}`, jwt).then(resp => {
+		const milestoneData = await softwareGet(`/100doc/milestones?${qryStr}`, jwt).then(resp => {
 			if (isResponseOk(resp) && resp.data) {
 				return resp.data;
 			}
@@ -160,7 +166,11 @@ export class MilestoneEventManager {
 	public async fetchAllMilestones(): Promise<any> {
 		const jwt = getItem("jwt");
 
-		const milestoneData = await softwareGet("/100doc/milestones", jwt).then(resp => {
+		const qryStr = queryString.stringify({
+			challenge_round: getCurrentChallengeRound()
+		});
+
+		const milestoneData = await softwareGet(`/100doc/milestones?${qryStr}`, jwt).then(resp => {
 			if (isResponseOk(resp) && resp.data) {
 				return resp.data;
 			}

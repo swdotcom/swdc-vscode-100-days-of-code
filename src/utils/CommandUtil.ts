@@ -18,6 +18,8 @@ import { getUpdatedLogsHtml } from "./LogsTemplateUtil";
 import { TrackerManager } from "../managers/TrackerManager";
 import { deleteLogDay, syncLogs } from "./LogsUtil";
 import { MilestoneEventManager } from "../managers/MilestoneEventManager";
+import { YES_LABEL } from "./Constants";
+import { restartChallenge } from "./SummaryUtil";
 
 let currentTitle: string = "";
 
@@ -388,6 +390,29 @@ export function createCommands(): { dispose: () => void } {
                 .then(selection => {
                     if (commandCallback && selection === tile) {
                         commands.executeCommand(commandCallback);
+                    }
+                });
+        })
+    );
+
+    cmds.push(
+        commands.registerCommand("DoC.restartChallengeRound", () => {
+            if (!isLoggedIn()) {
+                displayLoginPromptIfNotLoggedIn();
+                return;
+            }
+            window
+                .showInformationMessage(
+                    "Are you sure you want to restart the challenge? Once your challenge is restarted, you will not see your stats from your previous challenge.",
+                    {
+                        modal: true
+                    },
+                    YES_LABEL
+                )
+                .then(selection => {
+                    if (selection === YES_LABEL) {
+                        // set the new challenge round and create a new log based on the new round val
+                        restartChallenge();
                     }
                 });
         })
