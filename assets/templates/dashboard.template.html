@@ -126,10 +126,14 @@
             color: ${this.cardTextColor};
             word-wrap: break-word;
         }
-        #chart {
+        .fullCardGroup {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+        }
+        .dashboardCard {
             position: relative;
             width: 758px;
-            height: 325px;
             background-color: ${this.cardBackgroundColor};
             border-color: rgba(0,0,0,0);
             color: ${this.cardTextColor};
@@ -139,6 +143,12 @@
             margin-top: 13px;
             margin-bottom: 20px;
             padding: 20px;
+        }
+        .chartCard {
+            height: 325px;
+        }
+        .settingsCard {
+            min-height: 100px;
         }
         #chartXMin {
             position: absolute;
@@ -261,20 +271,20 @@
             width: 48px;
             display: inline-block;
         }
-        .milestoneData {
+        .cardData {
             display: inline-block;
             width: 200px;
             height: 50px;
             vertical-align: top;
             margin-left: 10px;
         }
-        .milestoneTitle {
+        .cardTitle {
             font-size: 14px;
             line-height: 20px;
             font-weight: 600;
             word-wrap: break-word;
         }
-        .milestoneDesc {
+        .cardDesc {
             font-size: 14px;
             line-height: 20px;
             color: #919EAB;
@@ -465,16 +475,27 @@
                     <div class="milestoneCardGroup">${this.milestoneHtml}</div>
                 </div>
             </div>
-            <div id="chart">
-                <div id="chartTitle">Days Coded: ${this.days} days</div>
-                <div id="chartXMin"></div>
-                <div class="chartYLabel" style="bottom: 45px">${this.min} hr</div>
-                <div id="chartXMid"></div>
-                <div class="chartYLabel" style="bottom: 170px">${this.mid} hr</div>
-                <div id="chartXMax"></div>
-                <div class="chartYLabel" style="bottom: 295px">${this.max} hr</div>
-                <div id="chartBarContainer">${this.barsHtml}</div>
-                <div id="chartDateBar">${this.xAxisDates}</div>
+            <div class="fullCardGroup">
+                <div id="chart" class="chartCard dashboardCard">
+                    <div id="chartTitle">Days Coded: ${this.days} days</div>
+                    <div id="chartXMin"></div>
+                    <div class="chartYLabel" style="bottom: 45px">${this.min} hr</div>
+                    <div id="chartXMid"></div>
+                    <div class="chartYLabel" style="bottom: 170px">${this.mid} hr</div>
+                    <div id="chartXMax"></div>
+                    <div class="chartYLabel" style="bottom: 295px">${this.max} hr</div>
+                    <div id="chartBarContainer">${this.barsHtml}</div>
+                    <div id="chartDateBar">${this.xAxisDates}</div>
+                </div>
+                <div id="settingsInfo" class="dashboardCard settingsCard">
+                    <div class="settingsCardItem">
+                        <img class="logo" src="https://100-days-of-code.s3-us-west-1.amazonaws.com/restart-challenge.svg"/>
+                        <div class="cardData">
+                            <div class="cardTitle">Current challenge round</div>
+                            <div class="cardDesc">${this.currentChallengeRound}</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </body>

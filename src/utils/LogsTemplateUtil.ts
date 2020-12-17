@@ -7,7 +7,7 @@ import path = require("path");
 import fs = require("fs");
 import { monthNames, NO_TITLE_LABEL } from "./Constants";
 import { fetchSummaryJsonFileData } from "../managers/FileManager";
-import { isLoggedIn } from "./Util";
+import { getInputFormStyles, isLoggedIn } from "./Util";
 
 function getLogsTemplate() {
     return path.join(__dirname, "/assets/templates/logs.template.html");
@@ -16,22 +16,19 @@ function getLogsTemplate() {
 function getStyleColorsBasedOnMode(): any {
     const tempWindow: any = window;
 
-    let cardTextColor = "#FFFFFF";
-    let cardBackgroundColor = "rgba(255,255,255,0.05)";
+    const { cardTextColor, cardBackgroundColor } = getInputFormStyles();
+    const editLogCardColor = cardTextColor;
+
     let cardMetricBarSidesColor = "rgba(255,255,255,0.20)";
     let editButtonColor = "rgba(255,255,255,0.10)";
     let cardToolTipColor = "rgba(109, 109, 109, .9)";
     let editPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/edit.svg";
     let dropDownPath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Logs/dropDown.svg";
-    let editLogCardColor = "#292929";
     let lightGrayColor = "#919eab";
     if (tempWindow.activeColorTheme.kind === 1) {
-        cardTextColor = "#444444";
-        cardBackgroundColor = "rgba(0,0,0,0.10)";
         cardMetricBarSidesColor = "rgba(0,0,0,0.20)";
         editButtonColor = "rgba(0,0,0,0.10)";
         cardToolTipColor = "rgba(165, 165, 165, .9)";
-        editLogCardColor = "#E5E5E5";
         lightGrayColor = "#596673";
     }
     return {

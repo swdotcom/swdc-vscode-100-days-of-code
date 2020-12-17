@@ -57,3 +57,13 @@ export function getDocMilestonesButton() {
         "100doc_milestones_btn"
     );
 }
+
+export function getChallengeRoundRestartButton() {
+    return getActionButton(
+        "Restart challenge",
+        "Restart the challenge round",
+        "DoC.restartChallengeRound",
+        "refresh.svg",
+        "100doc_learn_more_btn"
+    );
+}

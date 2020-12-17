@@ -1,12 +1,46 @@
-import { compareDates, mergeStringArrays } from "./Util";
+import { compareDates, getItem, mergeStringArrays, resetData } from "./Util";
 import fs = require("fs");
-import { getMostRecentLogObject, checkIfOnStreak, getLogsSummary } from "./LogsUtil";
+import { getMostRecentLogObject, checkIfOnStreak, getLogsSummary, createLog } from "./LogsUtil";
 import { getLanguages } from "./LanguageUtil";
 import { Summary } from "../models/Summary";
 import { Log } from "../models/Log";
 import { getTotalMilestonesAchieved, getThreeMostRecentMilestones } from "./MilestonesUtil";
 import { getSummaryJsonFilePath, fetchSummaryJsonFileData } from "../managers/FileManager";
+import { commands } from "vscode";
 
+let challenge_round = -1;
+
+export function getCurrentChallengeRound() {
+    if (challenge_round === -1) {
+        // fetch it from the local summary
+        let summary: Summary = fetchSummaryJsonFileData();
+        challenge_round = summary.challenge_round;
+    }
+    return challenge_round;
+}
+
+export async function restartChallenge() {
+    // increment the challenge round
+    challenge_round += 1;
+
+    // reset the data
+    resetData();
+
+    // set the challenge round in the local summary
+    const summary:Summary = new Summary();
+    summary.challenge_round = challenge_round;
+    writeToSummaryJson(summary);
+
+    // create a log with the new challenge round
+    const log:Log = new Log();
+    log.day_number = 1;
+    log.challenge_round = challenge_round;
+    
+    await createLog(log);
+
+    // show the dashboard view
+    commands.executeCommand("DoC.viewDashboard");
+}
 
 export function deleteSummaryJson() {
     const filepath = getSummaryJsonFilePath();
@@ -16,16 +50,26 @@ export function deleteSummaryJson() {
     }
 }
 
-export function compareLocalSummary(summaryFromApp: any) {
+export function updateLocalSummary(summaryFromApp: Summary) {
     let summary: Summary = fetchSummaryJsonFileData();
 
     // updates local summary if and only if db is as updated
-    if (summaryFromApp.days > summary.days || summaryFromApp.hours > summary.hours || summaryFromApp.keystrokes > summary.keystrokes) {
+    if (summaryFromApp.challenge_round !== summary.challenge_round
+        || summaryFromApp.days > summary.days
+        || summaryFromApp.hours > summary.hours
+        || summaryFromApp.keystrokes > summary.keystrokes) {
         const currentLog = getMostRecentLogObject();
+
+        summary.hours = summaryFromApp.hours;
         summary.days = summaryFromApp.days;
-        summary.hours = summaryFromApp.hours > summary.hours ? summaryFromApp.hours : summary.hours;
-        summary.keystrokes = summaryFromApp.keystrokes > summary.keystrokes ? summaryFromApp.keystrokes : summary.keystrokes;
-        summary.lines_added = summaryFromApp.lines_added > summary.lines_added ? summaryFromApp.lines_added : summary.lines_added;
+        summary.keystrokes = summaryFromApp.keystrokes;
+        summary.currentLines = summaryFromApp.currentLines;
+
+        if (summary.challenge_round < summaryFromApp.challenge_round) {
+            // update the local challenge round if its behind the challenge from the app
+            summary.challenge_round = summaryFromApp.challenge_round;
+        }
+
         summary.longest_streak =
             summaryFromApp.longest_streak > summary.longest_streak ? summaryFromApp.longest_streak : summary.longest_streak;
         summary.milestones = summaryFromApp.milestones > summary.milestones ? summaryFromApp.milestones : summary.milestones;

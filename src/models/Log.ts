@@ -14,4 +14,5 @@ export class Log {
     public codetime_metrics: CodetimeMetrics = new CodetimeMetrics();
     public shared: boolean = false;
     public milestones: Array<number> = [];
+    public challenge_round: number = 0;
 }

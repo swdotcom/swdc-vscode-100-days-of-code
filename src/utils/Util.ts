@@ -193,7 +193,6 @@ export async function checkIfNameChanged() {
     if (_name !== name) {
         _name = name;
 
-        resetData();
         await rebuildData();
         
         return true;
@@ -204,14 +203,15 @@ export async function checkIfNameChanged() {
 
 export async function rebuildData() {
 
+    resetData();
+
     window.showInformationMessage("Loading account logs and milestones...");
 
-    await syncLogs();
-
-    await MilestoneEventManager.getInstance().fetchMilestones();
-
-    // update the summary on init
-    await fetchSummary();
+    await Promise.all([
+        fetchSummary(),
+        syncLogs(),
+        MilestoneEventManager.getInstance().fetchMilestones(),
+    ]);
 
     reloadCurrentView();
 }
@@ -240,4 +240,27 @@ export function formatNumber(num) {
         str = num.toFixed(2);
     }
     return str;
+}
+
+export function getMillisSinceLastUpdate(file) {
+    if (!fs.existsSync(file)) {
+        return -1;
+    }
+    const stats = fs.statSync(file);
+
+    return (new Date().getTime() - stats.mtime);
+}
+
+export function getInputFormStyles() {
+    let cardTextColor = "#FFFFFF";
+    let cardBackgroundColor = "rgba(255,255,255,0.05)";
+    let cardGrayedLevel = "#474747";
+    let sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/share.svg";
+    if (window.activeColorTheme.kind === 1) {
+        cardTextColor = "#444444";
+        cardBackgroundColor = "rgba(0,0,0,0.10)";
+        cardGrayedLevel = "#B5B5B5";
+        sharePath = "https://100-days-of-code.s3-us-west-1.amazonaws.com/Milestones/shareLight.svg";
+    }
+    return { cardTextColor, cardBackgroundColor, cardGrayedLevel, sharePath };
 }

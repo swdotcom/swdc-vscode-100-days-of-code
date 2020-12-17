@@ -13,7 +13,8 @@ import {
     getDoCLearnMoreButton,
     getDocMilestonesButton,
     getDoCLogsButon,
-    getDashboardButton
+    getDashboardButton,
+    getChallengeRoundRestartButton
 } from "./TreeButtonManager";
 import { TrackerManager } from "../managers/TrackerManager";
 
@@ -155,6 +156,9 @@ export class Tree100DoCProvider implements TreeDataProvider<TreeNode> {
 
         const milestoneButton: TreeNode = getDocMilestonesButton();
         treeItems.push(milestoneButton);
+
+        const challengeRestartButton: TreeNode  = getChallengeRoundRestartButton();
+        treeItems.push(challengeRestartButton);
 
         return treeItems;
     }
