@@ -207,25 +207,6 @@
         margin-right: 4px;
     }
 
-    .cardHeaderDeleteLogButton {
-        cursor: pointer;
-        font-size: 12px;
-        font-weight: 600;
-        line-height: 18px;
-        border-radius: 2px;
-        text-align: center;
-        color: $ {
-            this.cardTextColor
-        };
-        background-color: $ {
-            this.editButtonColor
-        };
-        border-color: rgba(0, 0, 0, 0);
-        vertical-align: middle;
-        margin: 5px;
-        visibility: hidden;
-    }
-
     .cardHeaderShareButton {
         cursor: pointer;
         background-color: rgba(0, 0, 0, 0);
@@ -258,6 +239,16 @@
     .cardHeaderDropDownButtonIcon {
         width: 16px;
         height: 16px;
+    }
+
+    .cardHeaderDeleteButton {
+        cursor: pointer;
+        background-color: rgba(0, 0, 0, 0);
+        border-color: rgba(0, 0, 0, 0);
+    }
+    .cardHeaderDeleteButtonIcon {
+        width: 20px;
+        height: 20px;
     }
 
     button:focus {
@@ -624,43 +615,21 @@
     for (let i = 0; i < dropDownButtons.length; i++) {
         dropDownButtons[i].addEventListener("click", function() {
             const shareButton = this.parentNode.getElementsByClassName("cardHeaderShareButton")[0];
-            const editButton = this.parentNode.getElementsByClassName("cardHeaderEditButton")[0];
-            // const deleteButton = this.parentNode.getElementsByClassName("cardHeaderDeleteLogButton")[0];
             const dropDownIcon = this;
             const content = this.parentNode.parentNode.nextElementSibling;
             if (content.style.maxHeight) {
                 content.style.maxHeight = null;
                 dropDownIcon.style.transform = "rotate(180deg)";
-                // editButton.style.visibility = "hidden";
-                // deleteButton.style.visibility = "hidden";
                 // shareButton.style.transform = "translate(40px, -18px)";
                 // shareButton.style.left = "-15px";
             } else {
                 content.style.maxHeight = content.scrollHeight + "px";
                 dropDownIcon.style.transform = "rotate(0deg)";
-                // editButton.style.visibility = "visible";
-                // deleteButton.style.visibility = "visible";
                 // shareButton.style.transform = "translate(-48px, -18px)";
                 // shareButton.style.left = "0px";
             }
         });
     }
-
-    /**
-    const deleteButtons = document.getElementsByClassName("cardHeaderDeleteLogButton");
-
-    for (let i = 0; i < deleteButtons.length; i++) {
-        deleteButtons[i].addEventListener("click", arg => {
-            if (arg && arg.currentTarget) {
-                const date_val = arg.currentTarget.getAttribute("data-val");
-                if (date_val) {
-                    const unix_date = date_val / 1000;
-                    vscode.postMessage({ command: "deleteLog", value: parseInt(unix_date, 10) });
-                }
-            }
-        });
-    }
-    **/
 
     var days = [];
 
@@ -673,12 +642,8 @@
         cardContent.style.maxHeight = cardContent.scrollHeight + "px";
 
         const shareButton = logCard.getElementsByClassName("cardHeaderShareButton")[0];
-        const editButton = logCard.getElementsByClassName("cardHeaderEditButton")[0];
-        // const deleteButton = logCard.getElementsByClassName("cardHeaderDeleteLogButton")[0];
         const dropDownIcon = logCard.getElementsByClassName("cardHeaderDropDownButton")[0];
         dropDownIcon.style.transform = "rotate(0deg)";
-        // editButton.style.visibility = "visible";
-        // deleteButton.style.visibility = "visible";
         // shareButton.style.transform = "translate(-48px, -18px)";
         // shareButton.style.left = "0px";
 
@@ -760,6 +725,15 @@
         dayErrorElement.style.display = "none";
         dayErrorElement.innerHTML = ""; */
     });
+
+    const deleteButtons = document.getElementsByClassName("cardHeaderDeleteButton");
+    for (let i = 0; i < deleteButtons.length; i++) {
+        deleteButtons[i].addEventListener("click", function(arg) {
+            const unix_date = arg.currentTarget.getAttribute("date-data-val");
+            const title = arg.currentTarget.getAttribute("title-data-val");
+            vscode.postMessage({ command: "deleteLog", value: {unix_date: parseInt(unix_date, 10), title}});
+        });
+    }
 
     var submitButton = document.getElementById("editLogSubmitButton");
     submitButton.addEventListener("click", function() {
