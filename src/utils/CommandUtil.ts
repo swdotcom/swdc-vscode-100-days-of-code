@@ -129,12 +129,13 @@ export function createCommands(): { dispose: () => void } {
                             break;
                         case "deleteLog":
                             const selection = await window.showInformationMessage(
-                                "Are you sure you want to delete this log?",
+                                `Are you sure you want to delete this log, '${message.value.title}'?`,
                                 { modal: true },
                                 ...["Yes"]
                             );
+
                             if (selection && selection === "Yes") {
-                                commands.executeCommand("DoC.deleteLog", message.value);
+                                commands.executeCommand("DoC.deleteLog", message.value.unix_date);
                             }
                             break;
                         case "refreshView":
