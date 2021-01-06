@@ -98,7 +98,7 @@
         "webpack-cli": "^4.2.0"
     },
     "dependencies": {
-        "axios": "^0.19.2",
+        "axios": "^0.21.1",
         "file-it": "^1.0.26",
         "moment-timezone": "^0.5.28",
         "open": "^7.0.3",
