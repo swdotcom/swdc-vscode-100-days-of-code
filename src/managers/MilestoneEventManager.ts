@@ -1,189 +1,187 @@
-import { TextDocument, TextDocumentChangeEvent, window, WindowState, workspace } from "vscode";
+import { window, WindowState } from "vscode";
 import { getDayNumberFromDate } from "../utils/LogsUtil";
-import { checkCodeTimeMetricsMilestonesAchieved, checkDaysMilestones, checkLanguageMilestonesAchieved, compareWithLocalMilestones, getTodaysLocalMilestones } from "../utils/MilestonesUtil";
+import {
+  checkCodeTimeMetricsMilestonesAchieved,
+  checkDaysMilestones,
+  checkLanguageMilestonesAchieved,
+  compareWithLocalMilestones,
+  getTodaysLocalMilestones,
+} from "../utils/MilestonesUtil";
 import { getCurrentChallengeRound, syncSummary } from "../utils/SummaryUtil";
-import { getItem, isLoggedIn } from "../utils/Util";
+import { getItem, isLoggedIn, setItem } from "../utils/Util";
 import { isResponseOk, softwareGet, softwarePost } from "./HttpManager";
 
 const queryString = require("query-string");
 
+let milestoneTimer: NodeJS.Timer = undefined;
+const MILESTONE_CHECK_THESHOLD = 1000 * 60 * 3;
+
 export class MilestoneEventManager {
-	private static instance: MilestoneEventManager;
+  private static instance: MilestoneEventManager;
 
-	private _checkMilestoneTimeout: any;
-	private _checkingForMilestones: boolean = false;
+  private _checkingForMilestones: boolean = false;
 
-	static getInstance(): MilestoneEventManager {
-		if (!MilestoneEventManager.instance) {
-			MilestoneEventManager.instance = new MilestoneEventManager();
-		}
+  static getInstance(): MilestoneEventManager {
+    if (!MilestoneEventManager.instance) {
+      MilestoneEventManager.instance = new MilestoneEventManager();
+    }
 
-		return MilestoneEventManager.instance;
-	}
+    return MilestoneEventManager.instance;
+  }
 
-	private constructor() {
-		// document listener handlers
-		workspace.onDidOpenTextDocument(this._onOpenHandler, this);
-		workspace.onDidCloseTextDocument(this._onCloseHandler, this);
-		workspace.onDidChangeTextDocument(this._onEventHandler, this);
-		// window state changed handler
-		window.onDidChangeWindowState(this._windowStateChanged, this);
+  private constructor() {
+    if (!milestoneTimer) {
+      milestoneTimer = setInterval(() => {
+        this.checkForMilestones();
+      }, 1000 * 60 * 3);
 
-		this.checkMilestonesLazily();
-	}
+      window.onDidChangeWindowState(this._windowStateChanged, this);
+    }
+  }
 
-	private _onCloseHandler(textDoc: TextDocument) {
-		// set a timer to check so we don't disrupt typing
-		this.checkMilestonesLazily();
-	}
+  private _windowStateChanged(winState: WindowState) {
+    if (winState.focused) {
+      const now = new Date().getTime();
+      const lastTimeChecked = getItem("last100doc_milestoneCheckTime") ?? 0;
+      const passedThreshold = !!(now - lastTimeChecked >= MILESTONE_CHECK_THESHOLD);
+      if (passedThreshold) {
+        this.checkForMilestones();
+      }
+    }
+  }
 
-	private _onOpenHandler(textDoc: TextDocument) {
-		// set a timer to check so we don't disrupt typing
-		this.checkMilestonesLazily();
-	}
+  public dispose() {
+    if (milestoneTimer) {
+      clearInterval(milestoneTimer);
+      milestoneTimer = null;
+    }
+  }
 
-	private _onEventHandler(textDocChangeEvent: TextDocumentChangeEvent) {
-		// set a timer to check so we don't disrupt typing
-		this.checkMilestonesLazily();
-	}
+  private async checkForMilestones() {
+    if (!isLoggedIn() || this._checkingForMilestones || !window.state.focused) {
+      return;
+    }
+    const now = new Date().getTime();
+    setItem("last100doc_milestoneCheckTime", now);
+    this._checkingForMilestones = true;
+    // updates logs with latest metrics and checks for milestones
 
-	private _windowStateChanged(winState: WindowState) {
-		this.checkMilestonesLazily();
-	}
+    // checks to see if there are any new achieved milestones
+    const achievedTimeMilestones = checkCodeTimeMetricsMilestonesAchieved();
 
-	private checkMilestonesLazily() {
-		if (this._checkMilestoneTimeout) {
-			// cancel the current one
-			clearTimeout(this._checkMilestoneTimeout);
-			this._checkMilestoneTimeout = null;
-		}
-		this._checkMilestoneTimeout = setTimeout(() => {
-			this.checkForMilestones();
-		}, 1000 * 30);
-	}
+    // checks to see if there are any new language milestones achieved
+    const achievedLangMilestones = checkLanguageMilestonesAchieved();
 
-	private async checkForMilestones() {
-		if (!isLoggedIn() || this._checkingForMilestones) {
-			return;
-		}
-		this._checkingForMilestones = true;
-		// updates logs with latest metrics and checks for milestones
+    // checks to see if there are any day milestones achived
+    const achievedDaysMilestones = checkDaysMilestones();
 
-		// checks to see if there are any new achieved milestones
-		const achievedTimeMilestones = checkCodeTimeMetricsMilestonesAchieved();
+    if (achievedDaysMilestones.length || achievedLangMilestones.length || achievedTimeMilestones.length) {
+      // get the current milestones so if its an update, the milestone array
+      // has all milestones for this day instead of getting replaced by a new set of milestones
+      const currentMilestones: Array<number> = getTodaysLocalMilestones() || [];
 
-		// checks to see if there are any new language milestones achieved
-		const achievedLangMilestones = checkLanguageMilestonesAchieved();
+      // update the server
+      await this.upsertMilestones(currentMilestones);
 
-		// checks to see if there are any day milestones achived
-		const achievedDaysMilestones = checkDaysMilestones();
+      // fetch the milestones
+      await this.fetchMilestones();
 
-		if (achievedDaysMilestones.length || achievedLangMilestones.length || achievedTimeMilestones.length) {
-			// get the current milestones so if its an update, the milestone array
-			// has all milestones for this day instead of getting replaced by a new set of milestones
-			const currentMilestones: Array<number> = getTodaysLocalMilestones() || [];
+      // syncs the Summary info (hours, lines, etc) to the file
+      syncSummary();
+    }
+    this._checkingForMilestones = false;
+  }
 
-			// update the server
-			await this.upsertMilestones(currentMilestones);
+  private async upsertMilestones(milestones: Array<number>) {
+    const dateNow = new Date();
+    const millisNow = dateNow.valueOf();
+    // handles creating and updating of milestones and adds milestones accordingly
+    const d = new Date(millisNow);
+    const offset_minutes = d.getTimezoneOffset();
+    const day_number = getDayNumberFromDate(millisNow);
+    const milestoneData = [
+      {
+        day_number,
+        unix_date: Math.round(millisNow / 1000), // milliseconds --> seconds
+        local_date: Math.round(millisNow / 1000) - offset_minutes * 60, // milliseconds --> seconds,
+        offset_minutes,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        milestones,
+        challenge_round: getCurrentChallengeRound(),
+      },
+    ];
 
-			// fetch the milestones
-			await this.fetchMilestones();
+    await softwarePost("/100doc/milestones", milestoneData, getItem("jwt"));
+  }
 
-			// syncs the Summary info (hours, lines, etc) to the file
-			syncSummary();
-		}
-		this._checkingForMilestones = false;
-	}
+  /**
+   * This will return an array of..
+   * [{challenge_round, createdAt, day_number, local_date, milestones [numbers], offset_minutes, timezone, type, unix_date, userId}]
+   * @param date
+   */
+  public async fetchMilestones(date: any = null): Promise<any> {
+    const jwt = getItem("jwt");
+    const ONE_DAY_SEC = 68400000;
+    // default to today and yesterday
+    let endDate = new Date(); // 11:59:59 pm today
+    let startDate = new Date(endDate.valueOf() - ONE_DAY_SEC * 2); // 12:00:01 am yesterday
 
-	private async upsertMilestones(milestones: Array<number>) {
-		const dateNow = new Date();
-		const millisNow = dateNow.valueOf();
-		// handles creating and updating of milestones and adds milestones accordingly
-		const d = new Date(millisNow);
-		const offset_minutes = d.getTimezoneOffset();
-		const day_number = getDayNumberFromDate(millisNow);
-		const milestoneData = [{
-			day_number,
-			unix_date: Math.round(millisNow / 1000), // milliseconds --> seconds
-			local_date: Math.round(millisNow / 1000) - offset_minutes * 60, // milliseconds --> seconds,
-			offset_minutes,
-			timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-			milestones,
-			challenge_round: getCurrentChallengeRound()
-		}];
+    if (date) {
+      endDate = new Date(date); // 11:59:59 pm today
+      startDate = new Date(endDate.valueOf() - ONE_DAY_SEC); // 12:00:01 am yesterday
+    }
+    // normalize dates
+    startDate.setHours(0, 0, 1, 0);
+    endDate.setHours(23, 59, 59, 0);
 
-		await softwarePost("/100doc/milestones", milestoneData, getItem("jwt"));
-	}
+    // query params
+    const qryStr = queryString.stringify({
+      start_date: Math.round(startDate.valueOf() / 1000),
+      end_date: Math.round(endDate.valueOf() / 1000),
+      challenge_round: getCurrentChallengeRound(),
+    });
 
-	/**
- * This will return an array of..
- * [{challenge_round, createdAt, day_number, local_date, milestones [numbers], offset_minutes, timezone, type, unix_date, userId}]
- * @param date
- */
-	public async fetchMilestones(date: any = null): Promise<any> {
-		const jwt = getItem("jwt");
-		const ONE_DAY_SEC = 68400000;
-		// default to today and yesterday
-		let endDate = new Date(); // 11:59:59 pm today
-		let startDate = new Date(endDate.valueOf() - ONE_DAY_SEC * 2); // 12:00:01 am yesterday
+    const milestoneData = await softwareGet(`/100doc/milestones?${qryStr}`, jwt).then((resp) => {
+      if (isResponseOk(resp) && resp.data) {
+        return resp.data;
+      }
+      return null;
+    });
 
-		if (date) {
-			endDate = new Date(date); // 11:59:59 pm today
-			startDate = new Date(endDate.valueOf() - ONE_DAY_SEC); // 12:00:01 am yesterday
-		}
-		// normalize dates
-		startDate.setHours(0, 0, 1, 0);
-		endDate.setHours(23, 59, 59, 0);
+    // sync with local
+    if (milestoneData) {
+      compareWithLocalMilestones(milestoneData);
+    }
 
-		// query params
-		const qryStr = queryString.stringify({
-			start_date: Math.round(startDate.valueOf() / 1000),
-			end_date: Math.round(endDate.valueOf() / 1000),
-			challenge_round: getCurrentChallengeRound()
-		});
+    // return milestones
+    return milestoneData;
+  }
 
-		const milestoneData = await softwareGet(`/100doc/milestones?${qryStr}`, jwt).then(resp => {
-			if (isResponseOk(resp) && resp.data) {
-				return resp.data;
-			}
-			return null;
-		});
+  /**
+   * This will return an array of..
+   * [{challenge_round, createdAt, day_number, local_date, milestones [numbers], offset_minutes, timezone, type, unix_date, userId}]
+   * @param date a date value (timestamp or date string)
+   */
+  public async fetchAllMilestones(): Promise<any> {
+    const jwt = getItem("jwt");
 
-		// sync with local
-		if (milestoneData) {
-			compareWithLocalMilestones(milestoneData);
-		}
+    const qryStr = queryString.stringify({
+      challenge_round: getCurrentChallengeRound(),
+    });
 
-		// return milestones
-		return milestoneData;
-	}
+    const milestoneData = await softwareGet(`/100doc/milestones?${qryStr}`, jwt).then((resp) => {
+      if (isResponseOk(resp) && resp.data) {
+        return resp.data;
+      }
+      return null;
+    });
 
-	/**
-	* This will return an array of..
-	* [{challenge_round, createdAt, day_number, local_date, milestones [numbers], offset_minutes, timezone, type, unix_date, userId}]
-	* @param date a date value (timestamp or date string)
-	*/
-	public async fetchAllMilestones(): Promise<any> {
-		const jwt = getItem("jwt");
+    // sync with local
+    if (milestoneData) {
+      compareWithLocalMilestones(milestoneData);
+    }
 
-		const qryStr = queryString.stringify({
-			challenge_round: getCurrentChallengeRound()
-		});
-
-		const milestoneData = await softwareGet(`/100doc/milestones?${qryStr}`, jwt).then(resp => {
-			if (isResponseOk(resp) && resp.data) {
-				return resp.data;
-			}
-			return null;
-		});
-
-		// sync with local
-		if (milestoneData) {
-			compareWithLocalMilestones(milestoneData);
-		}
-
-		// return milestones
-		return milestoneData;
-	}
-
+    // return milestones
+    return milestoneData;
+  }
 }
