@@ -14,7 +14,7 @@ import { isResponseOk, softwareGet, softwarePost } from "./HttpManager";
 const queryString = require("query-string");
 
 let milestoneTimer: NodeJS.Timer = undefined;
-const MILESTONE_CHECK_THESHOLD = 1000 * 60 * 3;
+const MILESTONE_CHECK_THESHOLD = 1000 * 60 * 10;
 
 export class MilestoneEventManager {
   private static instance: MilestoneEventManager;
