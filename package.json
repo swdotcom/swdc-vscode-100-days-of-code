@@ -2,7 +2,7 @@
     "name": "swdc-100-days-of-code",
     "displayName": "100 Days of Code",
     "description": "100 Days of Code helps you reach your goals and complete the #100DaysOfCode Challenge.",
-    "version": "1.0.22",
+    "version": "1.0.23",
     "publisher": "softwaredotcom",
     "icon": "resources/100-days-of-code-icon.png",
     "scripts": {
@@ -71,14 +71,23 @@
                 "title": "100 Days of Code: View Milestones"
             }
         ],
-        "views": {
-            "code-time": [
-                {
-                    "id": "100DoC-tree",
-                    "name": "100 DAYS OF CODE"
-                }
-            ]
-        }
+        "viewsContainers": {
+			"activitybar": [
+				{
+					"id": "100-days-of-code",
+					"title": "100 Days of Code",
+					"icon": "resources/dark/milestones.svg"
+				}
+			]
+		},
+		"views": {
+			"100-days-of-code": [
+				{
+					"id": "100-days-of-code-view",
+					"name": ""
+				}
+			]
+		}
     },
     "devDependencies": {
         "@types/glob": "^7.1.1",
