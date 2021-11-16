@@ -1,3 +1,5 @@
+> :warning: **This plugin has been deprecated.** If you're interesting in building or maintaining this plugin, please [contact us](mailto:support@software.com).
+
 <br />
 
 <div>
