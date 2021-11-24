@@ -16,12 +16,10 @@ import {
     getDashboardButton,
     getChallengeRoundRestartButton
 } from "./TreeButtonManager";
-import { TrackerManager } from "../managers/TrackerManager";
 
 const docCollapsedStateMap: any = {};
 
 export const connectDoCTreeView = (view: TreeView<TreeNode>) => {
-    const tracker: TrackerManager = TrackerManager.getInstance();
 
     return Disposable.from(
         view.onDidCollapseElement(async e => {
@@ -40,9 +38,6 @@ export const connectDoCTreeView = (view: TreeView<TreeNode>) => {
             }
 
             const item: TreeNode = e.selection[0];
-
-            tracker.trackUIInteraction("click", item.element_name, "100doc_menu_tree", "", "", item.label);
-
             if (item.command) {
                 const args = item.commandArgs || null;
                 if (args) {

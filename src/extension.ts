@@ -6,11 +6,9 @@ import { checkMilestonesJson } from "./utils/MilestonesUtil";
 import { syncLogs } from "./utils/LogsUtil";
 import { displayReadmeIfNotExists, isLoggedIn, getMillisSinceLastUpdate } from "./utils/Util";
 import { getPluginName, getVersion } from "./utils/PluginUtil";
-import { TrackerManager } from "./managers/TrackerManager";
 import { MilestoneEventManager } from "./managers/MilestoneEventManager";
 import { getSummaryJsonFilePath } from "./managers/FileManager";
 
-const tracker: TrackerManager = TrackerManager.getInstance();
 const thirty_seconds = 1000 * 30;
 let milestoneMgr: MilestoneEventManager;
 
@@ -48,8 +46,6 @@ export async function initializePlugin() {
       await milestoneMgr.fetchAllMilestones();
     }
   }
-  // initialize tracker
-  tracker.init();
 }
 
 function isThresholdMet(millisSinceUpdate) {

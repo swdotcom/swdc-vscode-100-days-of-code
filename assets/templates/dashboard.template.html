@@ -14,6 +14,12 @@
         	font-size: 24px;
         	font-weight: 600;
         }
+        hr {
+            height: 3px;
+            border: none;
+            color: rgba(255, 255, 255, 0.05);
+            background-color: ${this.cardBackgroundColor};
+        }
         #top {
             display: flex;
             width: 100%;
@@ -36,7 +42,8 @@
             color: #ebb135;
             font-size: 14px;
             font-weight: 600;
-            max-width: 555px;
+            max-width: 475px;
+            padding-bottom: 10px;
         }
         #topMetrics {
             display: flex;
@@ -398,9 +405,12 @@
             </div>
         </div>
         <div class="warningNotice">
-            <p>The 100 Days of Code extension is no longer being maintained.</p>
-            <p>You can continue to track your progress towards completing the challenge using <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-vscode">Code Time</a></p>
+            <div style="padding-bottom: 6px;">The 100 Days of Code extension is no longer being maintained.</div>
+            <div>You can continue to track your progress towards completing the challenge using <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-vscode">Code Time</a></div>
         </div>
+
+        <hr>
+
         <div class="logInMessageStyle" id="logInMessage">You must log in with Code Time to start tracking your 100 Days of Code</div>
         <div id="topMetrics">
             <div class="metricsCard">
