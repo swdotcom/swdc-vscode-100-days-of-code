@@ -1,6 +1,6 @@
 <html>
     <style>
-        
+
         body {
         	font-family: sans-serif;
         	width: 800px;
@@ -32,7 +32,12 @@
             display: inline;
             color: ${this.cardTextColor};
         }
-        
+        .warningNotice {
+            color: #ebb135;
+            font-size: 14px;
+            font-weight: 600;
+            max-width: 555px;
+        }
         #topMetrics {
             display: flex;
             justify-content: space-between;
@@ -392,6 +397,10 @@
                 <button id="certificate">Get your Certificate</button>
             </div>
         </div>
+        <div class="warningNotice">
+            <p>The 100 Days of Code extension is no longer being maintained.</p>
+            <p>You can continue to track your progress towards completing the challenge using <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-vscode">Code Time</a></p>
+        </div>
         <div class="logInMessageStyle" id="logInMessage">You must log in with Code Time to start tracking your 100 Days of Code</div>
         <div id="topMetrics">
             <div class="metricsCard">
@@ -526,12 +535,14 @@
             });
         }
 
-        refreshButton.addEventListener("click", function () {
-            refreshButton.disabled = true;
-            vscode.postMessage({ command: "refreshView", value: "dashboard" });
-            setTimeout(() => {
-                refreshButton.disabled = false;
-            }, 2000);
-        });
+        if (refreshButton) {
+            refreshButton.addEventListener("click", function () {
+                refreshButton.disabled = true;
+                vscode.postMessage({ command: "refreshView", value: "dashboard" });
+                setTimeout(() => {
+                    refreshButton.disabled = false;
+                }, 2000);
+            });
+        }
     </script>
 </html>

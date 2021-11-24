@@ -2,7 +2,7 @@
     "name": "swdc-100-days-of-code",
     "displayName": "100 Days of Code",
     "description": "100 Days of Code helps you reach your goals and complete the #100DaysOfCode Challenge.",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "publisher": "softwaredotcom",
     "icon": "resources/100-days-of-code-icon.png",
     "scripts": {

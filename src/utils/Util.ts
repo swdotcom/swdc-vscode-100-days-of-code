@@ -1,7 +1,6 @@
 import { commands, ViewColumn, Uri, window } from "vscode";
 import { _100_DAYS_OF_CODE_PLUGIN_ID, _100_DAYS_OF_CODE_EXT_ID } from "./Constants";
 import { deleteLogsJson, syncLogs } from "./LogsUtil";
-import { fetchSummary } from "./SummaryDbUtil";
 import { reloadCurrentView } from "./CommandUtil";
 import { MilestoneEventManager } from "../managers/MilestoneEventManager";
 import { deleteMilestoneJson } from "./MilestonesUtil";
@@ -194,7 +193,7 @@ export async function checkIfNameChanged() {
         _name = name;
 
         await rebuildData();
-        
+
         return true;
     } else {
         return false;
@@ -208,7 +207,6 @@ export async function rebuildData() {
     window.showInformationMessage("Loading account logs and milestones...");
 
     await Promise.all([
-        fetchSummary(),
         syncLogs(),
         MilestoneEventManager.getInstance().fetchMilestones(),
     ]);

@@ -33,7 +33,12 @@
         };
         display: ${this.logInMessageDisplay};
     }
-
+    .warningNotice {
+        color: #ebb135;
+        font-size: 14px;
+        font-weight: 600;
+        max-width: 555px;
+    }
     .logHeader {
         display: flex;
         position: absolute;
@@ -410,7 +415,7 @@
         visibility: visible;
     }
 
-    
+
 
     /* Headings */
     #head1 {
@@ -547,6 +552,11 @@
         <div class="logHeader">
             <button id="addLog">Add Log</button>
         </div>
+    </div>
+
+    <div class="warningNotice">
+        <p>The 100 Days of Code extension is no longer being maintained.</p>
+        <p>You can continue to track your progress towards completing the challenge using <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-vscode">Code Time</a></p>
     </div>
 
     <div class="logInMessageStyle" id="logInMessage">You must log in with Code Time to start tracking your 100 Days of Code</div>

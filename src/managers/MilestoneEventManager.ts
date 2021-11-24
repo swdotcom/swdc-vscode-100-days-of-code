@@ -1,5 +1,4 @@
 import { window, WindowState } from "vscode";
-import { getDayNumberFromDate } from "../utils/LogsUtil";
 import {
   checkCodeTimeMetricsMilestonesAchieved,
   checkDaysMilestones,
@@ -7,11 +6,8 @@ import {
   compareWithLocalMilestones,
   getTodaysLocalMilestones,
 } from "../utils/MilestonesUtil";
-import { getCurrentChallengeRound, syncSummary } from "../utils/SummaryUtil";
+import { syncSummary } from "../utils/SummaryUtil";
 import { getItem, isLoggedIn, setItem } from "../utils/Util";
-import { isResponseOk, softwareGet, softwarePost } from "./HttpManager";
-
-const queryString = require("query-string");
 
 let milestoneTimer: NodeJS.Timer = undefined;
 const MILESTONE_CHECK_THESHOLD = 1000 * 60 * 10;
@@ -80,9 +76,6 @@ export class MilestoneEventManager {
       // has all milestones for this day instead of getting replaced by a new set of milestones
       const currentMilestones: Array<number> = getTodaysLocalMilestones() || [];
 
-      // update the server
-      await this.upsertMilestones(currentMilestones);
-
       // fetch the milestones
       await this.fetchMilestones();
 
@@ -92,35 +85,12 @@ export class MilestoneEventManager {
     this._checkingForMilestones = false;
   }
 
-  private async upsertMilestones(milestones: Array<number>) {
-    const dateNow = new Date();
-    const millisNow = dateNow.valueOf();
-    // handles creating and updating of milestones and adds milestones accordingly
-    const d = new Date(millisNow);
-    const offset_minutes = d.getTimezoneOffset();
-    const day_number = getDayNumberFromDate(millisNow);
-    const milestoneData = [
-      {
-        day_number,
-        unix_date: Math.round(millisNow / 1000), // milliseconds --> seconds
-        local_date: Math.round(millisNow / 1000) - offset_minutes * 60, // milliseconds --> seconds,
-        offset_minutes,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        milestones,
-        challenge_round: getCurrentChallengeRound(),
-      },
-    ];
-
-    await softwarePost("/100doc/milestones", milestoneData, getItem("jwt"));
-  }
-
   /**
    * This will return an array of..
    * [{challenge_round, createdAt, day_number, local_date, milestones [numbers], offset_minutes, timezone, type, unix_date, userId}]
    * @param date
    */
   public async fetchMilestones(date: any = null): Promise<any> {
-    const jwt = getItem("jwt");
     const ONE_DAY_SEC = 68400000;
     // default to today and yesterday
     let endDate = new Date(); // 11:59:59 pm today
@@ -134,19 +104,7 @@ export class MilestoneEventManager {
     startDate.setHours(0, 0, 1, 0);
     endDate.setHours(23, 59, 59, 0);
 
-    // query params
-    const qryStr = queryString.stringify({
-      start_date: Math.round(startDate.valueOf() / 1000),
-      end_date: Math.round(endDate.valueOf() / 1000),
-      challenge_round: getCurrentChallengeRound(),
-    });
-
-    const milestoneData = await softwareGet(`/100doc/milestones?${qryStr}`, jwt).then((resp) => {
-      if (isResponseOk(resp) && resp.data) {
-        return resp.data;
-      }
-      return null;
-    });
+    const milestoneData = [];
 
     // sync with local
     if (milestoneData) {
@@ -163,18 +121,8 @@ export class MilestoneEventManager {
    * @param date a date value (timestamp or date string)
    */
   public async fetchAllMilestones(): Promise<any> {
-    const jwt = getItem("jwt");
 
-    const qryStr = queryString.stringify({
-      challenge_round: getCurrentChallengeRound(),
-    });
-
-    const milestoneData = await softwareGet(`/100doc/milestones?${qryStr}`, jwt).then((resp) => {
-      if (isResponseOk(resp) && resp.data) {
-        return resp.data;
-      }
-      return null;
-    });
+    const milestoneData = [];
 
     // sync with local
     if (milestoneData) {

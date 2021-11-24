@@ -8,7 +8,6 @@ import { displayReadmeIfNotExists, isLoggedIn, getMillisSinceLastUpdate } from "
 import { getPluginName, getVersion } from "./utils/PluginUtil";
 import { TrackerManager } from "./managers/TrackerManager";
 import { MilestoneEventManager } from "./managers/MilestoneEventManager";
-import { fetchSummary } from "./utils/SummaryDbUtil";
 import { getSummaryJsonFilePath } from "./managers/FileManager";
 
 const tracker: TrackerManager = TrackerManager.getInstance();
@@ -45,7 +44,6 @@ export async function initializePlugin() {
     const millisSinceUpdate = getMillisSinceLastUpdate(getSummaryJsonFilePath());
     if (isThresholdMet(millisSinceUpdate)) {
       // initialize the user summary info (challenge_round and metrics data)
-      await fetchSummary();
       await syncLogs();
       await milestoneMgr.fetchAllMilestones();
     }

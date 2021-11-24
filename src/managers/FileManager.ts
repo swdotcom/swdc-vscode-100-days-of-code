@@ -2,7 +2,6 @@ import { getSoftwareDir, isWindows } from "../utils/Util";
 import fs = require("fs");
 import { Summary } from "../models/Summary";
 
-
 export function getFile(name: string) {
 	let file_path = getSoftwareDir();
 	if (isWindows()) {

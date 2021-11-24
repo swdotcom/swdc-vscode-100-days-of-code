@@ -13,7 +13,6 @@ import { getAddLogHtmlString } from "./AddLogUtil";
 import { getUpdatedDashboardHtmlString, getCertificateHtmlString } from "./DashboardUtil";
 import { displayReadmeIfNotExists, displayLoginPromptIfNotLoggedIn, isLoggedIn, checkIfNameChanged } from "./Util";
 import { getUpdatedMilestonesHtmlString } from "./MilestonesTemplateUtil";
-import { fetchSummary } from "./SummaryDbUtil";
 import { getUpdatedLogsHtml } from "./LogsTemplateUtil";
 import { TrackerManager } from "../managers/TrackerManager";
 import { deleteLogDay, syncLogs } from "./LogsUtil";
@@ -208,7 +207,6 @@ export function createCommands(): { dispose: () => void } {
                 });
             case "refreshView":
               // refresh the logs then show it again
-              await fetchSummary();
               if (currentPanel) {
                 // dipose the previous one
                 currentPanel.dispose();

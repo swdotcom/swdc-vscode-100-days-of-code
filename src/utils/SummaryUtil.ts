@@ -35,7 +35,7 @@ export async function restartChallenge() {
     const log:Log = new Log();
     log.day_number = 1;
     log.challenge_round = challenge_round;
-    
+
     await createLog(log);
 
     // show the dashboard view
@@ -48,42 +48,6 @@ export function deleteSummaryJson() {
     if (fileExists) {
         fs.unlinkSync(filepath);
     }
-}
-
-export function updateLocalSummary(summaryFromApp: Summary) {
-    let summary: Summary = fetchSummaryJsonFileData();
-
-    // updates local summary if and only if db is as updated
-    if (summaryFromApp.challenge_round !== summary.challenge_round
-        || summaryFromApp.days > summary.days
-        || summaryFromApp.hours > summary.hours
-        || summaryFromApp.keystrokes > summary.keystrokes) {
-        const currentLog = getMostRecentLogObject();
-
-        summary.hours = summaryFromApp.hours;
-        summary.days = summaryFromApp.days;
-        summary.keystrokes = summaryFromApp.keystrokes;
-        summary.currentLines = summaryFromApp.currentLines;
-
-        if (summary.challenge_round < summaryFromApp.challenge_round) {
-            // update the local challenge round if its behind the challenge from the app
-            summary.challenge_round = summaryFromApp.challenge_round;
-        }
-
-        summary.longest_streak =
-            summaryFromApp.longest_streak > summary.longest_streak ? summaryFromApp.longest_streak : summary.longest_streak;
-        summary.milestones = summaryFromApp.milestones > summary.milestones ? summaryFromApp.milestones : summary.milestones;
-        summary.shares = summaryFromApp.shares > summary.shares ? summaryFromApp.shares : summary.shares;
-
-        summary.languages = mergeStringArrays(summaryFromApp.languages, summary.languages);
-        if (currentLog && compareDates(new Date(currentLog.date), new Date())) {
-            summary.currentHours = currentLog.codetime_metrics.hours;
-            summary.currentKeystrokes = currentLog.codetime_metrics.keystrokes;
-            summary.currentLines = currentLog.codetime_metrics.lines_added;
-        }
-    }
-
-    writeToSummaryJson(summary);
 }
 
 export function syncSummary() {

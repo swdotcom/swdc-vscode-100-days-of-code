@@ -1,6 +1,4 @@
-> :warning: **This plugin has been deprecated.** If you're interesting in building or maintaining this plugin, please [contact us](mailto:support@software.com).
-
-<br />
+> :warning: **This plugin is no longer being maintained.** You can continue to track your progress towards completing the challenge using <a href="https://marketplace.visualstudio.com/items?itemName=softwaredotcom.swdc-vscode">Code Time</a>.
 
 <div>
   <h1 align="center">

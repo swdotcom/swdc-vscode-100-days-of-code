@@ -1,4 +1,4 @@
-import { compareDates, getItem, isLoggedIn } from "./Util";
+import { compareDates, isLoggedIn } from "./Util";
 import fs = require("fs");
 import { CodetimeMetrics } from "../models/CodetimeMetrics";
 import { Log } from "../models/Log";
@@ -11,12 +11,10 @@ import {
     getCurrentChallengeRound
 } from "./SummaryUtil";
 import { getFileDataAsJson, getFile } from "../managers/FileManager";
-import { isResponseOk, softwareDelete, softwareGet, softwarePost, softwarePut } from "../managers/HttpManager";
 import { commands, window } from "vscode";
 import { getAllMilestones } from "./MilestonesUtil";
 import { NO_TITLE_LABEL } from "./Constants";
 
-const queryString = require("query-string");
 const moment = require("moment-timezone");
 
 let currently_deleting_log_date: number = -1;
@@ -233,7 +231,7 @@ export function getLatestLogEntryNumber(): number {
 
 export function getMostRecentLogObject(): Log | any {
     const logs = getAllDescendingOrderLogObjects();
-    
+
     if (logs && logs.length > 0) {
         // get the most recent one
         return logs[0];
@@ -348,9 +346,6 @@ async function updateLog(log: Log) {
     logs[index] = log;
     // write back to local
     saveLogsToFile(logs);
-    // push changes to server
-    const preparedLog = await prepareLogForServerUpdate(log);
-    await updateExistingLogOnServer(preparedLog);
 }
 
 // creates a new log locally and on the server
@@ -363,8 +358,6 @@ export async function createLog(log: Log) {
     const updatedLogs = [...logs, preparedLog];
     // write back to the local file
     saveLogsToFile(updatedLogs);
-    
-    await pushNewLogToServer(preparedLog);
 }
 
 export async function deleteLogDay(unix_date: number) {
@@ -374,18 +367,16 @@ export async function deleteLogDay(unix_date: number) {
     }
 
     currently_deleting_log_date = unix_date;
-    
-    const resp = await softwareDelete("/100doc/logs", { unix_dates: [unix_date] }, getItem("jwt"));
-    if (isResponseOk(resp)) {
-        window.showInformationMessage("Your log has been successfully deleted.");
-        // delete the log
-        let logs: Array<Log> = await getLocalLogsFromFile();
-        // delete the log based on the dayNum
-        logs = logs.filter((n: Log) => n.unix_date !== unix_date);
-        saveLogsToFile(logs);
-        await syncLogs();
-        commands.executeCommand("DoC.viewLogs");
-    }
+
+    window.showInformationMessage("Your log has been successfully deleted.");
+    // delete the log
+    let logs: Array<Log> = await getLocalLogsFromFile();
+    // delete the log based on the dayNum
+    logs = logs.filter((n: Log) => n.unix_date !== unix_date);
+    saveLogsToFile(logs);
+    await syncLogs();
+    commands.executeCommand("DoC.viewLogs");
+
     currently_deleting_log_date = -1;
 
 }
@@ -393,15 +384,7 @@ export async function deleteLogDay(unix_date: number) {
 // pulls logs from the server and saves them locally. This will be run periodically.
 // logs have a format like [ { day_number: 1, date: ... }, ... ]
 export async function syncLogs() {
-    let serverLogs: Array<Log> = getLocalLogsFromFile();
-
-    const qryStr = queryString.stringify({
-        challenge_round: getCurrentChallengeRound()
-    });
-    const resp = await softwareGet(`/100doc/logs?${qryStr}`, getItem("jwt"));
-    if (isResponseOk(resp)) {
-        serverLogs = resp.data;
-    }
+    let serverLogs: Array<Log> = getLocalLogsFromFile() || [];
 
     let createLogForToday = true;
     const currentDay = moment().format("YYYY-MM-DD");
@@ -412,7 +395,7 @@ export async function syncLogs() {
 
         // check if we have one for today
         const lastLoggedDay = moment(formattedLogs[0].date).format("YYYY-MM-DD");
-        
+
         // if we don't have a log for today, we'll create an empty one
         if (currentDay === lastLoggedDay) {
             createLogForToday = false;
@@ -481,16 +464,6 @@ function checkIfLocalFileExists(filepath: string): boolean {
     } else {
         return false;
     }
-}
-
-// push new local logs to the server
-async function pushNewLogToServer(log: {}) {
-    await softwarePost("/100doc/logs", [log], getItem("jwt"));
-}
-
-// push new local logs to the server
-async function updateExistingLogOnServer(log: {}) {
-    await softwarePut("/100doc/logs", [log], getItem("jwt"));
 }
 
 // formats logs from the server into the local log model format before saving locally
